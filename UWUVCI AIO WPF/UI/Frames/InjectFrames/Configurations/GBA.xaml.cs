@@ -1,21 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using UWUVCI_AIO_WPF.Properties;
+using UWUVCI_AIO_WPF.Classes;
+using UWUVCI_AIO_WPF.Models;
 using UWUVCI_AIO_WPF.UI.Windows;
 
 namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
@@ -23,14 +12,18 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
     /// <summary>
     /// Interaktionslogik für OtherConfigs.xaml
     /// </summary>
-    public partial class TurboGrafX : Page, IDisposable
+    public partial class GBA : Page, IDisposable
     {
         MainViewModel mvm;
-        bool cd = false;
-        public TurboGrafX()
+
+        public GBA()
         {
+            mvm = (MainViewModel)FindResource("mvm");
+            mvm.GameConfiguration.GBAStuff = new N64Conf
+            {
+                DarkFilter = true
+            };
             InitializeComponent();
-            mvm = FindResource("mvm") as MainViewModel;
             mvm.setThing(this);
             Injection.ToolTip = "Changing the extension of a ROM may result in a faulty inject.\nWe will not give any support in such cases";
 
@@ -42,34 +35,25 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
             {
                 case 0:
                     icoIMG.Visibility = Visibility.Hidden;
-                    mvm.GameConfiguration.TGAIco = new Classes.PNGTGA();
+                    mvm.GameConfiguration.TGAIco = new PNGTGA();
                     ic.Text = null;
                     break;
                 case 1:
                     tvIMG.Visibility = Visibility.Hidden;
-                    mvm.GameConfiguration.TGATv = new Classes.PNGTGA();
+                    mvm.GameConfiguration.TGATv = new PNGTGA();
                     tv.Text = null;
                     break;
                 case 2:
                     drcIMG.Visibility = Visibility.Hidden;
-                    mvm.GameConfiguration.TGADrc = new Classes.PNGTGA();
+                    mvm.GameConfiguration.TGADrc = new PNGTGA();
                     drc.Text = null;
                     break;
                 case 3:
                     logIMG.Visibility = Visibility.Hidden;
-                    mvm.GameConfiguration.TGALog = new Classes.PNGTGA();
+                    mvm.GameConfiguration.TGALog = new PNGTGA();
                     log.Text = null;
                     break;
             }
-        }
-        public TurboGrafX(GameConfig c)
-        {
-            InitializeComponent();
-            mvm = FindResource("mvm") as MainViewModel;
-            mvm.setThing(this);
-            mvm.GameConfiguration = c.Clone(); getInfoFromConfig();
-            Injection.ToolTip = "Changing the extension of a ROM may result in a faulty inject.\nWe will not give any support in such cases";
-
         }
         private void SoundImg_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -99,6 +83,16 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
 
 
         }
+        public GBA(GameConfig c)
+        {
+
+            InitializeComponent();
+            mvm = FindResource("mvm") as MainViewModel;
+            mvm.GameConfiguration = c.Clone(); getInfoFromConfig();
+            mvm.setThing(this);
+            Injection.ToolTip = "Changing the extension of a ROM may result in a faulty inject.\nWe will not give any support in such cases";
+
+        }
         public void Dispose()
         {
 
@@ -107,22 +101,24 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
         private void Set_Rom_Path(object sender, RoutedEventArgs e)
         {
             string path = string.Empty;
-            if (!cd) path = mvm.GetFilePath(true, false);
-            else path = mvm.turbocd();
+            path = mvm.GetFilePath(true, false);
+
 
             if (!CheckIfNull(path))
             {
                 mvm.RomPath = path;
                 mvm.RomSet = true;
-                if (!cd)
-                {
-                    mvm.getBootIMGTG(mvm.RomPath);
-                }
                 if (mvm.BaseDownloaded)
                 {
                     mvm.CanInject = true;
-                    
+
                 }
+                FileInfo inf = new FileInfo(path);
+                if (inf.Extension.ToLower() != ".gb" && inf.Extension.ToLower() != ".gbc")
+                {
+                    mvm.getBootIMGGBA(mvm.RomPath);
+                }
+                
             }
 
         }
@@ -164,24 +160,45 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
             }
             mvm.GameConfiguration.GameName = gn.Text;
             mvm.Inject(false);
+            mvm.PokePatch = false;
+            rbRDF.IsChecked = true;
         }
 
         private void Set_TvTex(object sender, RoutedEventArgs e)
         {
             string path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "bin", "createdIMG", "bootTvTex.png");
-            using (ImageCreator ic = new ImageCreator(cd, GameBaseClassLibrary.GameConsoles.TG16, "bootTvTex"))
-            {
-                try
-                {
-                    ic.Owner = mvm.mw;
-                }
-                catch (Exception)
-                {
 
+            ImageCreator ic;
+            if (!string.IsNullOrEmpty(mvm.RomPath))
+            {
+                if (new FileInfo(mvm.RomPath).Extension.ToLower() == ".gb")
+                {
+                    ic = new ImageCreator(false, GameBaseClassLibrary.GameConsoles.GBA, "bootTvTex");
                 }
-                ic.ShowDialog();
+                else if (new FileInfo(mvm.RomPath).Extension.ToLower() == ".gbc")
+                {
+                    ic = new ImageCreator(true, GameBaseClassLibrary.GameConsoles.GBA, "bootTvTex");
+                }
+                else
+                {
+                    ic = new ImageCreator(GameBaseClassLibrary.GameConsoles.GBA, "bootTvTex");
+                }
             }
-            
+            else
+            {
+                ic = new ImageCreator(GameBaseClassLibrary.GameConsoles.GBA, "bootTvTex");
+            }
+
+            try
+            {
+                ic.Owner = mvm.mw;
+            }
+            catch (Exception)
+            {
+
+            }
+            ic.ShowDialog();
+            ic.Dispose();
             if (File.Exists(path) && mvm.CheckTime(new FileInfo(path).CreationTime))
             {
                 mvm.GameConfiguration.TGATv.ImgPath = path;
@@ -189,25 +206,44 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
                 tv.Text = path;
                 tvIMG.Visibility = Visibility.Visible;
             }
-            
+           
         }
 
         private void Set_DrcTex(object sender, RoutedEventArgs e)
         {
             string path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "bin", "createdIMG", "bootDrcTex.png");
-            using (ImageCreator ic = new ImageCreator(cd, GameBaseClassLibrary.GameConsoles.TG16, "bootDrcTex"))
+
+            ImageCreator ic;
+            if (!string.IsNullOrEmpty(mvm.RomPath))
             {
-                try
+                if (new FileInfo(mvm.RomPath).Extension.ToLower() == ".gb")
                 {
-                    ic.Owner = mvm.mw;
+                    ic = new ImageCreator(false, GameBaseClassLibrary.GameConsoles.GBA, "bootDrcTex");
                 }
-                catch (Exception)
+                else if (new FileInfo(mvm.RomPath).Extension.ToLower() == ".gbc")
                 {
-                    
+                    ic = new ImageCreator(true, GameBaseClassLibrary.GameConsoles.GBA, "bootDrcTex");
                 }
-                ic.ShowDialog();
+                else
+                {
+                    ic = new ImageCreator(GameBaseClassLibrary.GameConsoles.GBA, "bootDrcTex");
+                }
             }
-            
+            else
+            {
+                ic = new ImageCreator(GameBaseClassLibrary.GameConsoles.GBA, "bootDrcTex");
+            }
+
+            try
+            {
+                ic.Owner = mvm.mw;
+            }
+            catch (Exception)
+            {
+
+            }
+            ic.ShowDialog();
+            ic.Dispose();
             if (File.Exists(path) && mvm.CheckTime(new FileInfo(path).CreationTime))
             {
                 mvm.GameConfiguration.TGADrc.ImgPath = path;
@@ -220,19 +256,36 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
         private void Set_IconTex(object sender, RoutedEventArgs e)
         {
             string path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "bin", "createdIMG", "iconTex.png");
-            using (IconCreator ic = new IconCreator())
+            IconCreator ic;
+            if (!string.IsNullOrEmpty(mvm.RomPath))
             {
-                try
+                if (new FileInfo(mvm.RomPath).Extension.ToLower() == ".gb")
                 {
-                    ic.Owner = mvm.mw;
+                    ic =  new IconCreator("other", "GB");
                 }
-                catch (Exception)
+                else if (new FileInfo(mvm.RomPath).Extension.ToLower() == ".gbc")
                 {
-
+                    ic = new IconCreator("other", "GBC");
                 }
-                ic.ShowDialog();
+                else
+                {
+                    ic = new IconCreator();
+                }
             }
+            else
+            {
+                ic = new IconCreator();
+            }
+            try
+            {
+                ic.Owner = mvm.mw;
+            }
+            catch (Exception)
+            {
 
+            }
+            ic.ShowDialog();
+            ic.Dispose();
             if (File.Exists(path) && mvm.CheckTime(new FileInfo(path).CreationTime))
             {
                 mvm.GameConfiguration.TGAIco.ImgPath = path;
@@ -241,13 +294,7 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
                 icoIMG.Visibility = Visibility.Visible;
             }
         }
-        
-        public void imgpath(string icon, string tv)
-        {
-            ic.Text = icon;
-            this.tv.Text = tv;
-        }
-        
+
         private void Set_LogoTex(object sender, RoutedEventArgs e)
         {
             string path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "bin", "createdIMG", "bootLogoTex.png");
@@ -268,7 +315,7 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
             {
                 mvm.GameConfiguration.TGALog.ImgPath = path;
                 mvm.GameConfiguration.TGALog.extension = new FileInfo(path).Extension;
-                this.log.Text = path;
+                log.Text = path;
                 logIMG.Visibility = Visibility.Visible;
             }
 
@@ -299,14 +346,11 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
             {
                 logIMG.Visibility = Visibility.Visible;
             }
-            gn.Text = mvm.GameConfiguration.GameName;
-            cd = mvm.cd;
-            if (cd)
-            {
-                mvm.mw.tbTitleBar.Text = "UWUVCI AIO - TurboGrafX-CD VC INJECT";
-                Injection.Content = "Set Path";
-                cdtg.IsChecked = true;
-            }
+            
+                rbREF.IsChecked = mvm.PokePatch;
+                rbRDF.IsChecked = !mvm.PokePatch;
+            
+                gn.Text = mvm.GameConfiguration.GameName;
             if (mvm.GameConfiguration.extension != "" && mvm.GameConfiguration.bootsound != null)
             {
                 if (!Directory.Exists(@"bin\cfgBoot"))
@@ -332,39 +376,19 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
             return false;
         }
 
-        private void CheckBox_Click(object sender, RoutedEventArgs e)
-        {
-            mvm.RomPath = null;
-            mvm.RomSet = false;
-            mvm.CanInject = false;
-            if (cd)
-            {
-                cd = false;
-                
-                mvm.mw.tbTitleBar.Text = "UWUVCI AIO - TurboGrafX-16 VC INJECT";
-                Injection.Content = "Select File";
-            }
 
-            else
-            {
-                cd = true;
-                mvm.mw.tbTitleBar.Text = "UWUVCI AIO - TurboGrafX-CD VC INJECT";
-                Injection.Content = "Set Path";
-            }
-            mvm.cd = cd;
-        }
 
         private void gn_KeyUp(object sender, KeyEventArgs e)
         {
 
             /*Regex reg = new Regex("[^a-zA-Z0-9 é -]");
-            string backup = string.Copy(gn.Text);
-            gn.Text = reg.Replace(gn.Text, string.Empty);
-            gn.CaretIndex = gn.Text.Length;
-            if (gn.Text != backup)
-            {
-                gn.ScrollToHorizontalOffset(double.MaxValue);
-            }*/
+           string backup = string.Copy(gn.Text);
+           gn.Text = reg.Replace(gn.Text, string.Empty);
+           gn.CaretIndex = gn.Text.Length;
+           if (gn.Text != backup)
+           {
+               gn.ScrollToHorizontalOffset(double.MaxValue);
+           }*/
 
 
 
@@ -380,11 +404,15 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
             log.Text = "";
         }
 
-        private void icoIMG_MouseDown(object sender, MouseButtonEventArgs e)
+        private void RadioButton_Click(object sender, RoutedEventArgs e)
         {
-
+            mvm.PokePatch = true;
         }
 
+        private void rbRDF_Click(object sender, RoutedEventArgs e)
+        {
+            mvm.PokePatch = false;
+        }
         private void icoIMG_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             ICOSHOW ics = new ICOSHOW(ic.Text);
@@ -441,6 +469,14 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
             }
             t.ShowDialog();
         }
+        public void imgpath(string icon, string tv)
+        {
+            ic.Text = icon;
+            this.tv.Text = tv;
+            icoIMG.Visibility = Visibility.Visible;
+            this.tv.Visibility = Visibility.Visible;
+        }
+
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -488,7 +524,8 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
         {/*
             try
             {
-                TitleKeys webbrowser = new TitleKeys("n64", "UWUVCI AIO - N64 Help");
+
+                TitleKeys webbrowser = new TitleKeys("gba", "UWUVCI AIO - GBA Help");
                 try
                 {
                     webbrowser.Owner = mvm.mw;
@@ -502,7 +539,7 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
             }
             catch (Exception)
             {
-                Custom_Message cm = new Custom_Message("Not Implemented", "The Helppage for N64 is not implemented yet");
+                Custom_Message cm = new Custom_Message("Not Implemented", "The Helppage for GBA is not implemented yet");
                 try
                 {
                     cm.Owner = mvm.mw;
@@ -519,16 +556,7 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
         {
             try
             {
-                TitleKeys webbrowser = null;
-                if (cd)
-                {
-                    webbrowser =  new TitleKeys("tgcd", "TurboGrafX Inject Guide");
-                }
-                else
-                {
-                    webbrowser = new TitleKeys("tg16", "TurboGrafX Inject Guide");
-                }
-                
+                TitleKeys webbrowser = new TitleKeys("gba", "GameBoy Advance Inject Guide");
                 try
                 {
                     webbrowser.Owner = mvm.mw;
@@ -542,9 +570,7 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
             }
             catch (Exception)
             {
-                
-                
-                Custom_Message cm = new Custom_Message("Not Implemented", $"The Helppage for TurboGrafX is not implemented yet");
+                Custom_Message cm = new Custom_Message("Not Implemented", "The Helppage for GBA is not implemented yet");
                 try
                 {
                     cm.Owner = mvm.mw;
@@ -568,5 +594,20 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
 
             }
         }
-    }
+        private void rbRDF_GBA_Click(object sender, RoutedEventArgs e)
+        {
+            mvm.GameConfiguration.GBAStuff.DarkFilter = false;
+        }
+
+        private void rbREF_GBA_Click(object sender, RoutedEventArgs e)
+        {
+            mvm.GameConfiguration.GBAStuff.DarkFilter = true;
+        }
+
+        private void RbREF_GBA_Checked(object sender, RoutedEventArgs e)
+        {
+
+        }
+    } 
 }
+
