@@ -259,6 +259,8 @@
     <Compile Include="Models\DolSection.cs" />
     <Compile Include="Models\GctCode.cs" />
     <Compile Include="Models\JsonAppSettings.cs" />
+    <Compile Include="Models\TutorialContent.cs" />
+    <Compile Include="Models\TutorialSession.cs" />
     <Compile Include="Models\ToolStep.cs" />
     <Compile Include="Models\TKeys.cs" />
     <Compile Include="Classes\ToolCheck.cs" />
@@ -286,12 +288,6 @@
     <Compile Include="UI\Frames\Path\Paths.xaml.cs">
       <DependentUpon>Paths.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UI\Windows\CloseWindow.xaml.cs">
-      <DependentUpon>CloseWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UI\Windows\MacLinuxWindow.xaml.cs">
-      <DependentUpon>MacLinuxWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="UI\Windows\Custom Message - Kopieren.xaml.cs">
       <DependentUpon>Custom Message - Kopieren.xaml</DependentUpon>
     </Compile>
@@ -306,9 +302,6 @@
     </Compile>
     <Compile Include="UI\Windows\EnterKey.xaml.cs">
       <DependentUpon>EnterKey.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UI\Windows\BaseGameWindow.xaml.cs">
-      <DependentUpon>BaseGameWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\Windows\ImageCreator - Kopieren - Kopieren %282%29.xaml.cs">
       <DependentUpon>ImageCreator - Kopieren - Kopieren %282%29.xaml</DependentUpon>
@@ -333,9 +326,6 @@
     </Compile>
     <Compile Include="UI\Windows\IMG_Message.xaml.cs">
       <DependentUpon>IMG_Message.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UI\Windows\GuideWindow.xaml.cs">
-      <DependentUpon>GuideWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\Windows\IntroductionWindow.xaml.cs">
       <DependentUpon>IntroductionWindow.xaml</DependentUpon>
@@ -406,14 +396,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UI\Windows\CloseWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\Windows\MacLinuxWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="UI\Windows\Custom Message - Kopieren.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -433,10 +415,6 @@
     <Page Include="UI\Windows\EnterKey.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UI\Windows\BaseGameWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Windows\ImageCreator - Kopieren - Kopieren %282%29.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -469,10 +447,6 @@
     <Page Include="UI\Windows\IMG_Message.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UI\Windows\GuideWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Windows\IntroductionWindow.xaml">
       <SubType>Designer</SubType>
