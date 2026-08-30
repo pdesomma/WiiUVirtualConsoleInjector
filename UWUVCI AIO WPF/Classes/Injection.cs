@@ -1969,7 +1969,7 @@ namespace UWUVCI_AIO_WPF
                     // Yes this is a typo but it's becuase I fucked up when I uploaded the original file.
                     DirectoryCopy(Path.Combine(tempPath, "DSLayoutScreens", (mvvm.STLayout ? "Phatnom Hourglass" : "All")), baseRomPath, true);
                 }
-                if (mvvm.RendererScale || mvvm.Brightness != 80 || mvvm.PixelArtUpscaler != 0)
+                if (mvvm.Brightness != 80 || mvvm.PixelArtUpscaler != 0)
                 {
                     mvvm.msg = "Updating configuration_cafe.json...";
                     UpdateConfigurationCafeJson();
@@ -1997,7 +1997,7 @@ namespace UWUVCI_AIO_WPF
             var jsonObject = JObject.Parse(jsonContent);
 
             // Update the values
-            jsonObject["configuration"]["3DRendering"]["RenderScale"] = (mvvm.RendererScale ? 0 : 1);
+            // Leave the base's default RenderScale unchanged.
             jsonObject["configuration"]["Display"]["Brightness"] = mvvm.Brightness;
             jsonObject["configuration"]["Display"]["PixelArtUpscaler"] = mvvm.PixelArtUpscaler;
 
