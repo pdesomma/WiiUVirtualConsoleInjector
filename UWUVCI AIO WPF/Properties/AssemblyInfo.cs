@@ -51,3 +51,4 @@ using System.Windows;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("3.100.2")]
 [assembly: AssemblyFileVersion("3.100.2")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("UWUVCI.RegressionTests")]
