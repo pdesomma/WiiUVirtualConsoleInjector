@@ -19,11 +19,11 @@
  Check out our discord:
  * https://discord.gg/mPZpqJJVmZ
  
- Check out the official video guide:
- * https://www.youtube.com/watch?v=1vzD_R-xPx4&list=PLbQMtrmXFIxQ1hpvu9m1th41vsaqnZ2Id
+ Written help:
+ * [UWUVCI guides](https://uwuvci-prime.github.io/UWUVCI-Resources/)
+ * [Bundled FAQ](<UWUVCI AIO WPF/uwuvci_installer_creator/app/Readme.txt>)
  
- ## This repo is no longer in active development
+ ## V3.N2 Retirement Release
  
- * The latest version of this writing is 3.N
- * Any future updates will be community-driven
- * Repo is still being managed, so feel free to fork/PR
+ V3.N2 is ZestyTS' final update to UWUVCI-3 and retirement release.
+ Any future updates or ongoing maintenance would need to be community-driven.

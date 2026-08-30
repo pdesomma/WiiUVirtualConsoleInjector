@@ -1,4 +1,11 @@
 Thanks for downloading UWUVCI-3!
+V3.N2 updates:
+- Refreshed UWUVCI information and general Wii U homebrew pages.
+- Required quiz with randomized question selection, question order, and answer order.
+- Restored N64 widescreen and dark-filter removal.
+- Removed the NDS rendering-size option; the base's default RenderScale is left unchanged.
+- Removed the startup and Settings promotion for the separate fork.
+
 If you didn't download it from the official source (https://github.com/stuff-by-3-random-dudes/UWUVCI-AIO-WPF/releases), then you might be using a custom version that someone else made.
 
 If you're looking for the FAQ, keep scrolling.
@@ -9,11 +16,11 @@ https://discord.gg/mPZpqJJVmZ
 If you're curious about the latest changes:
 https://github.com/stuff-by-3-random-dudes/UWUVCI-AIO-WPF/releases/latest
 
-If you want to check out the official UWUVCI 3 video series:
-https://www.youtube.com/watch?v=I5UdYcVSRSA&list=PLbQMtrmXFIxQ1hpvu9m1th41vsaqnZ2Id
+Written UWUVCI guides:
+https://uwuvci-prime.github.io/UWUVCI-Resources/
 
-By the time you're reading this, active development on UWUVCI-3 has ended.
-I, ZestyTS, have been the active developer on UWUVCI-3 since late 2020 and have been helping the original creator with UWUVCI-Prime (aka V4).
+V3.N2 is my final update to UWUVCI-3 and my retirement release.
+I, ZestyTS, am stepping away from maintaining UWUVCI. Any future updates would need to come from other contributors.
 
 For history as to what I've done on the project, I fixed a lot of bugs and helped get UWUVCI-3 out of beta while introducing new features like:
 	Widescreen for N64
@@ -29,19 +36,18 @@ https://ko-fi.com/zestyts
 If you'd like to donate to the creator, NicoAICP:
 https://ko-fi.com/uwuvci
 
-If you have any questions, check out the FAQ below.
-
-If you have any questions about anything, checkout the FAQ below, and don't hestitate to check out the Discord server.
+For help, start with the FAQ and written guides. For community discussion, use the Discord link above.
 
 
 ##############################################################################################################################################################################
 									FAQ
 ##############################################################################################################################################################################
-I, ZestyTS, have been maintaining this FAQ since I took over UWUVCI-3. With the update of V3.Z-B, a lot of things were overhauled or changed, so the FAQ needed to be completely redone.
+This FAQ is included with V3.N2, my final UWUVCI update and retirement release.
+Look for topics by their titles; entry numbers may change as the FAQ is reorganized.
 
 
 1) I don't know how to use UWUVCI, can you show me?
-	https://uwuvci-prime.github.io/UWUVCI-Resources/index
+	https://uwuvci-prime.github.io/UWUVCI-Resources/
 	Select console and follow the guide
  
 2) What games are compatible?
@@ -93,9 +99,9 @@ I, ZestyTS, have been maintaining this FAQ since I took over UWUVCI-3. With the 
 	Stick to using the correct base/game for your region
 	Make sure the base game is bigger or equal in size to the game you're trying to inject
 	N64 games are notorious for giving issues, they may require different bases
-	Check out the compatibility guide listed earlier
+	See "What games are compatible?" for the compatibility guide.
 
-13) UWUVCI is throwing an error that reads something like "Could not find file 'bin\temp\pre.iso'"
+13) Missing pre.iso
 	More than likely you have a bad dump of a game or UWUVCI doesn't like the trimmed dump
 	Example: 
 		if the dump is an "nkit" or a "wbfs" please try using the iso version instead
@@ -107,7 +113,7 @@ I, ZestyTS, have been maintaining this FAQ since I took over UWUVCI-3. With the 
 	Don't expect that much help because mods or hacks add an extra level of complexity.
 	If the mods work with real hardware then there's a chance it will work on the Wii U
 	Ask the mod/hack's community, they'll be more helpful
-	It's possible that someone already tried it, check out the compatibility guide.
+	It's possible that someone already tried it. See "What games are compatible?" for the compatibility guide.
  
 16) Having problems with GCN injects?
 	Usually has to do with Nintendont, you can check out their compatibility list here: https://wiki.gbatemp.net/wiki/Nintendont_Compatibility_List
@@ -125,14 +131,18 @@ I, ZestyTS, have been maintaining this FAQ since I took over UWUVCI-3. With the 
 19) Can't find injects in SaveMii
 	You'll want to use a modified version called "SaveMii Inject MOD"
 
-20) Path .../temp/temp missing
-	Same issue as with Pre.iso, please redump and try again.
+20) Missing temp/temp folder
+	A temporary folder needed by a later injection step was not found. Check the log for an earlier failure.
+	If disc conversion failed, see "Missing pre.iso".
+	If the earlier error involves image processing, see "Image format or bit-depth errors".
 
 21) tmd.bin can't be found or parameter invalid or handle invalid
-	Same issue as with /temp/temp, please redump and try again
+	See "Missing temp/temp folder" and check the log for errors before the missing file was reported.
 
-22) Official Video Guide?
-	https://www.youtube.com/watch?v=I5UdYcVSRSA&list=PLbQMtrmXFIxQ1hpvu9m1th41vsaqnZ2Id
+22) Will there be more UWUVCI updates from ZestyTS?
+	No. V3.N2 is my final UWUVCI update and my retirement release.
+	Any later maintenance or releases would need to be community-driven.
+	The written guides and this FAQ remain available. For community discussion, use the Discord link above.
 
 23) UWUVCI is broken or acting funny
 	Check to see if you installed to OneDrive or if your Antivirus is blocking something
@@ -206,5 +216,26 @@ I, ZestyTS, have been maintaining this FAQ since I took over UWUVCI-3. With the 
 		Virtuozzo
 
 36) Error when making N64 injects?
-	If the error says something like "Destination array is not long enough to copy all the items in the collection. Check array index and length."
-	It's because Removing Dark Filter and Enabling Widescreen is broken
+	V3.N2 restores the N64 widescreen and dark-filter patches that were broken in earlier versions.
+	If an error remains, check that you are using a clean, supported base and include the exact error and log in your report.
+
+37) Where is the NDS rendering-size option?
+	It was removed in V3.N2. UWUVCI no longer changes RenderScale in configuration_cafe.json.
+	The normal base value is 1. Brightness and PixelArtUpscaler remain separate options.
+
+38) Why do I need to pass a quiz?
+	V3.N2 includes information about UWUVCI and Wii U homebrew prerequisites, followed by one question per topic.
+	All questions must be answered correctly. A failed attempt returns to the first page.
+	Each new attempt selects questions again and shuffles their order and answer choices.
+	Passing is remembered, including after restarting the app. Previous tutorial completion does not skip the new quiz.
+	You can review the pages and retry the quiz from Settings > Information and Quiz.
+
+39) Image format or bit-depth errors
+	Check the image named in the error. The generated TGA files must have the required dimensions and bit depth:
+		iconTex: 128x128, 32-bit.
+		bootDrcTex: 854x480, 24-bit.
+		bootTvTex: 1280x720, 24-bit.
+		bootLogoTex: 170x42, 32-bit.
+	If automatically downloaded artwork fails, select a different image or provide your own.
+	For image preparation, follow the written UWUVCI guide for your console:
+		https://uwuvci-prime.github.io/UWUVCI-Resources/
