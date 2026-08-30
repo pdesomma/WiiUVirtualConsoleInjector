@@ -2090,94 +2090,10 @@ namespace UWUVCI_AIO_WPF
         private static void ApplyCustomSettings(N64Conf config)
         {
             string frameLayoutPath = Path.Combine(baseRomPath, "content", "FrameLayout.arc");
-
-            using (var fileStream = File.Open(frameLayoutPath, FileMode.Open))
-            {
-                // I would love to modularize this code, but idfk how it works exactly
-                uint offset = 0;
-                uint size = 0;
-                byte[] offsetB = new byte[4];
-                byte[] sizeB = new byte[4];
-                byte[] nameB = new byte[0x18];
-                var header = new byte[4];
-
-                byte[] oneOut = BitConverter.GetBytes((float)1);
-                byte[] zeroOut = BitConverter.GetBytes((float)0);
-
-                byte darkFilter = (byte)(config.DarkFilter ? 0 : 1);
-                byte[] wideScreen = config.WideScreen ? new byte[] { 0x44, 0xF0, 0, 0 } : new byte[] { 0x44, 0xB4, 0, 0 };
-
-                fileStream.Read(header, 0, 4);
-
-                if (header.SequenceEqual(new byte[] { (byte)'S', (byte)'A', (byte)'R', (byte)'C' }))
-                {
-                    fileStream.Position = 0x0C;
-                    fileStream.Read(offsetB, 0, 4);
-                    offset = BitConverter.ToUInt32(offsetB.Reverse().ToArray(), 0);
-
-                    fileStream.Position = 0x38;
-                    fileStream.Read(offsetB, 0, 4);
-                    offset += BitConverter.ToUInt32(offsetB.Reverse().ToArray(), 0);
-
-                    fileStream.Position = offset;
-                    fileStream.Read(header, 0, 4);
-
-                    if (header.SequenceEqual(new byte[] { (byte)'F', (byte)'L', (byte)'Y', (byte)'T' }))
-                    {
-                        fileStream.Position = offset + 0x04;
-                        fileStream.Read(offsetB, 0, 4);
-
-                        offset += BitConverter.ToUInt32(offsetB.Skip(2).Reverse().ToArray(), 0);
-
-                        fileStream.Position = offset;
-
-                        while (offset < fileStream.Length)
-                        {
-                            fileStream.Read(header, 0, 4);
-                            fileStream.Read(sizeB, 0, 4);
-                            size = BitConverter.ToUInt32(sizeB.Reverse().ToArray(), 0);
-
-                            fileStream.Read(nameB, 0, 0x18);
-                            string name = Encoding.ASCII.GetString(nameB.TakeWhile(b => b != 0).ToArray());
-
-                            if (name == "frame")
-                                WriteFrameData(fileStream, offset, zeroOut, oneOut, wideScreen);
-                            else if (name == "frame_mask")
-                                WriteDarkFilterData(fileStream, offset, darkFilter);
-                            else if (name == "power_save_bg")
-                                break; // End the loop as the required modifications are done
-
-                            offset += size;
-                            fileStream.Position = offset;
-                        }
-                    }
-                }
-            }
+            byte[] archive = File.ReadAllBytes(frameLayoutPath);
+            N64FrameLayoutPatcher.Apply(archive, config.WideScreen, config.DarkFilter);
+            File.WriteAllBytes(frameLayoutPath, archive);
             mvvm.Progress = 70;
-        }
-
-        private static void WriteFrameData(FileStream fileStream, uint offset, byte[] zeroOut, byte[] oneOut, byte[] wideScreen)
-        {
-            fileStream.Position = offset + 0x2C;
-            fileStream.Write(zeroOut, 0, zeroOut.Length);
-
-            fileStream.Position = offset + 0x30; // TranslationX
-            fileStream.Write(zeroOut, 0, zeroOut.Length);
-
-            fileStream.Position = offset + 0x44; // ScaleX
-            fileStream.Write(oneOut, 0, oneOut.Length);
-
-            fileStream.Position = offset + 0x48; // ScaleY
-            fileStream.Write(oneOut, 0, oneOut.Length);
-
-            fileStream.Position = offset + 0x4C; // Widescreen
-            fileStream.Write(wideScreen, 0, wideScreen.Length);
-        }
-
-        private static void WriteDarkFilterData(FileStream fileStream, uint offset, byte darkFilter)
-        {
-            fileStream.Position = offset + 0x08; // Dark filter
-            fileStream.WriteByte(darkFilter);
         }
 
         private static void ApplyIniSettings(N64Conf config)
