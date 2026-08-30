@@ -263,7 +263,7 @@ namespace UWUVCI_AIO_WPF
                     errorMessage = "Injection Failed because there are base files missing. \nPlease redownload the base, or redump if you used a custom base!";
                 else if (e.Message.Contains("Images"))
                     errorMessage = "Injection Failed due to wrong BitDepth, please check if your Files are in a different bitdepth than 32bit or 24bit\n\nIf the image/s that's being used is automatically grabbed for you, then don't use them." +
-                        "\nFAQ: #28";
+                        "\nSee \"Image format or bit-depth errors\" in the Readme FAQ.";
                 else if (e.Message.Contains("Size"))
                     errorMessage = "Injection Failed due to Image Issues.Please check if your Images are made using following Information:\n\niconTex: \nDimensions: 128x128\nBitDepth: 32\n\nbootDrcTex: \nDimensions: 854x480\nBitDepth: 24\n\nbootTvTex: \nDimensions: 1280x720\nBitDepth: 24\n\nbootLogoTex: \nDimensions: 170x42\nBitDepth: 32";
                 else if (e.Message.Contains("retro"))
@@ -280,10 +280,10 @@ namespace UWUVCI_AIO_WPF
                     errorMessage = "Looks to be your meta.xml file isn't missing from your directory. If you downloaded your base, redownload it, if it's a custom base then the folder selected might be wrong or the layout is messed up.";
                 else if (e.Message.Contains("pre.iso"))
                     errorMessage = "Looks to be that there is something about your game that UWUVCI doesn't like, you are most likely injecting with a wbfs or nkit.iso file, this file has data trimmed." +
-                        "\nFAQ: #17, #27, #29";
+                        "\nSee \"Missing pre.iso\" in the Readme FAQ.";
                 else if (e.Message.Contains("temp\\temp") || e.Message.Contains("temp/temp"))
                     errorMessage = "The images are most likely the culprit, try changing them around." +
-                        "\nFAQ: #28";
+                        "\nSee \"Missing temp/temp folder\" in the Readme FAQ.";
 
                 if (MacLinuxHelper.IsRunningInVirtualMachine() || MacLinuxHelper.IsRunningUnderWineOrSimilar())
                     errorMessage += "\n\nYou look to be running this under some form of emulation instead of a native Windows OS. There are external tools that UWUVCI uses which are not managed by the UWUVCI team. These external tools may be causing you issues and we will not be able to resolve your issues.";
