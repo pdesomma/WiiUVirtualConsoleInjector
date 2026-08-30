@@ -263,7 +263,7 @@ namespace UWUVCI_AIO_WPF
                     errorMessage = "Injection Failed because there are base files missing. \nPlease redownload the base, or redump if you used a custom base!";
                 else if (e.Message.Contains("Images"))
                     errorMessage = "Injection Failed due to wrong BitDepth, please check if your Files are in a different bitdepth than 32bit or 24bit\n\nIf the image/s that's being used is automatically grabbed for you, then don't use them." +
-                        "\nFAQ: #28";
+                        "\nSee \"Image format or bit-depth errors\" in the Readme FAQ.";
                 else if (e.Message.Contains("Size"))
                     errorMessage = "Injection Failed due to Image Issues.Please check if your Images are made using following Information:\n\niconTex: \nDimensions: 128x128\nBitDepth: 32\n\nbootDrcTex: \nDimensions: 854x480\nBitDepth: 24\n\nbootTvTex: \nDimensions: 1280x720\nBitDepth: 24\n\nbootLogoTex: \nDimensions: 170x42\nBitDepth: 32";
                 else if (e.Message.Contains("retro"))
@@ -280,10 +280,10 @@ namespace UWUVCI_AIO_WPF
                     errorMessage = "Looks to be your meta.xml file isn't missing from your directory. If you downloaded your base, redownload it, if it's a custom base then the folder selected might be wrong or the layout is messed up.";
                 else if (e.Message.Contains("pre.iso"))
                     errorMessage = "Looks to be that there is something about your game that UWUVCI doesn't like, you are most likely injecting with a wbfs or nkit.iso file, this file has data trimmed." +
-                        "\nFAQ: #17, #27, #29";
+                        "\nSee \"Missing pre.iso\" in the Readme FAQ.";
                 else if (e.Message.Contains("temp\\temp") || e.Message.Contains("temp/temp"))
                     errorMessage = "The images are most likely the culprit, try changing them around." +
-                        "\nFAQ: #28";
+                        "\nSee \"Missing temp/temp folder\" in the Readme FAQ.";
 
                 if (MacLinuxHelper.IsRunningInVirtualMachine() || MacLinuxHelper.IsRunningUnderWineOrSimilar())
                     errorMessage += "\n\nYou look to be running this under some form of emulation instead of a native Windows OS. There are external tools that UWUVCI uses which are not managed by the UWUVCI team. These external tools may be causing you issues and we will not be able to resolve your issues.";
@@ -1969,7 +1969,7 @@ namespace UWUVCI_AIO_WPF
                     // Yes this is a typo but it's becuase I fucked up when I uploaded the original file.
                     DirectoryCopy(Path.Combine(tempPath, "DSLayoutScreens", (mvvm.STLayout ? "Phatnom Hourglass" : "All")), baseRomPath, true);
                 }
-                if (mvvm.RendererScale || mvvm.Brightness != 80 || mvvm.PixelArtUpscaler != 0)
+                if (mvvm.Brightness != 80 || mvvm.PixelArtUpscaler != 0)
                 {
                     mvvm.msg = "Updating configuration_cafe.json...";
                     UpdateConfigurationCafeJson();
@@ -1997,7 +1997,7 @@ namespace UWUVCI_AIO_WPF
             var jsonObject = JObject.Parse(jsonContent);
 
             // Update the values
-            jsonObject["configuration"]["3DRendering"]["RenderScale"] = (mvvm.RendererScale ? 0 : 1);
+            // Leave the base's default RenderScale unchanged.
             jsonObject["configuration"]["Display"]["Brightness"] = mvvm.Brightness;
             jsonObject["configuration"]["Display"]["PixelArtUpscaler"] = mvvm.PixelArtUpscaler;
 
@@ -2090,94 +2090,10 @@ namespace UWUVCI_AIO_WPF
         private static void ApplyCustomSettings(N64Conf config)
         {
             string frameLayoutPath = Path.Combine(baseRomPath, "content", "FrameLayout.arc");
-
-            using (var fileStream = File.Open(frameLayoutPath, FileMode.Open))
-            {
-                // I would love to modularize this code, but idfk how it works exactly
-                uint offset = 0;
-                uint size = 0;
-                byte[] offsetB = new byte[4];
-                byte[] sizeB = new byte[4];
-                byte[] nameB = new byte[0x18];
-                var header = new byte[4];
-
-                byte[] oneOut = BitConverter.GetBytes((float)1);
-                byte[] zeroOut = BitConverter.GetBytes((float)0);
-
-                byte darkFilter = (byte)(config.DarkFilter ? 0 : 1);
-                byte[] wideScreen = config.WideScreen ? new byte[] { 0x44, 0xF0, 0, 0 } : new byte[] { 0x44, 0xB4, 0, 0 };
-
-                fileStream.Read(header, 0, 4);
-
-                if (header.SequenceEqual(new byte[] { (byte)'S', (byte)'A', (byte)'R', (byte)'C' }))
-                {
-                    fileStream.Position = 0x0C;
-                    fileStream.Read(offsetB, 0, 4);
-                    offset = BitConverter.ToUInt32(offsetB.Reverse().ToArray(), 0);
-
-                    fileStream.Position = 0x38;
-                    fileStream.Read(offsetB, 0, 4);
-                    offset += BitConverter.ToUInt32(offsetB.Reverse().ToArray(), 0);
-
-                    fileStream.Position = offset;
-                    fileStream.Read(header, 0, 4);
-
-                    if (header.SequenceEqual(new byte[] { (byte)'F', (byte)'L', (byte)'Y', (byte)'T' }))
-                    {
-                        fileStream.Position = offset + 0x04;
-                        fileStream.Read(offsetB, 0, 4);
-
-                        offset += BitConverter.ToUInt32(offsetB.Skip(2).Reverse().ToArray(), 0);
-
-                        fileStream.Position = offset;
-
-                        while (offset < fileStream.Length)
-                        {
-                            fileStream.Read(header, 0, 4);
-                            fileStream.Read(sizeB, 0, 4);
-                            size = BitConverter.ToUInt32(sizeB.Reverse().ToArray(), 0);
-
-                            fileStream.Read(nameB, 0, 0x18);
-                            string name = Encoding.ASCII.GetString(nameB.TakeWhile(b => b != 0).ToArray());
-
-                            if (name == "frame")
-                                WriteFrameData(fileStream, offset, zeroOut, oneOut, wideScreen);
-                            else if (name == "frame_mask")
-                                WriteDarkFilterData(fileStream, offset, darkFilter);
-                            else if (name == "power_save_bg")
-                                break; // End the loop as the required modifications are done
-
-                            offset += size;
-                            fileStream.Position = offset;
-                        }
-                    }
-                }
-            }
+            byte[] archive = File.ReadAllBytes(frameLayoutPath);
+            N64FrameLayoutPatcher.Apply(archive, config.WideScreen, config.DarkFilter);
+            File.WriteAllBytes(frameLayoutPath, archive);
             mvvm.Progress = 70;
-        }
-
-        private static void WriteFrameData(FileStream fileStream, uint offset, byte[] zeroOut, byte[] oneOut, byte[] wideScreen)
-        {
-            fileStream.Position = offset + 0x2C;
-            fileStream.Write(zeroOut, 0, zeroOut.Length);
-
-            fileStream.Position = offset + 0x30; // TranslationX
-            fileStream.Write(zeroOut, 0, zeroOut.Length);
-
-            fileStream.Position = offset + 0x44; // ScaleX
-            fileStream.Write(oneOut, 0, oneOut.Length);
-
-            fileStream.Position = offset + 0x48; // ScaleY
-            fileStream.Write(oneOut, 0, oneOut.Length);
-
-            fileStream.Position = offset + 0x4C; // Widescreen
-            fileStream.Write(wideScreen, 0, wideScreen.Length);
-        }
-
-        private static void WriteDarkFilterData(FileStream fileStream, uint offset, byte darkFilter)
-        {
-            fileStream.Position = offset + 0x08; // Dark filter
-            fileStream.WriteByte(darkFilter);
         }
 
         private static void ApplyIniSettings(N64Conf config)

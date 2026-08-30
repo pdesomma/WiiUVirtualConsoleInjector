@@ -466,17 +466,6 @@ namespace UWUVCI_AIO_WPF.UI.Frames.InjectFrames.Configurations
             throw new NotImplementedException();
         }
 
-        private void RendererScale1_Checked(object sender, RoutedEventArgs e)
-        {
-            if (mvm != null)
-                mvm.RendererScale = false;
-        }
-
-        private void RendererScale2_Checked(object sender, RoutedEventArgs e)
-        {
-            mvm.RendererScale = true;
-        }
-
         private void STLayoutFalse_Checked(object sender, RoutedEventArgs e)
         {
             if (mvm != null)

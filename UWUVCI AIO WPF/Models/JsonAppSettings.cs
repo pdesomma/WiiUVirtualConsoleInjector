@@ -16,8 +16,8 @@
         public bool snesw { get; set; } = false;
         public bool gczw { get; set; } = false;
         public string Ancast { get; set; } = "";
-        public bool IsFirstLaunch { get; set; } = true;
-        public bool ShowZestyFork { get; set; } = true;
+        // 0 requires the quiz; 1 records a successful pass.
+        public int QuizScreen { get; set; } = 0;
     }
 
 }

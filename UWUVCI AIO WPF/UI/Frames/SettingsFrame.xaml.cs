@@ -135,14 +135,13 @@ namespace UWUVCI_AIO_WPF.UI.Frames
             Process.Start("https://ko-fi.com/zestyts");
         }
 
-        private void BtnZestyTSVersion(object sender, RoutedEventArgs e)
+        private void ShowQuizScreen_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start("https://zestyts.itch.io/uwuvci-v3");
-        }
-
-        private void ShowTutorialScreens_Click(object sender, RoutedEventArgs e)
-        {
-            new IntroductionWindow().ShowDialog();
+            new IntroductionWindow
+            {
+                Owner = parent,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            }.ShowDialog();
         }
     }
 }
