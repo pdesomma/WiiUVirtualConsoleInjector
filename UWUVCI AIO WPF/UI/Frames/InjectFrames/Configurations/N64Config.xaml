@@ -27,7 +27,7 @@
         <StackPanel Margin="10,20,222,436" Orientation="Horizontal" >
 
             <Label Content="DarkFilter:" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Width="90"/>
-            <RadioButton Content="Enabled" Width="78" HorizontalAlignment="Left" Margin="0,5,0,0" VerticalAlignment="Top" GroupName="df" IsChecked="True" Click="RadioButton_Click" IsTabStop="False"/>
+            <RadioButton x:Name="rbDF" Content="Enabled" Width="78" HorizontalAlignment="Left" Margin="0,5,0,0" VerticalAlignment="Top" GroupName="df" IsChecked="True" Click="RadioButton_Click" IsTabStop="False"/>
 
             <RadioButton x:Name="rbRDF" Width="111" Content="Disabled" HorizontalAlignment="Left" Margin="0,5,0,0"  VerticalAlignment="Top" GroupName="df" Click="rbRDF_Click" IsTabStop="False"/>
             <CheckBox x:Name="chkWide" Content="Enable Widescreen" VerticalAlignment="Top" HorizontalAlignment="Left" Height="28" Click="chkWide_Click"/>

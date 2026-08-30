@@ -215,7 +215,6 @@ namespace UWUVCI_AIO_WPF
             mvm.pixelperfect = false;
             mvm.injected2 = false;
             mvm.Brightness = 80;
-            mvm.RendererScale = false;
             mvm.RemoveDeflicker = false;
             mvm.RemoveDithering = false;
             mvm.HalfVFilter = false;

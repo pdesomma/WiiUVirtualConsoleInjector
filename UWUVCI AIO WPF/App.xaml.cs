@@ -7,13 +7,13 @@ using System.Windows.Controls;
 using UWUVCI_AIO_WPF.UI.Windows;
 using UWUVCI_AIO_WPF.Helpers;
 using GameBaseClassLibrary;
+using UWUVCI_AIO_WPF.Models;
 
 namespace UWUVCI_AIO_WPF
 {
     public partial class App : Application
     {
         Timer t = new Timer(5000);
-        private StartupEventArgs _startupArgs;
         private static string AppDataPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "UWUVCI-V3");
@@ -43,40 +43,23 @@ namespace UWUVCI_AIO_WPF
             if (File.Exists("tools.json"))
                 File.Delete("tools.json");
 
-            _startupArgs = e;
             JsonSettingsManager.LoadSettings();
 
-            if (!JsonSettingsManager.Settings.IsFirstLaunch)
+            // Keep startup alive while the modal quiz closes, before opening the main window.
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            if (JsonSettingsManager.Settings.QuizScreen != 1)
             {
-                LaunchMainApplication(e);
-            }
-            else
-            {
-                if (MacLinuxHelper.IsRunningUnderWineOrSimilar())
+                if (new IntroductionWindow().ShowDialog() != true)
                 {
-                    MessageBox.Show("UWUVCI cannot tell if you went through the tutorial or not. We will assume you did, but if you didn't, in the main application click the gear icon, and then click the button that says 'Show Tutorial Screens'.",
-                        "UWUVCI Tutorial..?", MessageBoxButton.OK, MessageBoxImage.Question);
-                    JsonSettingsManager.Settings.IsFirstLaunch = false;
-                    JsonSettingsManager.SaveSettings();
-                    LaunchMainApplication(e);
+                    Shutdown();
+                    return;
                 }
-                else
-                {
-                    new IntroductionWindow().ShowDialog();
-                }
-            }
-
-            if (JsonSettingsManager.Settings.ShowZestyFork)
-            {
-                var result = MessageBox.Show("There is a more updated fork that is recommended to use going forward. Press 'Yes' to check it out now. If not, you can always find it under the Settings (gear icon).", "ZestyTS's UWUVCI V3", MessageBoxButton.YesNo,MessageBoxImage.Exclamation);
-                
-                if (result == MessageBoxResult.Yes)
-                {
-                    Process.Start("https://zestyts.itch.io/uwuvci-v3");
-                }
-                JsonSettingsManager.Settings.ShowZestyFork = false;
+                JsonSettingsManager.Settings.QuizScreen = 1;
                 JsonSettingsManager.SaveSettings();
             }
+
+            LaunchMainApplication(e);
+            ShutdownMode = ShutdownMode.OnLastWindowClose;
         }
 
         private static void GlobalTextBox_PreviewDragOver(object sender, DragEventArgs e)
@@ -183,11 +166,6 @@ namespace UWUVCI_AIO_WPF
         }
 
 
-        public void LaunchMainApplication()
-        {
-            LaunchMainApplication(_startupArgs);
-        }
-
         private void LaunchMainApplication(StartupEventArgs e)
         {
             if (Directory.Exists(@"custom") && File.Exists(@"custom\main.dol"))
@@ -239,6 +217,7 @@ namespace UWUVCI_AIO_WPF
                 if (e.Args.Length >= 1 && e.Args[0] == "--debug")
                     wnd.setDebug(bypass);
 
+                MainWindow = wnd;
                 wnd.Show();
             }
         }
