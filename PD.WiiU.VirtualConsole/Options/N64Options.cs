@@ -8,13 +8,13 @@ public sealed class N64Options : IConsoleOptions
     /// <inheritdoc/>
     public SourceConsole Console => SourceConsole.N64;
     /// <summary>
-    /// Keep the emulator's darkening filter.
-    /// </summary>
-    public bool DarkFilter { get; init; }
-    /// <summary>
-    /// Emulator INI to use instead of the base title's.
+    /// Emulator INI to use; null writes an empty one.
     /// </summary>
     public string? IniPath { get; init; }
+    /// <summary>
+    /// Switch off the darkening overlay the base draws over the game.
+    /// </summary>
+    public bool RemoveDarkFilter { get; init; }
     /// <summary>
     /// Render in widescreen.
     /// </summary>
