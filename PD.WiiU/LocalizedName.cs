@@ -1,24 +1,24 @@
 namespace PD.WiiU;
 
 /// <summary>
-/// How a title presents itself in one language.
+/// Title name in one language.
 /// </summary>
-/// <param name="ShortName">Shown where space is tight, e.g. under the icon on the menu.</param>
-/// <param name="LongName">Shown where space allows, e.g. the banner. May contain a newline to split the name over two lines.</param>
+/// <param name="ShortName">Menu name.</param>
+/// <param name="LongName">Banner name; may contain a newline.</param>
 public sealed record LocalizedName(string ShortName, string LongName)
 {
     /// <summary>
-    /// Creates a new instance of the <see cref="LocalizedName"/> record that reads the same in short and long form.
+    /// Creates a new instance of the <see cref="LocalizedName"/> record with one name for both forms.
     /// </summary>
-    /// <param name="name">The name to use for both forms.</param>
+    /// <param name="name">Name.</param>
     public LocalizedName(string name) : this(name, name)
     {
     }
 
     /// <summary>
-    /// Uses <paramref name="name"/> for every language the Wii U supports.
+    /// Same name for every language.
     /// </summary>
-    /// <param name="name">The name to use in every language.</param>
+    /// <param name="name">Name.</param>
     public static IReadOnlyDictionary<Language, LocalizedName> ForAllLanguages(LocalizedName name)
     {
         if (name is null)

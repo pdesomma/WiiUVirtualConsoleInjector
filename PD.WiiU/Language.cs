@@ -1,7 +1,7 @@
 namespace PD.WiiU;
 
 /// <summary>
-/// The twelve system languages the Wii U can display a title's name in.
+/// Wii U system languages.
 /// </summary>
 public enum Language
 {
@@ -20,15 +20,15 @@ public enum Language
 }
 
 /// <summary>
-/// Wii U specifics of each <see cref="Language"/>.
+/// <see cref="Language"/> extensions.
 /// </summary>
 public static class LanguageExtensions
 {
     /// <summary>
-    /// The short code the Wii U uses to tag per-language fields, e.g. <c>en</c> or <c>zhs</c>.
+    /// Wii U locale code, e.g. "en" or "zhs".
     /// </summary>
-    /// <param name="language">The language to get the code for.</param>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="language"/> is not a defined <see cref="Language"/>.</exception>
+    /// <param name="language">Language.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Undefined language.</exception>
     public static string Code(this Language language) => language switch
     {
         Language.Japanese => "ja",

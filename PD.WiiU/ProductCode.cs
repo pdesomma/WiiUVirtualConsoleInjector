@@ -1,20 +1,20 @@
 namespace PD.WiiU;
 
 /// <summary>
-/// The human-facing code printed on packaging and shown in system settings, e.g. <c>WUP-P-ARKE</c> for a retail disc or <c>WUP-N-FAAE</c> for an eShop title. Format is <c>WUP-&lt;category&gt;-&lt;four-character id&gt;</c>.
+/// Product code in the form WUP-X-XXXX.
 /// </summary>
 public readonly struct ProductCode : IEquatable<ProductCode>
 {
     /// <summary>
-    /// Category letter for eShop-distributed titles, including Virtual Console.
+    /// Category letter for eShop titles.
     /// </summary>
     public const char EShop = 'N';
     /// <summary>
-    /// Every Wii U product code starts with this platform tag.
+    /// Platform tag.
     /// </summary>
     public const string Platform = "WUP";
     /// <summary>
-    /// Category letter for retail (packaged) titles.
+    /// Category letter for retail titles.
     /// </summary>
     public const char Retail = 'P';
     private const int IdLength = 4;
@@ -22,9 +22,9 @@ public readonly struct ProductCode : IEquatable<ProductCode>
     /// <summary>
     /// Creates a new instance of the <see cref="ProductCode"/> struct.
     /// </summary>
-    /// <param name="category">Single upper-case letter describing how the title is distributed.</param>
-    /// <param name="id">The four upper-case alphanumeric characters that identify the title.</param>
-    /// <exception cref="ArgumentException"><paramref name="category"/> is not an upper-case letter, or <paramref name="id"/> is not exactly four upper-case alphanumeric characters.</exception>
+    /// <param name="category">Upper-case category letter.</param>
+    /// <param name="id">Four upper-case alphanumeric characters.</param>
+    /// <exception cref="ArgumentException">Malformed category or id.</exception>
     public ProductCode(char category, string id)
     {
         if (!IsUpperLetter(category))
@@ -39,11 +39,11 @@ public readonly struct ProductCode : IEquatable<ProductCode>
     }
 
     /// <summary>
-    /// Single letter describing how the title is distributed; see <see cref="Retail"/> and <see cref="EShop"/>.
+    /// Category letter.
     /// </summary>
     public char Category { get; }
     /// <summary>
-    /// The four upper-case alphanumeric characters that identify the title.
+    /// Four-character id.
     /// </summary>
     public string Id { get; }
 
@@ -61,10 +61,10 @@ public readonly struct ProductCode : IEquatable<ProductCode>
     public static bool operator !=(ProductCode left, ProductCode right) => !left.Equals(right);
 
     /// <summary>
-    /// Parses the <c>WUP-X-XXXX</c> textual form.
+    /// Parses WUP-X-XXXX.
     /// </summary>
-    /// <param name="text">The product code text to parse.</param>
-    /// <exception cref="FormatException">The text does not match <c>WUP-X-XXXX</c>.</exception>
+    /// <param name="text">Text to parse.</param>
+    /// <exception cref="FormatException">Not WUP-X-XXXX.</exception>
     public static ProductCode Parse(string text)
     {
         if (!TryParse(text, out var code))
@@ -73,15 +73,15 @@ public readonly struct ProductCode : IEquatable<ProductCode>
     }
 
     /// <summary>
-    /// The <c>WUP-X-XXXX</c> form the Wii U expects.
+    /// WUP-X-XXXX.
     /// </summary>
     public override string ToString() => $"{Platform}-{Category}-{Id}";
 
     /// <summary>
-    /// Parses the <c>WUP-X-XXXX</c> textual form without throwing.
+    /// Parses WUP-X-XXXX without throwing.
     /// </summary>
-    /// <param name="text">The product code text to parse.</param>
-    /// <param name="code">The parsed product code, or the default value when parsing fails.</param>
+    /// <param name="text">Text to parse.</param>
+    /// <param name="code">Parsed value, or default on failure.</param>
     public static bool TryParse(string? text, out ProductCode code)
     {
         code = default;
