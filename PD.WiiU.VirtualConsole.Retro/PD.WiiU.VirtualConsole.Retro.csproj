@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\PD.WiiU.VirtualConsole\PD.WiiU.VirtualConsole.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WiiUSharp.Rpx" Version="0.6.0" />
+  </ItemGroup>
+
+</Project>
