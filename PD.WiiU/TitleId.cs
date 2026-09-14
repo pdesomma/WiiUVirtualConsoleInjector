@@ -3,20 +3,20 @@ using System.Globalization;
 namespace PD.WiiU;
 
 /// <summary>
-/// The 64-bit identifier the Wii U uses to tell titles apart. Written as sixteen upper-case hex digits, e.g. <c>0005000212345678</c>: the high half is the <see cref="TitleType"/>, the low half is unique within that type.
+/// 64-bit title identifier, written as sixteen hex digits.
 /// </summary>
 public readonly struct TitleId : IEquatable<TitleId>
 {
     /// <summary>
-    /// Number of hex digits in the textual form.
+    /// Hex digits in the textual form.
     /// </summary>
     public const int Length = 16;
 
     /// <summary>
     /// Creates a new instance of the <see cref="TitleId"/> struct.
     /// </summary>
-    /// <param name="type">The kind of title; becomes the high 32 bits.</param>
-    /// <param name="uniqueId">Identifies the title within its type; becomes the low 32 bits.</param>
+    /// <param name="type">High 32 bits.</param>
+    /// <param name="uniqueId">Low 32 bits.</param>
     public TitleId(TitleType type, uint uniqueId)
         : this(((ulong)(uint)type << 32) | uniqueId)
     {
@@ -25,22 +25,22 @@ public readonly struct TitleId : IEquatable<TitleId>
     /// <summary>
     /// Creates a new instance of the <see cref="TitleId"/> struct.
     /// </summary>
-    /// <param name="value">The raw 64-bit value.</param>
+    /// <param name="value">Raw 64-bit value.</param>
     public TitleId(ulong value)
     {
         Value = value;
     }
 
     /// <summary>
-    /// The kind of title, taken from the high 32 bits.
+    /// High 32 bits.
     /// </summary>
     public TitleType Type => (TitleType)(uint)(Value >> 32);
     /// <summary>
-    /// The low 32 bits; identifies the title within its <see cref="Type"/>.
+    /// Low 32 bits.
     /// </summary>
     public uint UniqueId => (uint)Value;
     /// <summary>
-    /// The raw 64-bit value.
+    /// Raw 64-bit value.
     /// </summary>
     public ulong Value { get; }
 
@@ -58,10 +58,10 @@ public readonly struct TitleId : IEquatable<TitleId>
     public static bool operator !=(TitleId left, TitleId right) => !left.Equals(right);
 
     /// <summary>
-    /// Parses the sixteen-hex-digit textual form.
+    /// Parses sixteen hex digits.
     /// </summary>
-    /// <param name="text">The sixteen hex digits to parse.</param>
-    /// <exception cref="FormatException">The text is not exactly sixteen hex digits.</exception>
+    /// <param name="text">Text to parse.</param>
+    /// <exception cref="FormatException">Not sixteen hex digits.</exception>
     public static TitleId Parse(string text)
     {
         if (!TryParse(text, out var id))
@@ -70,15 +70,15 @@ public readonly struct TitleId : IEquatable<TitleId>
     }
 
     /// <summary>
-    /// The sixteen upper-case hex digits the Wii U expects.
+    /// Sixteen upper-case hex digits.
     /// </summary>
     public override string ToString() => Value.ToString("X16", CultureInfo.InvariantCulture);
 
     /// <summary>
-    /// Parses the sixteen-hex-digit textual form without throwing.
+    /// Parses sixteen hex digits without throwing.
     /// </summary>
-    /// <param name="text">The sixteen hex digits to parse.</param>
-    /// <param name="id">The parsed title ID, or the default value when parsing fails.</param>
+    /// <param name="text">Text to parse.</param>
+    /// <param name="id">Parsed value, or default on failure.</param>
     public static bool TryParse(string? text, out TitleId id)
     {
         id = default;

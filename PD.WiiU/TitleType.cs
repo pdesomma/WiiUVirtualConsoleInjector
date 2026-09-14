@@ -1,36 +1,36 @@
 namespace PD.WiiU;
 
 /// <summary>
-/// The high 32 bits of a <see cref="TitleId"/>. Tells the system what kind of title it is and therefore where it installs and how the menu treats it.
+/// High 32 bits of a <see cref="TitleId"/>.
 /// </summary>
 public enum TitleType : uint
 {
     /// <summary>
-    /// Retail disc and eShop games.
+    /// Retail and eShop games.
     /// </summary>
     Game = 0x00050000,
     /// <summary>
-    /// Demos and kiosk builds. Virtual Console injections use this type.
+    /// Demos; used by Virtual Console injections.
     /// </summary>
     Demo = 0x00050002,
     /// <summary>
-    /// Downloadable content for a <see cref="Game"/> title.
+    /// Downloadable content.
     /// </summary>
     Dlc = 0x0005000C,
     /// <summary>
-    /// Title updates (patches) for a <see cref="Game"/> title.
+    /// Title updates.
     /// </summary>
     Update = 0x0005000E,
     /// <summary>
-    /// System applications such as the eShop and Mii Maker.
+    /// System applications.
     /// </summary>
     SystemApplication = 0x00050010,
     /// <summary>
-    /// System data titles such as fonts and certificates.
+    /// System data.
     /// </summary>
     SystemData = 0x0005001B,
     /// <summary>
-    /// System applets such as the Internet Browser and Home Menu overlays.
+    /// System applets.
     /// </summary>
     SystemApplet = 0x00050030,
 }

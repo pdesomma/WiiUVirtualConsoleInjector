@@ -9,7 +9,6 @@
     <AssemblyName>PD.WiiU</AssemblyName>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <!-- CS1591: not every public member needs a doc comment (equality boilerplate, self-describing enum values). -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 

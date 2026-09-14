@@ -1,7 +1,7 @@
 namespace PD.WiiU;
 
 /// <summary>
-/// Regions a title is allowed to run in. A bitmask; combine values for multi-region titles.
+/// Regions a title may run in.
 /// </summary>
 [Flags]
 public enum Region : uint
@@ -15,7 +15,7 @@ public enum Region : uint
     Korea = 1 << 5,
     Taiwan = 1 << 6,
     /// <summary>
-    /// Region-free: runs on any console.
+    /// Region-free.
     /// </summary>
     All = 0xFFFFFFFF,
 }
