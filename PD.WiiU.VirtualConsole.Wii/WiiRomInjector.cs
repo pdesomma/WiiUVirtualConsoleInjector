@@ -28,6 +28,7 @@ public sealed class WiiRomInjector : IRomInjector
     public const string TmdFileName = "rvlt.tmd";
 
     private const string PayloadFileName = "game.iso";
+    private const string RebuiltFileName = "rebuilt.iso";
 
     private readonly WiiPartitionCipher _cipher;
 
@@ -104,8 +105,8 @@ public sealed class WiiRomInjector : IRomInjector
         if (disc.DataPartitions.Count == 0)
             throw new InvalidDataException("Disc has no data partition.");
 
-        WriteNfs(iso, options, title, progress, cancellationToken);
-        CopyTicketAndTmd(iso, disc.DataPartitions[0], title);
+        var (ticket, tmd) = WriteNfs(iso, disc.DataPartitions[0], options, title, progress, cancellationToken);
+        WriteTicketAndTmd(title, ticket, tmd);
 
         progress?.Report("Patching " + FirmwareFileName);
         FirmwarePatcher.PatchFile(Path.Combine(title.Code, FirmwareFileName), FirmwarePatcher.PatchesFor(options));
@@ -113,13 +114,58 @@ public sealed class WiiRomInjector : IRomInjector
         VWiiMeta.Apply(title, disc.Header.GameId);
     }
 
-    private static void CopyTicketAndTmd(Stream iso, Partition partition, TitleDirectory title)
+    /// <summary>
+    /// Applies the requested main.dol patches; reports what was found.
+    /// </summary>
+    /// <param name="dol">main.dol.</param>
+    /// <param name="options">Wii settings.</param>
+    /// <param name="progress">Receives one line per patch.</param>
+    /// <returns>The patched copy.</returns>
+    public static byte[] PatchMainDol(byte[] dol, WiiOptions options, IProgress<string>? progress = null)
     {
-        foreach (var stale in Directory.GetFiles(title.Code, "rvlt.*"))
-            File.Delete(stale);
+        if (dol is null)
+            throw new ArgumentNullException(nameof(dol));
+        if (options is null)
+            throw new ArgumentNullException(nameof(options));
 
-        File.WriteAllBytes(Path.Combine(title.Code, TicketFileName), partition.Ticket.ToBytes());
+        var patched = (byte[])dol.Clone();
+        if (options.RemoveDeflicker)
+        {
+            var found = DolFilterPatches.RemoveDeflicker(patched);
+            progress?.Report(found ? "Deflicker filter removed" : "Deflicker pattern not found");
+        }
+        if (options.RemoveDithering)
+        {
+            var found = DolFilterPatches.RemoveDithering(patched);
+            progress?.Report(found ? "Dithering removed" : "Dithering pattern not found");
+        }
+        if (options.HalfVerticalFilter)
+        {
+            var count = DolFilterPatches.HalveVerticalFilter(patched);
+            progress?.Report($"Vertical filters halved: {count}");
+        }
+        if (options.VideoMode != WiiVideoMode.Unchanged)
+        {
+            var count = VideoModePatch.Apply(patched, options.VideoMode);
+            progress?.Report($"Video modes set to {options.VideoMode}: {count}");
+        }
+        return patched;
+    }
 
+    /// <summary>
+    /// True when any option needs main.dol rewritten.
+    /// </summary>
+    /// <param name="options">Wii settings.</param>
+    public static bool PatchesMainDol(WiiOptions options)
+    {
+        if (options is null)
+            throw new ArgumentNullException(nameof(options));
+
+        return options.RemoveDeflicker || options.RemoveDithering || options.HalfVerticalFilter || options.VideoMode != WiiVideoMode.Unchanged;
+    }
+
+    private static byte[] ReadTmd(Stream iso, Partition partition)
+    {
         var tmd = new byte[partition.Header.TmdSize];
         iso.Position = partition.Offset + partition.Header.TmdOffset;
         var read = 0;
@@ -130,38 +176,63 @@ public sealed class WiiRomInjector : IRomInjector
                 throw new EndOfStreamException("Disc image ends inside the TMD.");
             read += n;
         }
-        File.WriteAllBytes(Path.Combine(title.Code, TmdFileName), tmd);
+        return tmd;
     }
 
     private static void RejectUnsupported(WiiOptions options)
     {
-        if (!options.TrimDisc)
-            throw new NotSupportedException("Untrimmed discs are not supported yet.");
         if (options.CheatCodesPath is not null)
             throw new NotSupportedException("Cheat codes are not supported yet.");
-        if (options.ForcePal || options.HalfVerticalFilter || options.RemoveDeflicker || options.RemoveDithering)
-            throw new NotSupportedException("main.dol patches are not supported yet.");
     }
 
-    private void WriteNfs(Stream iso, WiiOptions options, TitleDirectory title, IProgress<string>? progress, CancellationToken cancellationToken)
+    private static void WriteTicketAndTmd(TitleDirectory title, byte[] ticket, byte[] tmd)
+    {
+        foreach (var stale in Directory.GetFiles(title.Code, "rvlt.*"))
+            File.Delete(stale);
+
+        File.WriteAllBytes(Path.Combine(title.Code, TicketFileName), ticket);
+        File.WriteAllBytes(Path.Combine(title.Code, TmdFileName), tmd);
+    }
+
+    private (byte[] Ticket, byte[] Tmd) WriteNfs(Stream iso, Partition partition, WiiOptions options, TitleDirectory title, IProgress<string>? progress, CancellationToken cancellationToken)
     {
         var key = NfsKey.FromFile(Path.Combine(title.Code, NfsKeyFileName));
         var payloadPath = Path.Combine(title.Content, PayloadFileName);
+        var rebuiltPath = Path.Combine(title.Content, RebuiltFileName);
         try
         {
-            using var payload = new FileStream(payloadPath, FileMode.Create, FileAccess.ReadWrite);
-            progress?.Report("Decrypting disc");
-            var span = _cipher.Decrypt(iso, payload, cancellationToken);
+            var payload = new FileStream(payloadPath, FileMode.Create, FileAccess.ReadWrite);
+            using (payload)
+            {
+                progress?.Report("Decrypting disc");
+                var span = _cipher.Decrypt(iso, payload, cancellationToken);
 
-            if (RegionPatcher.Apply(payload, options))
-                progress?.Report($"Region set to {options.TargetRegion}");
+                if (RegionPatcher.Apply(payload, options))
+                    progress?.Report($"Region set to {options.TargetRegion}");
 
-            progress?.Report("Writing NFS container");
-            new NfsWriter(key).Write(payload, span, title.Content, cancellationToken: cancellationToken);
+                if (!options.TrimDisc && !PatchesMainDol(options))
+                {
+                    progress?.Report("Writing NFS container");
+                    new NfsWriter(key).Write(payload, span, title.Content, cancellationToken: cancellationToken);
+                    return (partition.Ticket.ToBytes(), ReadTmd(iso, partition));
+                }
+
+                progress?.Report("Rebuilding disc");
+                using var rebuilt = new FileStream(rebuiltPath, FileMode.Create, FileAccess.ReadWrite);
+                var result = WiiDiscRebuilder.Rebuild(payload, rebuilt, PatchesMainDol(options) ? dol => PatchMainDol(dol, options, progress) : null, cancellationToken);
+                payload.Dispose();
+                File.Delete(payloadPath);
+
+                progress?.Report("Writing NFS container");
+                rebuilt.Position = 0;
+                new NfsWriter(key).Write(rebuilt, new DiscDataSpan(result.Partition.Start, result.Partition.Length), title.Content, cancellationToken: cancellationToken);
+                return (result.Ticket.ToBytes(), result.Tmd.ToBytes());
+            }
         }
         finally
         {
             File.Delete(payloadPath);
+            File.Delete(rebuiltPath);
         }
     }
 }

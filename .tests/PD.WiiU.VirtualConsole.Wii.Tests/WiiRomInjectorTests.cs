@@ -66,7 +66,7 @@ public class WiiRomInjectorTests
     public async Task InjectAsync_TargetRegion_RewritesRegionAreaInPayload()
     {
         var title = StageBase();
-        var injection = Injection(new WiiOptions { TargetRegion = Region.UnitedStates });
+        var injection = Injection(new WiiOptions { TargetRegion = Region.UnitedStates, TrimDisc = false });
 
         await new WiiRomInjector(FakeDisc.CommonKey).InjectAsync(injection, title);
 
@@ -83,7 +83,7 @@ public class WiiRomInjectorTests
         var injector = new WiiRomInjector(FakeDisc.CommonKey);
 
         await injector.InjectAsync(Injection(), fromIso);
-        await injector.InjectAsync(new Injection(Base(), new Rom(wbfs, SourceConsole.Wii), Game()), fromWbfs);
+        await injector.InjectAsync(new Injection(Base(), new Rom(wbfs, SourceConsole.Wii), Game()) { Options = new WiiOptions { TrimDisc = false } }, fromWbfs);
 
         CollectionAssert.AreEqual(
             File.ReadAllBytes(Path.Combine(fromIso.Content, "hif_000000.nfs")),
@@ -144,9 +144,57 @@ public class WiiRomInjectorTests
     {
         var injector = new WiiRomInjector(FakeDisc.CommonKey);
 
-        await Assert.ThrowsExactlyAsync<NotSupportedException>(() => injector.InjectAsync(Injection(new WiiOptions { RemoveDeflicker = true }), StageBase()));
-        await Assert.ThrowsExactlyAsync<NotSupportedException>(() => injector.InjectAsync(Injection(new WiiOptions { TrimDisc = false }), StageBase()));
         await Assert.ThrowsExactlyAsync<NotSupportedException>(() => injector.InjectAsync(Injection(new WiiOptions { CheatCodesPath = "codes.gct" }), StageBase()));
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_Trim_RebuildsTheDiscAndStoresItsNewTicketAndTmd()
+    {
+        var title = StageBase();
+        var iso = Write("retail.iso", FakeRetailDisc.Encrypted(FakeRetailDisc.Dol(), DiscRegion.Europe));
+        var messages = new List<string>();
+
+        await new WiiRomInjector(FakeDisc.CommonKey).InjectAsync(new Injection(Base(), new Rom(iso, SourceConsole.Wii), Game()), title, new SyncProgress(messages.Add));
+
+        CollectionAssert.AreEqual(new[] { "hif_000000.nfs" }, Directory.GetFiles(title.Content).Select(f => Path.GetFileName(f)).ToArray());
+        using var payload = NfsReader.Open(title.Content, NfsKey).OpenPayload();
+        var disc = WiiDisc.Read(payload);
+        Assert.AreEqual(FakeRetailDisc.GameId, disc.Header.GameId);
+        var partition = disc.DataPartitions[0];
+        Assert.AreEqual(DiscFormat.RetailDataPartitionOffset, partition.Offset, "re-laid at the retail offset");
+        Assert.AreEqual(DiscRegion.Europe, RegionArea.Read(payload).Region);
+        CollectionAssert.AreEqual(partition.Ticket.ToBytes(), File.ReadAllBytes(Path.Combine(title.Code, WiiRomInjector.TicketFileName)));
+        CollectionAssert.AreEqual(ReadAt(payload, partition.Offset + partition.Header.TmdOffset, (int)partition.Header.TmdSize), File.ReadAllBytes(Path.Combine(title.Code, WiiRomInjector.TmdFileName)));
+        var boot = PartitionSystemFiles.Read(payload, partition).Boot;
+        var data = new PartitionDataStream(payload, partition);
+        CollectionAssert.AreEqual(FakeRetailDisc.Dol(), ReadAt(data, Offset(boot, 0x420), 0x800), "untouched without patches");
+        var files = Fst.Parse(ReadAt(data, Offset(boot, 0x424), (int)Offset(boot, 0x428)));
+        CollectionAssert.AreEqual(FakeRetailDisc.Files.Select(f => f.Path).ToArray(), files.Select(f => f.Path).ToArray());
+        CollectionAssert.AreEqual(FakeRetailDisc.Files[1].Content, ReadAt(data, files[1].Offset, (int)files[1].Length));
+        Assert.AreEqual("52535045", WiiUSharp.MetaXml.Load(title.MetaXmlPath).Get("reserved_flag2"));
+        CollectionAssert.AreEqual(new[] { "Decrypting disc", "Rebuilding disc", "Writing NFS container", "Patching fw.img" }, messages);
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_DolPatches_RewriteMainDolEvenWithoutTrim()
+    {
+        var title = StageBase();
+        var iso = Write("retail.iso", FakeRetailDisc.Encrypted(FakeRetailDisc.Dol()));
+        var options = new WiiOptions { TrimDisc = false, RemoveDeflicker = true, RemoveDithering = true, HalfVerticalFilter = true, VideoMode = WiiVideoMode.Pal50 };
+        var messages = new List<string>();
+
+        await new WiiRomInjector(FakeDisc.CommonKey).InjectAsync(new Injection(Base(), new Rom(iso, SourceConsole.Wii), Game()) { Options = options }, title, new SyncProgress(messages.Add));
+
+        using var payload = NfsReader.Open(title.Content, NfsKey).OpenPayload();
+        var partition = WiiDisc.Read(payload).DataPartitions[0];
+        var boot = PartitionSystemFiles.Read(payload, partition).Boot;
+        var dol = ReadAt(new PartitionDataStream(payload, partition), Offset(boot, 0x420), 0x800);
+        CollectionAssert.AreEqual(WiiRomInjector.PatchMainDol(FakeRetailDisc.Dol(), options), dol, "same result with or without a reporter");
+        CollectionAssert.AreEqual(FakeRetailDisc.Pal528IntDfHeader, dol.Skip(FakeRetailDisc.RenderModeOffset).Take(24).ToArray());
+        CollectionAssert.Contains(messages, "Deflicker filter removed");
+        CollectionAssert.Contains(messages, "Video modes set to Pal50: 1");
+        Assert.IsFalse(File.Exists(Path.Combine(title.Content, "rebuilt.iso")));
+        Assert.IsFalse(File.Exists(Path.Combine(title.Content, "game.iso")));
     }
 
     private static BaseTitle Base() =>
@@ -156,7 +204,7 @@ public class WiiRomInjectorTests
         new(new TitleId(TitleType.Demo, 0x1ABCDE00), GroupId.Parse("00001ABC"), ProductCode.Parse("WUP-N-TEST"));
 
     private Injection Injection(WiiOptions? options = null) =>
-        new(Base(), new Rom(IsoPath(), SourceConsole.Wii), Game()) { Options = options };
+        new(Base(), new Rom(IsoPath(), SourceConsole.Wii), Game()) { Options = options ?? new WiiOptions { TrimDisc = false } };
 
     private string IsoPath()
     {
@@ -169,6 +217,17 @@ public class WiiRomInjectorTests
         return path;
     }
 
+    private static long Offset(byte[] boot, int at) =>
+        (long)(uint)(boot[at] << 24 | boot[at + 1] << 16 | boot[at + 2] << 8 | boot[at + 3]) << 2;
+
+    private static byte[] ReadAt(Stream stream, long position, int count)
+    {
+        var bytes = new byte[count];
+        stream.Position = position;
+        ReadExactly(stream, bytes);
+        return bytes;
+    }
+
     private static void ReadExactly(Stream stream, byte[] buffer)
     {
         var read = 0;
@@ -179,6 +238,14 @@ public class WiiRomInjectorTests
                 throw new EndOfStreamException();
             read += n;
         }
+    }
+
+    private string Write(string name, byte[] bytes)
+    {
+        Directory.CreateDirectory(_root);
+        var path = Path.Combine(_root, name);
+        File.WriteAllBytes(path, bytes);
+        return path;
     }
 
     private TitleDirectory StageBase()
