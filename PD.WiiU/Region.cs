@@ -14,7 +14,8 @@ public enum Region : uint
     China = 1 << 4,
     Korea = 1 << 5,
     Taiwan = 1 << 6,
-
-    /// <summary>Region-free: runs on any console.</summary>
+    /// <summary>
+    /// Region-free: runs on any console.
+    /// </summary>
     All = 0xFFFFFFFF,
 }

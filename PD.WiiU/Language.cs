@@ -19,11 +19,16 @@ public enum Language
     TraditionalChinese,
 }
 
+/// <summary>
+/// Wii U specifics of each <see cref="Language"/>.
+/// </summary>
 public static class LanguageExtensions
 {
     /// <summary>
     /// The short code the Wii U uses to tag per-language fields, e.g. <c>en</c> or <c>zhs</c>.
     /// </summary>
+    /// <param name="language">The language to get the code for.</param>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="language"/> is not a defined <see cref="Language"/>.</exception>
     public static string Code(this Language language) => language switch
     {
         Language.Japanese => "ja",

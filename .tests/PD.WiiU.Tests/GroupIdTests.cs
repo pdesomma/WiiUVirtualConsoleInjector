@@ -1,13 +1,14 @@
-﻿namespace PD.WiiU.Tests;
+namespace PD.WiiU.Tests;
 
 [TestClass]
 public class GroupIdTests
 {
     [TestMethod]
-    public void WritesEightUpperCaseHexDigits()
+    public void EqualityIsByValue()
     {
-        Assert.AreEqual("00001234", new GroupId(0x1234).ToString());
-        Assert.AreEqual("0000ABCD", new GroupId(0xABCD).ToString());
+        Assert.AreEqual(new GroupId(7), new GroupId(7));
+        Assert.IsTrue(new GroupId(7) == new GroupId(7));
+        Assert.IsTrue(new GroupId(7) != new GroupId(8));
     }
 
     [TestMethod]
@@ -30,10 +31,9 @@ public class GroupIdTests
     }
 
     [TestMethod]
-    public void EqualityIsByValue()
+    public void WritesEightUpperCaseHexDigits()
     {
-        Assert.AreEqual(new GroupId(7), new GroupId(7));
-        Assert.IsTrue(new GroupId(7) == new GroupId(7));
-        Assert.IsTrue(new GroupId(7) != new GroupId(8));
+        Assert.AreEqual("00001234", new GroupId(0x1234).ToString());
+        Assert.AreEqual("0000ABCD", new GroupId(0xABCD).ToString());
     }
 }

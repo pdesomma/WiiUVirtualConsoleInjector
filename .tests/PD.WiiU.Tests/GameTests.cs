@@ -1,13 +1,8 @@
-﻿namespace PD.WiiU.Tests;
+namespace PD.WiiU.Tests;
 
 [TestClass]
 public class GameTests
 {
-    private static Game NewGame() => new(
-        new TitleId(TitleType.Demo, 0x12345678),
-        new GroupId(0x5678),
-        new ProductCode(ProductCode.EShop, "FAAE"));
-
     [TestMethod]
     public void DefaultsToRegionFreeNintendoTitle()
     {
@@ -18,6 +13,19 @@ public class GameTests
         Assert.AreEqual((ushort)0, game.TitleVersion);
         Assert.AreEqual(0u, game.GamePadUse);
         Assert.AreEqual(0, game.Names.Count);
+    }
+
+    [TestMethod]
+    public void ForAllLanguagesCoversEveryLanguage()
+    {
+        var names = LocalizedName.ForAllLanguages(new LocalizedName("Short", "Long"));
+
+        foreach (Language language in Enum.GetValues(typeof(Language)))
+        {
+            Assert.AreEqual("Short", names[language].ShortName);
+            Assert.AreEqual("Long", names[language].LongName);
+        }
+        Assert.AreEqual(12, names.Count);
     }
 
     [TestMethod]
@@ -42,19 +50,6 @@ public class GameTests
     }
 
     [TestMethod]
-    public void ForAllLanguagesCoversEveryLanguage()
-    {
-        var names = LocalizedName.ForAllLanguages(new LocalizedName("Short", "Long"));
-
-        foreach (Language language in Enum.GetValues(typeof(Language)))
-        {
-            Assert.AreEqual("Short", names[language].ShortName);
-            Assert.AreEqual("Long", names[language].LongName);
-        }
-        Assert.AreEqual(12, names.Count);
-    }
-
-    [TestMethod]
     public void SingleArgumentNameIsUsedForBothForms()
     {
         var name = new LocalizedName("Earthbound");
@@ -62,4 +57,9 @@ public class GameTests
         Assert.AreEqual("Earthbound", name.ShortName);
         Assert.AreEqual("Earthbound", name.LongName);
     }
+
+    private static Game NewGame() => new(
+        new TitleId(TitleType.Demo, 0x12345678),
+        new GroupId(0x5678),
+        new ProductCode(ProductCode.EShop, "FAAE"));
 }
