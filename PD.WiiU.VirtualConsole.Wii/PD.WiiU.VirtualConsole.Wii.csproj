@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\PD.WiiU.VirtualConsole\PD.WiiU.VirtualConsole.csproj" />
+    <ProjectReference Include="$(WiiUSharpRoot)WiiUSharp.Nfs\WiiUSharp.Nfs.csproj" />
+    <ProjectReference Include="$(WiiSharpRoot)WiiSharp\WiiSharp.csproj" />
+  </ItemGroup>
+
+</Project>
