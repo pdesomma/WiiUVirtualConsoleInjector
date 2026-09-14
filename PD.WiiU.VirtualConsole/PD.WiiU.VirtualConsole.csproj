@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\PD.WiiU\PD.WiiU.csproj" />
+    <ProjectReference Include="$(WiiUSharpRoot)WiiUSharp\WiiUSharp.csproj" />
   </ItemGroup>
 
 </Project>

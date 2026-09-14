@@ -1,5 +1,10 @@
 <Project>
 
+  <PropertyGroup>
+    <!-- Sibling repos referenced as projects while they evolve together; override to point elsewhere. -->
+    <WiiUSharpRoot Condition="'$(WiiUSharpRoot)' == ''">$(MSBuildThisFileDirectory)..\WiiUSharp\</WiiUSharpRoot>
+  </PropertyGroup>
+
   <PropertyGroup Condition="$(MSBuildProjectName.StartsWith('PD.'))">
     <TargetFrameworks>net10.0;net48</TargetFrameworks>
     <LangVersion>latest</LangVersion>

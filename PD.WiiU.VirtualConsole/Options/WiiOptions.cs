@@ -1,3 +1,5 @@
+using WiiUSharp;
+
 namespace PD.WiiU.VirtualConsole.Options;
 
 /// <summary>

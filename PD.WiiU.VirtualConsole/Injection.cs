@@ -1,4 +1,5 @@
 using PD.WiiU.VirtualConsole.Options;
+using WiiUSharp;
 
 namespace PD.WiiU.VirtualConsole;
 
