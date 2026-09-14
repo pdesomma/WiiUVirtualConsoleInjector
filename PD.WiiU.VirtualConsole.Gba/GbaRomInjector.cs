@@ -23,6 +23,18 @@ public sealed class GbaRomInjector : IRomInjector
     public SourceConsole Console => SourceConsole.Gba;
 
     /// <inheritdoc/>
+    public IReadOnlyList<BaseIssue> Inspect(TitleDirectory title)
+    {
+        if (title is null)
+            throw new ArgumentNullException(nameof(title));
+
+        var inspection = new BaseInspection(title);
+        inspection.RequireFile(TitleDirectory.ContentFolder + "/" + AllDataArchive.ManifestFileName, 1);
+        inspection.RequireFile(TitleDirectory.ContentFolder + "/" + AllDataArchive.BaseName + ".bin", 1);
+        return inspection.Issues;
+    }
+
+    /// <inheritdoc/>
     /// <exception cref="InvalidDataException">The archive holds no .gba file, or more than one.</exception>
     public Task InjectAsync(Injection injection, TitleDirectory title, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {

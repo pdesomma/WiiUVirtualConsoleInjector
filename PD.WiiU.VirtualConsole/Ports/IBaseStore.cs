@@ -6,6 +6,12 @@ namespace PD.WiiU.VirtualConsole.Ports;
 public interface IBaseStore
 {
     /// <summary>
+    /// Where the base lives in the store; may not exist.
+    /// </summary>
+    /// <param name="base">Base to find.</param>
+    TitleDirectory Locate(BaseTitle @base);
+
+    /// <summary>
     /// Copies a base into a working folder.
     /// </summary>
     /// <param name="base">Base to stage.</param>

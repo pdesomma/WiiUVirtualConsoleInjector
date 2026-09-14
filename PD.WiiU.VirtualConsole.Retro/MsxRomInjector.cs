@@ -40,6 +40,17 @@ public sealed class MsxRomInjector : IRomInjector
     public int HeaderLength { get; }
 
     /// <inheritdoc/>
+    public IReadOnlyList<BaseIssue> Inspect(TitleDirectory title)
+    {
+        if (title is null)
+            throw new ArgumentNullException(nameof(title));
+
+        var inspection = new BaseInspection(title);
+        inspection.RequireFile(TitleDirectory.ContentFolder + "/" + EmulatorFolder + "/" + PackageFileName, HeaderLength);
+        return inspection.Issues;
+    }
+
+    /// <inheritdoc/>
     /// <exception cref="InvalidDataException">The base package is shorter than the header.</exception>
     public Task InjectAsync(Injection injection, TitleDirectory title, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {

@@ -15,6 +15,20 @@ internal static class RetroExecutable
         return candidates.OrderBy(p => p, StringComparer.Ordinal).First();
     }
 
+    public static IReadOnlyList<BaseIssue> Inspect(TitleDirectory title, bool nes)
+    {
+        var inspection = new BaseInspection(title);
+        var path = inspection.RequireAny(TitleDirectory.CodeFolder, "*.rpx");
+        if (path is null)
+            return inspection.Issues;
+
+        var relative = inspection.Relative(path);
+        RomSlot? slot = null;
+        if (inspection.Parse(relative, () => slot = RomSlot.Find(RpxFile.Load(path))))
+            inspection.Require(slot!.IsNes == nes, relative, nes ? "executable is a SNES title" : "executable is a NES title");
+        return inspection.Issues;
+    }
+
     public static void Inject(Injection injection, TitleDirectory title, bool nes, bool pixelPerfect, IProgress<string>? progress, CancellationToken cancellationToken)
     {
         var path = Locate(title);

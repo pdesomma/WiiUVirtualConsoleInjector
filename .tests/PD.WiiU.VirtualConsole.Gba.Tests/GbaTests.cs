@@ -135,6 +135,17 @@ public class GbaTests
         await Assert.ThrowsExactlyAsync<ArgumentNullException>(() => new GbaRomInjector().InjectAsync(Injection("x.gba"), null!));
     }
 
+    [TestMethod]
+    public void Inspect_ArchivePresent_PassesAndMissingPartsAreListed()
+    {
+        var good = StageBase();
+        var empty = TitleDirectory.Create(Path.Combine(_root, "empty"));
+
+        Assert.AreEqual(0, new GbaRomInjector().Inspect(good).Count);
+        CollectionAssert.AreEqual(new[] { "content/alldata.psb.m: file missing", "content/alldata.bin: file missing" }, new GbaRomInjector().Inspect(empty).Select(i => i.ToString()).ToArray());
+        Assert.ThrowsExactly<ArgumentNullException>(() => new GbaRomInjector().Inspect(null!));
+    }
+
     private static BaseTitle Base() =>
         new(new TitleId(TitleType.Game, 0x10101D00), "Base", Region.UnitedStates, SourceConsole.Gba);
 

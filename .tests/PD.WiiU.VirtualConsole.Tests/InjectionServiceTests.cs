@@ -158,9 +158,10 @@ public class InjectionServiceTests
         var result = await service.InjectAsync(injection, Work(), Output(), new SyncProgress(reports.Add));
 
         CollectionAssert.AreEqual(
-            new[] { InjectionStep.StageBase, InjectionStep.InjectRom, InjectionStep.InjectRom, InjectionStep.WriteMetadata, InjectionStep.ConvertArtwork, InjectionStep.ConvertBootSound, InjectionStep.Pack },
+            new[] { InjectionStep.StageBase, InjectionStep.InspectBase, InjectionStep.InjectRom, InjectionStep.InjectRom, InjectionStep.WriteMetadata, InjectionStep.ConvertArtwork, InjectionStep.ConvertBootSound, InjectionStep.Pack },
             reports.Select(r => r.Step).ToArray());
-        Assert.AreEqual("injecting", reports[2].Message);
+        Assert.AreEqual("injecting", reports[3].Message);
+        Assert.AreSame(injector.Titles.Single(), injector.Inspected.Single(), "the staged copy is what gets inspected");
         Assert.AreEqual(bases.Destinations.Single(), injector.Titles.Single().Root);
         Assert.AreSame(injector.Titles.Single(), packer.Calls.Single().Title);
         Assert.AreEqual(Output(), packer.Calls.Single().Output);
@@ -168,6 +169,54 @@ public class InjectionServiceTests
         Assert.AreSame(injection.Game, result.Game);
         Assert.IsTrue(File.Exists(Path.Combine(Output(), "title.tmd")));
         Assert.AreEqual(0, Directory.GetDirectories(Work()).Length);
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_InjectorReportsIssues_FailsAtInspectBaseBeforeInjecting()
+    {
+        var injector = new FakeRomInjector(SourceConsole.N64);
+        injector.Issues.Add(new BaseIssue("content/rom", "folder missing"));
+        injector.Issues.Add(new BaseIssue("content/FrameLayout.arc", "file missing"));
+        var service = Service(injector);
+
+        var error = await Assert.ThrowsExactlyAsync<InjectionException>(() => service.InjectAsync(new Injection(TestTitle.Base(), Rom(), TestTitle.Game()), Work(), Output()));
+
+        Assert.AreEqual(InjectionStep.InspectBase, error.Step);
+        StringAssert.Contains(error.Message, "content/rom: folder missing; content/FrameLayout.arc: file missing");
+        Assert.AreEqual(0, injector.Titles.Count);
+        Assert.AreEqual(0, Directory.GetDirectories(Work()).Length);
+    }
+
+    [TestMethod]
+    public void InspectBase_StoreHasNoSuchFolder_ReportsLayoutOnly()
+    {
+        var injector = new FakeRomInjector(SourceConsole.N64);
+        injector.Issues.Add(new BaseIssue("content/rom", "folder missing"));
+        var bases = new FakeBaseStore { Root = Path.Combine(_root, "store") };
+        var service = new InjectionService(bases, new[] { injector }, new FakeImageConverter(), new FakeBootSoundConverter(), new FakeTitlePacker());
+
+        var issues = service.InspectBase(TestTitle.Base());
+
+        Assert.IsTrue(issues.Count >= 3);
+        Assert.IsTrue(issues.All(i => i.Message.EndsWith("missing", StringComparison.Ordinal)));
+        Assert.AreEqual(0, injector.Inspected.Count, "console check waits for a sane layout");
+    }
+
+    [TestMethod]
+    public void InspectBase_PopulatedStore_DefersToTheInjector()
+    {
+        var injector = new FakeRomInjector(SourceConsole.N64);
+        injector.Issues.Add(new BaseIssue("content/rom", "folder missing"));
+        var bases = new FakeBaseStore { Root = Path.Combine(_root, "store") };
+        TestTitle.Populate(bases.Locate(TestTitle.Base()).Root);
+        var service = new InjectionService(bases, new[] { injector }, new FakeImageConverter(), new FakeBootSoundConverter(), new FakeTitlePacker());
+
+        var issues = service.InspectBase(TestTitle.Base());
+
+        CollectionAssert.AreEqual(injector.Issues, issues.ToList());
+        Assert.AreEqual(bases.Locate(TestTitle.Base()).Root, injector.Inspected.Single().Root);
+        Assert.ThrowsExactly<NotSupportedException>(() => service.InspectBase(TestTitle.Base(SourceConsole.Wii)));
+        Assert.ThrowsExactly<ArgumentNullException>(() => service.InspectBase(null!));
     }
 
     [TestMethod]

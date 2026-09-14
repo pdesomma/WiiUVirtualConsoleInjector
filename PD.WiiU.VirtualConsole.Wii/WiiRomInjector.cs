@@ -51,6 +51,15 @@ public sealed class WiiRomInjector : IRomInjector
     public SourceConsole Console => SourceConsole.Wii;
 
     /// <inheritdoc/>
+    public IReadOnlyList<BaseIssue> Inspect(TitleDirectory title)
+    {
+        if (title is null)
+            throw new ArgumentNullException(nameof(title));
+
+        return VWiiBase.Inspect(title);
+    }
+
+    /// <inheritdoc/>
     /// <exception cref="NotSupportedException">Not an ISO or WBFS, or an option this injector cannot apply yet.</exception>
     public Task InjectAsync(Injection injection, TitleDirectory title, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
