@@ -2,8 +2,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PD.WiiU.VirtualConsole\PD.WiiU.VirtualConsole.csproj" />
-    <ProjectReference Include="$(WiiUSharpRoot)WiiUSharp.Nfs\WiiUSharp.Nfs.csproj" />
-    <ProjectReference Include="$(WiiSharpRoot)WiiSharp\WiiSharp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WiiSharp" Version="0.1.0" />
+    <PackageReference Include="WiiUSharp.Nfs" Version="0.1.0" />
   </ItemGroup>
 
 </Project>
