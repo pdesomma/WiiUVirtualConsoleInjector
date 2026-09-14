@@ -1,3 +1,4 @@
+using System.Text;
 using PD.WiiU.VirtualConsole.Options;
 using PD.WiiU.VirtualConsole.Ports;
 using WiiSharp;
@@ -26,6 +27,11 @@ public sealed class WiiRomInjector : IRomInjector
     /// Disc TMD copied next to the firmware.
     /// </summary>
     public const string TmdFileName = "rvlt.tmd";
+
+    /// <summary>
+    /// Carrier ID given to a homebrew DOL.
+    /// </summary>
+    public const string HomebrewGameId = "HBRW01";
 
     private const string PayloadFileName = "game.iso";
     private const string RebuiltFileName = "rebuilt.iso";
@@ -58,12 +64,38 @@ public sealed class WiiRomInjector : IRomInjector
         var options = injection.Options as WiiOptions ?? new WiiOptions();
         RejectUnsupported(options);
 
+        var extension = Path.GetExtension(injection.Rom.Path);
+        if (string.Equals(extension, ".dol", StringComparison.OrdinalIgnoreCase))
+        {
+            InjectHomebrew(injection.Rom.Path, options, title, progress, cancellationToken);
+            return Task.CompletedTask;
+        }
+        if (string.Equals(extension, ".wad", StringComparison.OrdinalIgnoreCase))
+        {
+            InjectChannel(injection.Rom.Path, options, title, progress, cancellationToken);
+            return Task.CompletedTask;
+        }
+
         using var container = OpenImage(injection.Rom.Path, out var iso);
         using (iso)
         {
             Inject(iso, options, title, progress, cancellationToken);
         }
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Six-character carrier ID for a channel: its four-character code plus the retail maker code.
+    /// </summary>
+    /// <param name="titleId">Eight-byte channel title ID.</param>
+    public static string ChannelGameId(byte[] titleId)
+    {
+        if (titleId is null)
+            throw new ArgumentNullException(nameof(titleId));
+        if (titleId.Length != 8)
+            throw new ArgumentException("A title ID is 8 bytes.", nameof(titleId));
+
+        return Encoding.ASCII.GetString(titleId, 4, 4) + "01";
     }
 
     /// <summary>
@@ -97,6 +129,32 @@ public sealed class WiiRomInjector : IRomInjector
             return wbfs;
         }
         throw new NotSupportedException("Only .iso and .wbfs images are supported.");
+    }
+
+    private static void InjectChannel(string wadPath, WiiOptions options, TitleDirectory title, IProgress<string>? progress, CancellationToken cancellationToken)
+    {
+        var wad = WadFile.Open(wadPath);
+        var gameId = ChannelGameId(wad.TitleId);
+        var booter = options.ForwarderPath is null ? ChannelBooter.Embedded(options.ForceFourByThree) : File.ReadAllBytes(options.ForwarderPath);
+        progress?.Report($"Forwarding to channel {gameId.Substring(0, 4)}");
+
+        using var code = new MemoryStream(wad.TitleId.Skip(4).Take(4).ToArray());
+        CarrierDisc.Write(title, gameId, "Channel " + gameId.Substring(0, 4), booter, new[] { new DiscFile(ChannelBooter.TitleFileName, code) }, progress, cancellationToken);
+        PatchFirmware(title, options, progress);
+    }
+
+    private static void InjectHomebrew(string dolPath, WiiOptions options, TitleDirectory title, IProgress<string>? progress, CancellationToken cancellationToken)
+    {
+        var dol = File.ReadAllBytes(dolPath);
+        DolHeader.Parse(dol);
+        CarrierDisc.Write(title, HomebrewGameId, Path.GetFileNameWithoutExtension(dolPath), dol, Array.Empty<DiscFile>(), progress, cancellationToken);
+        PatchFirmware(title, options, progress);
+    }
+
+    private static void PatchFirmware(TitleDirectory title, WiiOptions options, IProgress<string>? progress)
+    {
+        progress?.Report("Patching " + FirmwareFileName);
+        FirmwarePatcher.PatchFile(Path.Combine(title.Code, FirmwareFileName), FirmwarePatcher.PatchesFor(options, homebrew: true));
     }
 
     private void Inject(Stream iso, WiiOptions options, TitleDirectory title, IProgress<string>? progress, CancellationToken cancellationToken)

@@ -18,6 +18,14 @@ public sealed class WiiOptions : IConsoleOptions
     /// </summary>
     public WiiControllerMode ControllerMode { get; init; } = WiiControllerMode.ClassicController;
     /// <summary>
+    /// For a channel WAD: boot with 4:3 forced.
+    /// </summary>
+    public bool ForceFourByThree { get; init; }
+    /// <summary>
+    /// For a channel WAD: booter to use as main.dol, or null for the embedded wiivc_chan_booter.
+    /// </summary>
+    public string? ForwarderPath { get; init; }
+    /// <summary>
     /// Halve the vertical filter strength.
     /// </summary>
     public bool HalfVerticalFilter { get; init; }
