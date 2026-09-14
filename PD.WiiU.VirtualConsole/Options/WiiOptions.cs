@@ -18,10 +18,6 @@ public sealed class WiiOptions : IConsoleOptions
     /// </summary>
     public WiiControllerMode ControllerMode { get; init; } = WiiControllerMode.ClassicController;
     /// <summary>
-    /// Force PAL video mode.
-    /// </summary>
-    public bool ForcePal { get; init; }
-    /// <summary>
     /// Halve the vertical filter strength.
     /// </summary>
     public bool HalfVerticalFilter { get; init; }
@@ -46,7 +42,11 @@ public sealed class WiiOptions : IConsoleOptions
     /// </summary>
     public Region? TargetRegion { get; init; }
     /// <summary>
-    /// Strip unused partitions from the disc.
+    /// Rebuild the disc with only the game partition; also required by every main.dol patch.
     /// </summary>
     public bool TrimDisc { get; init; } = true;
+    /// <summary>
+    /// Video standard to force in main.dol.
+    /// </summary>
+    public WiiVideoMode VideoMode { get; init; }
 }
