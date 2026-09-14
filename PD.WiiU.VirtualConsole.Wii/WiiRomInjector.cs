@@ -46,7 +46,7 @@ public sealed class WiiRomInjector : IRomInjector
     public SourceConsole Console => SourceConsole.Wii;
 
     /// <inheritdoc/>
-    /// <exception cref="NotSupportedException">Not an ISO, or an option this injector cannot apply yet.</exception>
+    /// <exception cref="NotSupportedException">Not an ISO or WBFS, or an option this injector cannot apply yet.</exception>
     public Task InjectAsync(Injection injection, TitleDirectory title, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
         if (injection is null)
@@ -55,13 +55,53 @@ public sealed class WiiRomInjector : IRomInjector
             throw new ArgumentNullException(nameof(title));
         if (injection.Console != SourceConsole.Wii)
             throw new ArgumentException($"Injection is for {injection.Console}.", nameof(injection));
-        if (!string.Equals(Path.GetExtension(injection.Rom.Path), ".iso", StringComparison.OrdinalIgnoreCase))
-            throw new NotSupportedException("Only .iso images are supported.");
 
         var options = injection.Options as WiiOptions ?? new WiiOptions();
         RejectUnsupported(options);
 
-        using var iso = File.OpenRead(injection.Rom.Path);
+        using var container = OpenImage(injection.Rom.Path, out var iso);
+        using (iso)
+        {
+            Inject(iso, options, title, progress, cancellationToken);
+        }
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Opens a .iso directly or the first disc of a .wbfs; the returned disposable owns the container.
+    /// </summary>
+    /// <param name="path">Image path.</param>
+    /// <param name="image">Seekable disc image.</param>
+    /// <exception cref="NotSupportedException">Any other extension, or an NKit image.</exception>
+    public static IDisposable OpenImage(string path, out Stream image)
+    {
+        if (path is null)
+            throw new ArgumentNullException(nameof(path));
+        if (path.IndexOf(".nkit.", StringComparison.OrdinalIgnoreCase) >= 0)
+            throw new NotSupportedException("NKit images are not supported; convert to a plain ISO or WBFS first.");
+
+        var extension = Path.GetExtension(path);
+        if (string.Equals(extension, ".iso", StringComparison.OrdinalIgnoreCase))
+        {
+            image = File.OpenRead(path);
+            return image;
+        }
+        if (string.Equals(extension, ".wbfs", StringComparison.OrdinalIgnoreCase))
+        {
+            var wbfs = WbfsFile.Open(path);
+            if (wbfs.Discs.Count == 0)
+            {
+                wbfs.Dispose();
+                throw new InvalidDataException("WBFS file holds no disc.");
+            }
+            image = wbfs.Discs[0].OpenStream();
+            return wbfs;
+        }
+        throw new NotSupportedException("Only .iso and .wbfs images are supported.");
+    }
+
+    private void Inject(Stream iso, WiiOptions options, TitleDirectory title, IProgress<string>? progress, CancellationToken cancellationToken)
+    {
         var disc = WiiDisc.Read(iso);
         if (disc.DataPartitions.Count == 0)
             throw new InvalidDataException("Disc has no data partition.");
@@ -73,7 +113,6 @@ public sealed class WiiRomInjector : IRomInjector
         FirmwarePatcher.PatchFile(Path.Combine(title.Code, FirmwareFileName), FirmwarePatcher.PatchesFor(options));
 
         SetManualId(title, disc.Header.GameId);
-        return Task.CompletedTask;
     }
 
     private static void CopyTicketAndTmd(Stream iso, Partition partition, TitleDirectory title)
