@@ -8,4 +8,10 @@
     <PackageReference Include="WiiUSharp.Rpx" Version="0.6.0" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <PackageReference Include="System.Text.Json" Version="10.0.12" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+  </ItemGroup>
+
 </Project>
