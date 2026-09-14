@@ -1,0 +1,164 @@
+using PD.WiiU.VirtualConsole.Ports;
+using WiiUSharp;
+
+namespace PD.WiiU.VirtualConsole;
+
+/// <summary>
+/// Sequences the injection steps over the supplied ports.
+/// </summary>
+public sealed class InjectionService : IInjectionService
+{
+    private readonly IBaseStore _bases;
+    private readonly IBootSoundConverter _bootSounds;
+    private readonly IImageConverter _images;
+    private readonly IReadOnlyDictionary<SourceConsole, IRomInjector> _injectors;
+    private readonly ITitlePacker _packer;
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="InjectionService"/> class.
+    /// </summary>
+    /// <param name="bases">Where bases come from.</param>
+    /// <param name="injectors">One injector per console.</param>
+    /// <param name="images">Artwork converter.</param>
+    /// <param name="bootSounds">Boot sound converter.</param>
+    /// <param name="packer">Final packer.</param>
+    /// <exception cref="ArgumentException">Two injectors claim the same console.</exception>
+    public InjectionService(IBaseStore bases, IEnumerable<IRomInjector> injectors, IImageConverter images, IBootSoundConverter bootSounds, ITitlePacker packer)
+    {
+        _bases = bases ?? throw new ArgumentNullException(nameof(bases));
+        _images = images ?? throw new ArgumentNullException(nameof(images));
+        _bootSounds = bootSounds ?? throw new ArgumentNullException(nameof(bootSounds));
+        _packer = packer ?? throw new ArgumentNullException(nameof(packer));
+
+        if (injectors is null)
+            throw new ArgumentNullException(nameof(injectors));
+        var byConsole = new Dictionary<SourceConsole, IRomInjector>();
+        foreach (var injector in injectors)
+        {
+            if (byConsole.ContainsKey(injector.Console))
+                throw new ArgumentException($"More than one injector for {injector.Console}.", nameof(injectors));
+            byConsole.Add(injector.Console, injector);
+        }
+        _injectors = byConsole;
+    }
+
+    /// <summary>
+    /// Consoles an injector was supplied for.
+    /// </summary>
+    public IReadOnlyCollection<SourceConsole> SupportedConsoles => _injectors.Keys.ToArray();
+
+    /// <inheritdoc/>
+    public async Task<InjectedTitle> InjectAsync(Injection injection, string workDirectory, string outputDirectory, IProgress<InjectionProgress>? progress = null, CancellationToken cancellationToken = default)
+    {
+        if (injection is null)
+            throw new ArgumentNullException(nameof(injection));
+        if (string.IsNullOrWhiteSpace(workDirectory))
+            throw new ArgumentException("Work directory is required.", nameof(workDirectory));
+        if (string.IsNullOrWhiteSpace(outputDirectory))
+            throw new ArgumentException("Output directory is required.", nameof(outputDirectory));
+        if (!_injectors.TryGetValue(injection.Console, out var injector))
+            throw new NotSupportedException($"No injector for {injection.Console}.");
+
+        var work = Path.Combine(workDirectory, Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(work);
+        try
+        {
+            var title = await Run(InjectionStep.StageBase, $"Staging {injection.Base}", progress,
+                () => _bases.StageAsync(injection.Base, work, cancellationToken)).ConfigureAwait(false);
+
+            await Run(InjectionStep.InjectRom, $"Injecting {Path.GetFileName(injection.Rom.Path)}", progress,
+                () => injector.InjectAsync(injection, title, Detail(InjectionStep.InjectRom, progress), cancellationToken)).ConfigureAwait(false);
+
+            await Run(InjectionStep.WriteMetadata, "Writing meta.xml and app.xml", progress,
+                () => WriteMetadata(injection.Game, title)).ConfigureAwait(false);
+
+            await Run(InjectionStep.ConvertArtwork, "Converting artwork", progress,
+                () => ConvertArtwork(injection.Artwork, title, Detail(InjectionStep.ConvertArtwork, progress), cancellationToken)).ConfigureAwait(false);
+
+            if (injection.BootSoundPath is { } sound)
+                await Run(InjectionStep.ConvertBootSound, $"Converting {Path.GetFileName(sound)}", progress,
+                    () => _bootSounds.ConvertAsync(sound, Path.Combine(title.Meta, BootSound.FileName), cancellationToken)).ConfigureAwait(false);
+
+            Directory.CreateDirectory(outputDirectory);
+            await Run(InjectionStep.Pack, "Packing", progress,
+                () => _packer.PackAsync(title, outputDirectory, Detail(InjectionStep.Pack, progress), cancellationToken)).ConfigureAwait(false);
+
+            return new InjectedTitle(injection.Game, outputDirectory);
+        }
+        finally
+        {
+            if (Directory.Exists(work))
+                Directory.Delete(work, recursive: true);
+        }
+    }
+
+    private async Task ConvertArtwork(Artwork artwork, TitleDirectory title, IProgress<string> progress, CancellationToken cancellationToken)
+    {
+        foreach (var slot in ImageSlot.All)
+        {
+            if (artwork.PathFor(slot) is not { } source)
+                continue;
+            progress.Report($"{slot.FileName} from {Path.GetFileName(source)}");
+            await _images.ConvertAsync(source, slot, Path.Combine(title.Meta, slot.FileName), cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static IProgress<string> Detail(InjectionStep step, IProgress<InjectionProgress>? progress) =>
+        new StepProgress(step, progress);
+
+    private static async Task Run(InjectionStep step, string message, IProgress<InjectionProgress>? progress, Func<Task> action)
+    {
+        await Run(step, message, progress, async () =>
+        {
+            await action().ConfigureAwait(false);
+            return true;
+        }).ConfigureAwait(false);
+    }
+
+    private static async Task<T> Run<T>(InjectionStep step, string message, IProgress<InjectionProgress>? progress, Func<Task<T>> action)
+    {
+        progress?.Report(new InjectionProgress(step, message));
+        try
+        {
+            return await action().ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (InjectionException)
+        {
+            throw;
+        }
+        catch (Exception e)
+        {
+            throw new InjectionException(step, $"{message}: {e.Message}", e);
+        }
+    }
+
+    private static Task WriteMetadata(Game game, TitleDirectory title)
+    {
+        var meta = MetaXml.Load(title.MetaXmlPath);
+        meta.Apply(game);
+        meta.Save(title.MetaXmlPath);
+
+        var app = AppXml.Load(title.AppXmlPath);
+        app.Apply(game);
+        app.Save(title.AppXmlPath);
+        return Task.CompletedTask;
+    }
+
+    private sealed class StepProgress : IProgress<string>
+    {
+        private readonly IProgress<InjectionProgress>? _progress;
+        private readonly InjectionStep _step;
+
+        public StepProgress(InjectionStep step, IProgress<InjectionProgress>? progress)
+        {
+            _step = step;
+            _progress = progress;
+        }
+
+        public void Report(string value) => _progress?.Report(new InjectionProgress(_step, value));
+    }
+}
