@@ -21,6 +21,20 @@ public sealed class N64RomInjector : IRomInjector
     public SourceConsole Console => SourceConsole.N64;
 
     /// <inheritdoc/>
+    public IReadOnlyList<BaseIssue> Inspect(TitleDirectory title)
+    {
+        if (title is null)
+            throw new ArgumentNullException(nameof(title));
+
+        var inspection = new BaseInspection(title);
+        var folder = TitleDirectory.ContentFolder + "/" + RomFolder;
+        if (inspection.RequireDirectory(folder))
+            inspection.Require(Directory.GetFiles(Path.Combine(title.Content, RomFolder)).Length == 1, folder, "expected exactly one ROM file");
+        inspection.RequireFile(TitleDirectory.ContentFolder + "/" + FrameLayoutPatch.FileName, 1);
+        return inspection.Issues;
+    }
+
+    /// <inheritdoc/>
     /// <exception cref="FileNotFoundException">The base has no content/rom file.</exception>
     public Task InjectAsync(Injection injection, TitleDirectory title, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {

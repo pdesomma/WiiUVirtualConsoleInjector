@@ -16,6 +16,17 @@ public sealed class Tg16RomInjector : IRomInjector
     public SourceConsole Console => SourceConsole.Tg16;
 
     /// <inheritdoc/>
+    public IReadOnlyList<BaseIssue> Inspect(TitleDirectory title)
+    {
+        if (title is null)
+            throw new ArgumentNullException(nameof(title));
+
+        var inspection = new BaseInspection(title);
+        inspection.RequireFile(TitleDirectory.ContentFolder + "/" + EmulatorFolder + "/" + PcePackage.FileName, 1);
+        return inspection.Issues;
+    }
+
+    /// <inheritdoc/>
     /// <remarks>A ROM path that is a folder is packed as a TurboCD game.</remarks>
     public Task InjectAsync(Injection injection, TitleDirectory title, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {

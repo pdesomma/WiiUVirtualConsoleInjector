@@ -6,6 +6,7 @@ namespace PD.WiiU.VirtualConsole;
 public enum InjectionStep
 {
     StageBase,
+    InspectBase,
     InjectRom,
     WriteMetadata,
     ConvertArtwork,

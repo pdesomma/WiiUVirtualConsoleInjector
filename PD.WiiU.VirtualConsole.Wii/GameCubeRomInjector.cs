@@ -24,6 +24,15 @@ public sealed class GameCubeRomInjector : IRomInjector
     public SourceConsole Console => SourceConsole.GameCube;
 
     /// <inheritdoc/>
+    public IReadOnlyList<BaseIssue> Inspect(TitleDirectory title)
+    {
+        if (title is null)
+            throw new ArgumentNullException(nameof(title));
+
+        return VWiiBase.Inspect(title);
+    }
+
+    /// <inheritdoc/>
     /// <exception cref="NotSupportedException">Not an ISO, GCM or GCZ image.</exception>
     /// <exception cref="InvalidDataException">Not a GameCube disc, or the base has no usable disc.</exception>
     public Task InjectAsync(Injection injection, TitleDirectory title, IProgress<string>? progress = null, CancellationToken cancellationToken = default)

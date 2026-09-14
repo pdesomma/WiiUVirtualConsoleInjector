@@ -6,6 +6,9 @@ namespace PD.WiiU.VirtualConsole.Tests;
 internal sealed class FakeBaseStore : IBaseStore
 {
     public List<string> Destinations { get; } = new();
+    public string Root { get; init; } = Path.Combine(Path.GetTempPath(), "PD.WiiU.VirtualConsole.Tests", "store");
+
+    public TitleDirectory Locate(BaseTitle @base) => new(Path.Combine(Root, @base.TitleId.ToString()));
 
     public Task<TitleDirectory> StageAsync(BaseTitle @base, string destination, CancellationToken cancellationToken = default)
     {
@@ -49,7 +52,15 @@ internal sealed class FakeRomInjector : IRomInjector
     }
 
     public SourceConsole Console { get; }
+    public List<BaseIssue> Issues { get; } = new();
+    public List<TitleDirectory> Inspected { get; } = new();
     public List<TitleDirectory> Titles { get; } = new();
+
+    public IReadOnlyList<BaseIssue> Inspect(TitleDirectory title)
+    {
+        Inspected.Add(title);
+        return Issues;
+    }
 
     public Task InjectAsync(Injection injection, TitleDirectory title, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {

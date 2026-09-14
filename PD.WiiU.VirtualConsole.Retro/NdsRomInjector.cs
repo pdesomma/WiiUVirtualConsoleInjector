@@ -27,6 +27,20 @@ public sealed class NdsRomInjector : IRomInjector
     public SourceConsole Console => SourceConsole.Nds;
 
     /// <inheritdoc/>
+    public IReadOnlyList<BaseIssue> Inspect(TitleDirectory title)
+    {
+        if (title is null)
+            throw new ArgumentNullException(nameof(title));
+
+        var inspection = new BaseInspection(title);
+        var archive = TitleDirectory.ContentFolder + "/" + DataFolder + "/" + RomArchiveName;
+        if (inspection.RequireFile(archive, 1))
+            inspection.Parse(archive, () => RomEntryName(Path.Combine(title.Content, DataFolder, RomArchiveName)));
+        inspection.RequireFile(TitleDirectory.ContentFolder + "/" + DataFolder + "/" + ConfigurationFileName, 1);
+        return inspection.Issues;
+    }
+
+    /// <inheritdoc/>
     /// <exception cref="InvalidDataException">rom.zip has no WUP-named entry.</exception>
     public Task InjectAsync(Injection injection, TitleDirectory title, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {

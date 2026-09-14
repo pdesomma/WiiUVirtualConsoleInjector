@@ -66,6 +66,9 @@ public sealed class InjectionService : IInjectionService
             var title = await Run(InjectionStep.StageBase, $"Staging {injection.Base}", progress,
                 () => _bases.StageAsync(injection.Base, work, cancellationToken)).ConfigureAwait(false);
 
+            await Run(InjectionStep.InspectBase, "Checking base", progress,
+                () => RequireUsable(Inspect(title, injector))).ConfigureAwait(false);
+
             await Run(InjectionStep.InjectRom, $"Injecting {Path.GetFileName(injection.Rom.Path)}", progress,
                 () => injector.InjectAsync(injection, title, Detail(InjectionStep.InjectRom, progress), cancellationToken)).ConfigureAwait(false);
 
@@ -90,6 +93,30 @@ public sealed class InjectionService : IInjectionService
             if (Directory.Exists(work))
                 Directory.Delete(work, recursive: true);
         }
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<BaseIssue> InspectBase(BaseTitle @base)
+    {
+        if (@base is null)
+            throw new ArgumentNullException(nameof(@base));
+        if (!_injectors.TryGetValue(@base.Console, out var injector))
+            throw new NotSupportedException($"No injector for {@base.Console}.");
+
+        return Inspect(_bases.Locate(@base), injector);
+    }
+
+    private static IReadOnlyList<BaseIssue> Inspect(TitleDirectory title, IRomInjector injector)
+    {
+        var layout = new BaseInspection(title).Layout();
+        return layout.Passed ? injector.Inspect(title) : layout.Issues;
+    }
+
+    private static Task RequireUsable(IReadOnlyList<BaseIssue> issues)
+    {
+        if (issues.Count > 0)
+            throw new InvalidDataException("Base is not usable: " + string.Join("; ", issues));
+        return Task.CompletedTask;
     }
 
     private async Task ConvertArtwork(Artwork artwork, TitleDirectory title, IProgress<string> progress, CancellationToken cancellationToken)

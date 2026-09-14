@@ -12,6 +12,15 @@ public sealed class SnesRomInjector : IRomInjector
     public SourceConsole Console => SourceConsole.Snes;
 
     /// <inheritdoc/>
+    public IReadOnlyList<BaseIssue> Inspect(TitleDirectory title)
+    {
+        if (title is null)
+            throw new ArgumentNullException(nameof(title));
+
+        return RetroExecutable.Inspect(title, nes: false);
+    }
+
+    /// <inheritdoc/>
     public Task InjectAsync(Injection injection, TitleDirectory title, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
         if (injection is null)

@@ -11,6 +11,12 @@ public interface IRomInjector
     SourceConsole Console { get; }
 
     /// <summary>
+    /// Lists what the base lacks for this console; empty when it can be injected.
+    /// </summary>
+    /// <param name="title">Base to inspect, staged or in place.</param>
+    IReadOnlyList<BaseIssue> Inspect(TitleDirectory title);
+
+    /// <summary>
     /// Replaces the base game with the ROM and applies console-specific options.
     /// </summary>
     /// <param name="injection">ROM and options.</param>
