@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PD.WiiU.VirtualConsole", "P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PD.WiiU.VirtualConsole.Tests", ".tests\PD.WiiU.VirtualConsole.Tests\PD.WiiU.VirtualConsole.Tests.csproj", "{3F1EAF13-2228-41F9-95A3-4C93F7C2788E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PD.WiiU.Nfs", "PD.WiiU.Nfs\PD.WiiU.Nfs.csproj", "{51C388AB-3034-4B82-A456-775DD5BF535E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PD.WiiU.Nfs.Tests", ".tests\PD.WiiU.Nfs.Tests\PD.WiiU.Nfs.Tests.csproj", "{4F08D463-67A4-4565-ABD0-981FF7F847D9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +89,30 @@ Global
 		{3F1EAF13-2228-41F9-95A3-4C93F7C2788E}.Release|x64.Build.0 = Release|Any CPU
 		{3F1EAF13-2228-41F9-95A3-4C93F7C2788E}.Release|x86.ActiveCfg = Release|Any CPU
 		{3F1EAF13-2228-41F9-95A3-4C93F7C2788E}.Release|x86.Build.0 = Release|Any CPU
+		{51C388AB-3034-4B82-A456-775DD5BF535E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51C388AB-3034-4B82-A456-775DD5BF535E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51C388AB-3034-4B82-A456-775DD5BF535E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{51C388AB-3034-4B82-A456-775DD5BF535E}.Debug|x64.Build.0 = Debug|Any CPU
+		{51C388AB-3034-4B82-A456-775DD5BF535E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{51C388AB-3034-4B82-A456-775DD5BF535E}.Debug|x86.Build.0 = Debug|Any CPU
+		{51C388AB-3034-4B82-A456-775DD5BF535E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51C388AB-3034-4B82-A456-775DD5BF535E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51C388AB-3034-4B82-A456-775DD5BF535E}.Release|x64.ActiveCfg = Release|Any CPU
+		{51C388AB-3034-4B82-A456-775DD5BF535E}.Release|x64.Build.0 = Release|Any CPU
+		{51C388AB-3034-4B82-A456-775DD5BF535E}.Release|x86.ActiveCfg = Release|Any CPU
+		{51C388AB-3034-4B82-A456-775DD5BF535E}.Release|x86.Build.0 = Release|Any CPU
+		{4F08D463-67A4-4565-ABD0-981FF7F847D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F08D463-67A4-4565-ABD0-981FF7F847D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F08D463-67A4-4565-ABD0-981FF7F847D9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4F08D463-67A4-4565-ABD0-981FF7F847D9}.Debug|x64.Build.0 = Debug|Any CPU
+		{4F08D463-67A4-4565-ABD0-981FF7F847D9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4F08D463-67A4-4565-ABD0-981FF7F847D9}.Debug|x86.Build.0 = Debug|Any CPU
+		{4F08D463-67A4-4565-ABD0-981FF7F847D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F08D463-67A4-4565-ABD0-981FF7F847D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F08D463-67A4-4565-ABD0-981FF7F847D9}.Release|x64.ActiveCfg = Release|Any CPU
+		{4F08D463-67A4-4565-ABD0-981FF7F847D9}.Release|x64.Build.0 = Release|Any CPU
+		{4F08D463-67A4-4565-ABD0-981FF7F847D9}.Release|x86.ActiveCfg = Release|Any CPU
+		{4F08D463-67A4-4565-ABD0-981FF7F847D9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -92,6 +120,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{F6D64E3A-3BEC-4B75-A22B-0F0D625AA065} = {9CBE8BDF-E2D4-CFB6-4D71-B203AD5191F7}
 		{3F1EAF13-2228-41F9-95A3-4C93F7C2788E} = {9CBE8BDF-E2D4-CFB6-4D71-B203AD5191F7}
+		{4F08D463-67A4-4565-ABD0-981FF7F847D9} = {9CBE8BDF-E2D4-CFB6-4D71-B203AD5191F7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BDE1F92C-62A4-456D-844B-49FCECE2C0E9}
