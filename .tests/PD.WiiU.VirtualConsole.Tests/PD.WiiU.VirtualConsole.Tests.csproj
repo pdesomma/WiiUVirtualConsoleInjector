@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\PD.WiiU\PD.WiiU.csproj" />
+    <ProjectReference Include="..\..\PD.WiiU.VirtualConsole\PD.WiiU.VirtualConsole.csproj" />
   </ItemGroup>
 
   <ItemGroup>
