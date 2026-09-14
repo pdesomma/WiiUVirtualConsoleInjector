@@ -23,6 +23,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PD.WiiU.VirtualConsole.Retr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PD.WiiU.VirtualConsole.Retro.Tests", ".tests\PD.WiiU.VirtualConsole.Retro.Tests\PD.WiiU.VirtualConsole.Retro.Tests.csproj", "{43BD9EAD-0BFB-489B-A511-F2DB157C15CD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PD.WiiU.VirtualConsole.Gba", "PD.WiiU.VirtualConsole.Gba\PD.WiiU.VirtualConsole.Gba.csproj", "{32D11DF1-CE14-4777-838B-E868A98ACD39}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PD.WiiU.VirtualConsole.Gba.Tests", ".tests\PD.WiiU.VirtualConsole.Gba.Tests\PD.WiiU.VirtualConsole.Gba.Tests.csproj", "{455100B8-2163-4453-8438-2D5A816C7F5E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -141,6 +145,30 @@ Global
 		{43BD9EAD-0BFB-489B-A511-F2DB157C15CD}.Release|x64.Build.0 = Release|Any CPU
 		{43BD9EAD-0BFB-489B-A511-F2DB157C15CD}.Release|x86.ActiveCfg = Release|Any CPU
 		{43BD9EAD-0BFB-489B-A511-F2DB157C15CD}.Release|x86.Build.0 = Release|Any CPU
+		{32D11DF1-CE14-4777-838B-E868A98ACD39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32D11DF1-CE14-4777-838B-E868A98ACD39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32D11DF1-CE14-4777-838B-E868A98ACD39}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{32D11DF1-CE14-4777-838B-E868A98ACD39}.Debug|x64.Build.0 = Debug|Any CPU
+		{32D11DF1-CE14-4777-838B-E868A98ACD39}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{32D11DF1-CE14-4777-838B-E868A98ACD39}.Debug|x86.Build.0 = Debug|Any CPU
+		{32D11DF1-CE14-4777-838B-E868A98ACD39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32D11DF1-CE14-4777-838B-E868A98ACD39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32D11DF1-CE14-4777-838B-E868A98ACD39}.Release|x64.ActiveCfg = Release|Any CPU
+		{32D11DF1-CE14-4777-838B-E868A98ACD39}.Release|x64.Build.0 = Release|Any CPU
+		{32D11DF1-CE14-4777-838B-E868A98ACD39}.Release|x86.ActiveCfg = Release|Any CPU
+		{32D11DF1-CE14-4777-838B-E868A98ACD39}.Release|x86.Build.0 = Release|Any CPU
+		{455100B8-2163-4453-8438-2D5A816C7F5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{455100B8-2163-4453-8438-2D5A816C7F5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{455100B8-2163-4453-8438-2D5A816C7F5E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{455100B8-2163-4453-8438-2D5A816C7F5E}.Debug|x64.Build.0 = Debug|Any CPU
+		{455100B8-2163-4453-8438-2D5A816C7F5E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{455100B8-2163-4453-8438-2D5A816C7F5E}.Debug|x86.Build.0 = Debug|Any CPU
+		{455100B8-2163-4453-8438-2D5A816C7F5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{455100B8-2163-4453-8438-2D5A816C7F5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{455100B8-2163-4453-8438-2D5A816C7F5E}.Release|x64.ActiveCfg = Release|Any CPU
+		{455100B8-2163-4453-8438-2D5A816C7F5E}.Release|x64.Build.0 = Release|Any CPU
+		{455100B8-2163-4453-8438-2D5A816C7F5E}.Release|x86.ActiveCfg = Release|Any CPU
+		{455100B8-2163-4453-8438-2D5A816C7F5E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -150,6 +178,7 @@ Global
 		{E096D985-A2EE-4ED0-9D71-8392421B94F9} = {9CBE8BDF-E2D4-CFB6-4D71-B203AD5191F7}
 		{013E9CCE-DD89-4684-A595-F7F01BC54B47} = {9CBE8BDF-E2D4-CFB6-4D71-B203AD5191F7}
 		{43BD9EAD-0BFB-489B-A511-F2DB157C15CD} = {9CBE8BDF-E2D4-CFB6-4D71-B203AD5191F7}
+		{455100B8-2163-4453-8438-2D5A816C7F5E} = {9CBE8BDF-E2D4-CFB6-4D71-B203AD5191F7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BDE1F92C-62A4-456D-844B-49FCECE2C0E9}

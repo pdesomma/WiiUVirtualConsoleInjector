@@ -11,4 +11,8 @@ public sealed class GbaOptions : IConsoleOptions
     /// Apply the Pokémon save patch.
     /// </summary>
     public bool PokemonPatch { get; init; }
+    /// <summary>
+    /// Switch off the darkening the base applies to the game.
+    /// </summary>
+    public bool RemoveDarkFilter { get; init; }
 }
