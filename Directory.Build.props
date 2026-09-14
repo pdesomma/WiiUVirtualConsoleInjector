@@ -3,6 +3,7 @@
   <PropertyGroup>
     <!-- Sibling repos referenced as projects while they evolve together; override to point elsewhere. -->
     <WiiUSharpRoot Condition="'$(WiiUSharpRoot)' == ''">$(MSBuildThisFileDirectory)..\WiiUSharp\</WiiUSharpRoot>
+    <WiiSharpRoot Condition="'$(WiiSharpRoot)' == ''">$(MSBuildThisFileDirectory)..\WiiSharp\</WiiSharpRoot>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(MSBuildProjectName.StartsWith('PD.'))">
@@ -13,6 +14,12 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup Condition="$(MSBuildProjectName.StartsWith('PD.')) And '$(TargetFramework)' == 'net48'">
