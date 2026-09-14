@@ -75,12 +75,49 @@ public class WiiRomInjectorTests
     }
 
     [TestMethod]
-    public async Task InjectAsync_NonIsoRom_ThrowsNotSupportedException()
+    public async Task InjectAsync_Wbfs_ProducesTheSameNfsAsTheIso()
+    {
+        var fromIso = StageBase();
+        var fromWbfs = StageBase();
+        var wbfs = FakeWbfs.Write(Path.Combine(_root, "wbfs"), FakeWbfs.Build(FakeDisc.Build()), splitAt: (1L << FakeWbfs.WbfsShift) + 777);
+        var injector = new WiiRomInjector(FakeDisc.CommonKey);
+
+        await injector.InjectAsync(Injection(), fromIso);
+        await injector.InjectAsync(new Injection(Base(), new Rom(wbfs, SourceConsole.Wii), Game()), fromWbfs);
+
+        CollectionAssert.AreEqual(
+            File.ReadAllBytes(Path.Combine(fromIso.Content, "hif_000000.nfs")),
+            File.ReadAllBytes(Path.Combine(fromWbfs.Content, "hif_000000.nfs")));
+        CollectionAssert.AreEqual(FakeDisc.Tmd(), File.ReadAllBytes(Path.Combine(fromWbfs.Code, WiiRomInjector.TmdFileName)));
+        Assert.AreEqual("52414243", WiiUSharp.MetaXml.Load(fromWbfs.MetaXmlPath).Get("reserved_flag2"));
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_UnknownExtension_ThrowsNotSupportedException()
     {
         var title = StageBase();
-        var injection = new Injection(Base(), new Rom(Path.Combine(_root, "game.wbfs"), SourceConsole.Wii), Game());
+        var injection = new Injection(Base(), new Rom(Path.Combine(_root, "game.gcz"), SourceConsole.Wii), Game());
 
         await Assert.ThrowsExactlyAsync<NotSupportedException>(() => new WiiRomInjector(FakeDisc.CommonKey).InjectAsync(injection, title));
+    }
+
+    [TestMethod]
+    public void OpenImage_NkitName_ThrowsNotSupportedException()
+    {
+        Assert.ThrowsExactly<NotSupportedException>(() => WiiRomInjector.OpenImage(Path.Combine(_root, "game.nkit.iso"), out _));
+    }
+
+    [TestMethod]
+    public void OpenImage_Wbfs_DisposingReleasesTheFile()
+    {
+        var wbfs = FakeWbfs.Write(Path.Combine(_root, "wbfs"), FakeWbfs.Build(FakeDisc.Build()));
+
+        var container = WiiRomInjector.OpenImage(wbfs, out var image);
+        Assert.IsTrue(image.CanSeek);
+        image.Dispose();
+        container.Dispose();
+
+        File.Delete(wbfs);
     }
 
     [TestMethod]

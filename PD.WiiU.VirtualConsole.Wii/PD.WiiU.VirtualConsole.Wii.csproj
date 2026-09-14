@@ -5,7 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="WiiSharp" Version="0.2.0" />
+    <PackageReference Include="WiiSharp" Version="0.3.0" />
     <PackageReference Include="WiiUSharp.Nfs" Version="0.5.0" />
   </ItemGroup>
 
