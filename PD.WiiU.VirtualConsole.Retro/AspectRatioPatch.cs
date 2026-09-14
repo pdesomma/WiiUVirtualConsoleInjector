@@ -30,7 +30,7 @@ public static class AspectRatioPatch
 
         var sections = rpx.Sections.Where(s => s.HasData).OrderBy(s => s.StoredOffset).ToArray();
         var tv = sections.Select(s => (Section: s, At: IndexOf(s.Data, Tv, last: false))).FirstOrDefault(m => m.At >= 0);
-        var pad = sections.Reverse().Select(s => (Section: s, At: IndexOf(s.Data, Pad, last: true))).FirstOrDefault(m => m.At >= 0);
+        var pad = Enumerable.Reverse(sections).Select(s => (Section: s, At: IndexOf(s.Data, Pad, last: true))).FirstOrDefault(m => m.At >= 0);
         if (tv.Section is null || pad.Section is null)
             return false;
 
