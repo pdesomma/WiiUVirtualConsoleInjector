@@ -1,8 +1,6 @@
-using System.Text;
 using PD.WiiU.VirtualConsole.Options;
 using PD.WiiU.VirtualConsole.Ports;
 using WiiSharp;
-using WiiUSharp;
 using WiiUSharp.Nfs;
 
 namespace PD.WiiU.VirtualConsole.Wii;
@@ -112,7 +110,7 @@ public sealed class WiiRomInjector : IRomInjector
         progress?.Report("Patching " + FirmwareFileName);
         FirmwarePatcher.PatchFile(Path.Combine(title.Code, FirmwareFileName), FirmwarePatcher.PatchesFor(options));
 
-        SetManualId(title, disc.Header.GameId);
+        VWiiMeta.Apply(title, disc.Header.GameId);
     }
 
     private static void CopyTicketAndTmd(Stream iso, Partition partition, TitleDirectory title)
@@ -143,17 +141,6 @@ public sealed class WiiRomInjector : IRomInjector
             throw new NotSupportedException("Cheat codes are not supported yet.");
         if (options.ForcePal || options.HalfVerticalFilter || options.RemoveDeflicker || options.RemoveDithering)
             throw new NotSupportedException("main.dol patches are not supported yet.");
-    }
-
-    private static void SetManualId(TitleDirectory title, string gameId)
-    {
-        var hex = new StringBuilder();
-        foreach (var b in Encoding.ASCII.GetBytes(gameId.Substring(0, 4)))
-            hex.Append(b.ToString("x2"));
-
-        var meta = MetaXml.Load(title.MetaXmlPath);
-        meta.Set("reserved_flag2", hex.ToString());
-        meta.Save(title.MetaXmlPath);
     }
 
     private void WriteNfs(Stream iso, WiiOptions options, TitleDirectory title, IProgress<string>? progress, CancellationToken cancellationToken)
