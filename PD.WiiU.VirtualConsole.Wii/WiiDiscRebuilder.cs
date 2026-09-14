@@ -12,9 +12,6 @@ public static class WiiDiscRebuilder
     /// </summary>
     public const int FileAlignment = 0x20;
 
-    private const int DolHeaderSize = 0x100;
-    private const int DolSections = 18;
-
     /// <summary>
     /// Rebuilds the first data partition; other partitions are dropped.
     /// </summary>
@@ -41,7 +38,7 @@ public static class WiiDiscRebuilder
         var fstOffset = (long)ReadUInt32(boot, 0x424) << 2;
         var fstSize = (int)(ReadUInt32(boot, 0x428) << 2);
 
-        var dol = ReadAt(data, dolOffset, DolLength(ReadAt(data, dolOffset, DolHeaderSize)));
+        var dol = ReadAt(data, dolOffset, checked((int)DolHeader.Parse(ReadAt(data, dolOffset, DolHeader.Size)).Length));
         if (patchMainDol is not null)
             dol = patchMainDol(dol);
 
@@ -55,30 +52,6 @@ public static class WiiDiscRebuilder
         foreach (var file in Fst.Parse(ReadAt(data, fstOffset, fstSize)))
             builder.Files.Add(new DiscFile(file.Path, new SliceStream(data, file.Offset, file.Length)));
         return builder.Build(output, cancellationToken);
-    }
-
-    /// <summary>
-    /// Bytes a DOL occupies: the end of its furthest section.
-    /// </summary>
-    /// <param name="header">First <c>0x100</c> bytes.</param>
-    /// <exception cref="InvalidDataException">No section has data.</exception>
-    public static int DolLength(byte[] header)
-    {
-        if (header is null)
-            throw new ArgumentNullException(nameof(header));
-        if (header.Length < DolHeaderSize)
-            throw new ArgumentException($"Need at least {DolHeaderSize} bytes.", nameof(header));
-
-        long end = 0;
-        for (var i = 0; i < DolSections; i++)
-        {
-            var size = ReadUInt32(header, 0x90 + i * 4);
-            if (size != 0)
-                end = Math.Max(end, ReadUInt32(header, i * 4) + (long)size);
-        }
-        if (end < DolHeaderSize || end > int.MaxValue)
-            throw new InvalidDataException("DOL header describes no sections.");
-        return (int)end;
     }
 
     private static byte[] ReadAt(Stream stream, long position, int count)

@@ -64,21 +64,6 @@ public class WiiDiscRebuilderTests
     }
 
     [TestMethod]
-    public void DolLength_FollowsTheFurthestSection()
-    {
-        var header = new byte[0x100];
-        Write(header, 0x00, 0x100);
-        Write(header, 0x90, 0x40);
-        Write(header, 0x1C, 0x1000);
-        Write(header, 0xAC, 0x10);
-
-        Assert.AreEqual(0x1010, WiiDiscRebuilder.DolLength(header));
-        Assert.ThrowsExactly<InvalidDataException>(() => WiiDiscRebuilder.DolLength(new byte[0x100]));
-        Assert.ThrowsExactly<ArgumentException>(() => WiiDiscRebuilder.DolLength(new byte[0x10]));
-        Assert.ThrowsExactly<ArgumentNullException>(() => WiiDiscRebuilder.DolLength(null!));
-    }
-
-    [TestMethod]
     public void Rebuild_NullArguments_ThrowArgumentNullException()
     {
         Assert.ThrowsExactly<ArgumentNullException>(() => WiiDiscRebuilder.Rebuild(null!, new MemoryStream()));
@@ -100,13 +85,5 @@ public class WiiDiscRebuilderTests
             read += n;
         }
         return bytes;
-    }
-
-    private static void Write(byte[] bytes, int offset, uint value)
-    {
-        bytes[offset] = (byte)(value >> 24);
-        bytes[offset + 1] = (byte)(value >> 16);
-        bytes[offset + 2] = (byte)(value >> 8);
-        bytes[offset + 3] = (byte)value;
     }
 }
