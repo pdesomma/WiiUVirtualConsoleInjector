@@ -1,17 +1,8 @@
-﻿namespace PD.WiiU.Tests;
+namespace PD.WiiU.Tests;
 
 [TestClass]
 public class TitleIdTests
 {
-    [TestMethod]
-    public void SplitsIntoTypeAndUniqueId()
-    {
-        var id = new TitleId(0x0005000212345678);
-
-        Assert.AreEqual(TitleType.Demo, id.Type);
-        Assert.AreEqual(0x12345678u, id.UniqueId);
-    }
-
     [TestMethod]
     public void ComposesFromTypeAndUniqueId()
     {
@@ -21,10 +12,12 @@ public class TitleIdTests
     }
 
     [TestMethod]
-    public void WritesSixteenUpperCaseHexDigits()
+    public void EqualityIsByValue()
     {
-        Assert.AreEqual("0005000212345678", new TitleId(0x0005000212345678).ToString());
-        Assert.AreEqual("0005000000000ABC", new TitleId(TitleType.Game, 0xABC).ToString());
+        Assert.AreEqual(new TitleId(1), new TitleId(1));
+        Assert.IsTrue(new TitleId(1) == new TitleId(1));
+        Assert.IsTrue(new TitleId(1) != new TitleId(2));
+        Assert.AreEqual(new TitleId(1).GetHashCode(), new TitleId(1).GetHashCode());
     }
 
     [TestMethod]
@@ -48,11 +41,18 @@ public class TitleIdTests
     }
 
     [TestMethod]
-    public void EqualityIsByValue()
+    public void SplitsIntoTypeAndUniqueId()
     {
-        Assert.AreEqual(new TitleId(1), new TitleId(1));
-        Assert.IsTrue(new TitleId(1) == new TitleId(1));
-        Assert.IsTrue(new TitleId(1) != new TitleId(2));
-        Assert.AreEqual(new TitleId(1).GetHashCode(), new TitleId(1).GetHashCode());
+        var id = new TitleId(0x0005000212345678);
+
+        Assert.AreEqual(TitleType.Demo, id.Type);
+        Assert.AreEqual(0x12345678u, id.UniqueId);
+    }
+
+    [TestMethod]
+    public void WritesSixteenUpperCaseHexDigits()
+    {
+        Assert.AreEqual("0005000212345678", new TitleId(0x0005000212345678).ToString());
+        Assert.AreEqual("0005000000000ABC", new TitleId(TitleType.Game, 0xABC).ToString());
     }
 }

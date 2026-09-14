@@ -1,13 +1,14 @@
-﻿namespace PD.WiiU.Tests;
+namespace PD.WiiU.Tests;
 
 [TestClass]
 public class ProductCodeTests
 {
     [TestMethod]
-    public void WritesPlatformCategoryAndId()
+    public void EqualityIsByValue()
     {
-        Assert.AreEqual("WUP-N-FAAE", new ProductCode(ProductCode.EShop, "FAAE").ToString());
-        Assert.AreEqual("WUP-P-ARKE", new ProductCode(ProductCode.Retail, "ARKE").ToString());
+        Assert.AreEqual(ProductCode.Parse("WUP-N-FAAE"), new ProductCode('N', "FAAE"));
+        Assert.IsTrue(ProductCode.Parse("WUP-N-FAAE") != ProductCode.Parse("WUP-P-FAAE"));
+        Assert.IsTrue(ProductCode.Parse("WUP-N-FAAE") != ProductCode.Parse("WUP-N-FAAF"));
     }
 
     [TestMethod]
@@ -17,6 +18,17 @@ public class ProductCodeTests
 
         Assert.AreEqual('N', code.Category);
         Assert.AreEqual("A1B2", code.Id);
+    }
+
+    [TestMethod]
+    [DataRow('n', "FAAE")]
+    [DataRow('1', "FAAE")]
+    [DataRow('N', "FAA")]
+    [DataRow('N', "faae")]
+    [DataRow('N', "FA-E")]
+    public void RejectsMalformedParts(char category, string id)
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => new ProductCode(category, id));
     }
 
     [TestMethod]
@@ -37,27 +49,15 @@ public class ProductCodeTests
     }
 
     [TestMethod]
-    [DataRow('n', "FAAE")]
-    [DataRow('1', "FAAE")]
-    [DataRow('N', "FAA")]
-    [DataRow('N', "faae")]
-    [DataRow('N', "FA-E")]
-    public void RejectsMalformedParts(char category, string id)
-    {
-        Assert.ThrowsExactly<ArgumentException>(() => new ProductCode(category, id));
-    }
-
-    [TestMethod]
     public void RejectsNullId()
     {
         Assert.ThrowsExactly<ArgumentNullException>(() => new ProductCode('N', null!));
     }
 
     [TestMethod]
-    public void EqualityIsByValue()
+    public void WritesPlatformCategoryAndId()
     {
-        Assert.AreEqual(ProductCode.Parse("WUP-N-FAAE"), new ProductCode('N', "FAAE"));
-        Assert.IsTrue(ProductCode.Parse("WUP-N-FAAE") != ProductCode.Parse("WUP-P-FAAE"));
-        Assert.IsTrue(ProductCode.Parse("WUP-N-FAAE") != ProductCode.Parse("WUP-N-FAAF"));
+        Assert.AreEqual("WUP-N-FAAE", new ProductCode(ProductCode.EShop, "FAAE").ToString());
+        Assert.AreEqual("WUP-P-ARKE", new ProductCode(ProductCode.Retail, "ARKE").ToString());
     }
 }
