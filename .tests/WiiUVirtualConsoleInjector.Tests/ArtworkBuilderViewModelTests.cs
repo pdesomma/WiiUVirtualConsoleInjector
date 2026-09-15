@@ -1,4 +1,4 @@
-﻿using PD.WiiU.VirtualConsole;
+using PD.WiiU.VirtualConsole;
 using WiiUSharp;
 using WiiUVirtualConsoleInjector.ViewModels;
 
@@ -39,37 +39,69 @@ public class ArtworkBuilderViewModelTests
     }
 
     [TestMethod]
-    public void Refresh_Console_ListsItsFramesAndSplitsTheNameOnCommas()
+    public void Refresh_Console_FillsEachSlotsFramesAndSeedsTheText()
     {
         var vm = Create();
 
-        vm.Refresh(SourceConsole.Snes, "The Legend of Zelda, A Link to the Past");
+        vm.Refresh(SourceConsole.Snes, "The Legend of Zelda, A Link to the Past", "Zelda");
 
-        CollectionAssert.AreEqual(ArtworkTemplates.For(SourceConsole.Snes).ToArray(), vm.Templates);
-        Assert.AreEqual("snes-pal", vm.SelectedTemplate!.Key);
+        CollectionAssert.AreEqual(ArtworkFrames.For(ImageSlot.BootTv, SourceConsole.Snes).ToArray(), vm.TvFrames);
+        CollectionAssert.AreEqual(ArtworkFrames.For(ImageSlot.BootDrc, SourceConsole.Snes).ToArray(), vm.GamePadFrames);
+        CollectionAssert.AreEqual(ArtworkFrames.For(ImageSlot.Icon, SourceConsole.Snes).ToArray(), vm.IconFrames);
+        CollectionAssert.AreEqual(ArtworkFrames.For(ImageSlot.BootLogo, SourceConsole.Snes).ToArray(), vm.LogoFrames);
+        Assert.AreEqual("snes-pal", vm.TvFrame!.Key);
+        Assert.AreEqual("snes-pal", vm.GamePadFrame!.Key);
+        Assert.AreEqual("icon-snes-1", vm.IconFrame!.Key);
+        Assert.AreEqual("logo-pill", vm.LogoFrame!.Key);
         Assert.AreEqual("The Legend of Zelda", vm.NameLine1);
         Assert.AreEqual("A Link to the Past", vm.NameLine2);
+        Assert.AreEqual("Zelda", vm.LogoText);
     }
 
     [TestMethod]
-    public void Refresh_SameConsoleAgain_KeepsTheChosenFrame()
+    public void Refresh_NoShortName_LogoTakesTheFirstNameLine()
+    {
+        var vm = Create();
+
+        vm.Refresh(SourceConsole.Nes, "Metroid");
+
+        Assert.AreEqual("Metroid", vm.LogoText);
+    }
+
+    [TestMethod]
+    public void Refresh_SameConsoleAgain_KeepsEachFrameChoice()
     {
         var vm = Create();
         vm.Refresh(SourceConsole.Snes, "Game");
-        vm.SelectedTemplate = vm.Templates.Single(t => t.Key == "snes-sfc");
+        vm.TvFrame = vm.TvFrames.Single(f => f.Key == "snes-sfc");
+        vm.GamePadFrame = vm.GamePadFrames.Single(f => f.Key == "boot-plain");
+        vm.IconFrame = vm.IconFrames.Single(f => f.Key == "icon-vc");
 
         vm.Refresh(SourceConsole.Snes, "Renamed");
 
-        Assert.AreEqual("snes-sfc", vm.SelectedTemplate!.Key);
-        Assert.AreEqual("Renamed", vm.NameLine1);
-        Assert.IsNull(vm.NameLine2);
+        Assert.AreEqual("snes-sfc", vm.TvFrame!.Key);
+        Assert.AreEqual("boot-plain", vm.GamePadFrame!.Key);
+        Assert.AreEqual("icon-vc", vm.IconFrame!.Key);
     }
 
     [TestMethod]
-    public void CanApply_NeedsAFrameAndAScreenshot()
+    public void Refresh_OtherConsole_DropsFramesThatNoLongerApply()
     {
         var vm = Create();
-        Assert.IsFalse(vm.CanApply);
+        vm.Refresh(SourceConsole.Snes, "Game");
+        vm.TvFrame = vm.TvFrames.Single(f => f.Key == "snes-sfc");
+
+        vm.Refresh(SourceConsole.Nes, "Game");
+
+        Assert.AreEqual("nes", vm.TvFrame!.Key);
+        Assert.IsFalse(vm.TvFrames.Any(f => f.Key == "snes-sfc"));
+    }
+
+    [TestMethod]
+    public void CanApply_NeedsAScreenshotAndEveryFrame()
+    {
+        var vm = Create();
+        Assert.IsFalse(vm.CanApply, "no frames yet");
 
         vm.Refresh(SourceConsole.Nes, "Game");
         Assert.IsFalse(vm.CanApply, "no screenshot yet");
@@ -80,10 +112,10 @@ public class ArtworkBuilderViewModelTests
     }
 
     [TestMethod]
-    public async Task Inputs_Changed_RedrawThePreviewOnceTheyHaveSettled()
+    public async Task Inputs_Changed_RedrawAllFourPreviewsOnceTheyHaveSettled()
     {
         var vm = Create();
-        vm.Refresh(SourceConsole.Nes, "Game");
+        vm.Refresh(SourceConsole.Nes, "Game", "Short");
         vm.ScreenshotPath = @"C:\shot.png";
         vm.ReleaseYear = "1985";
         vm.Players = "2";
@@ -93,16 +125,20 @@ public class ArtworkBuilderViewModelTests
         await vm.PreviewRender;
 
         Assert.AreEqual(0, _scheduler.Pending.Count, "one render for the whole burst");
-        CollectionAssert.AreEquivalent(new[] { ImageSlot.BootTv, ImageSlot.Icon }, _composer.Composed.Select(c => c.Slot).ToArray());
-        var request = _composer.Composed[0].Request;
-        Assert.AreEqual("nes", request.Template.Key);
-        Assert.AreEqual(@"C:\shot.png", request.ScreenshotPath);
-        Assert.AreEqual("Game", request.NameLine1);
-        Assert.AreEqual(1985, request.ReleaseYear);
-        Assert.AreEqual(2, request.Players);
-        Assert.IsNotNull(vm.PreviewPath);
+        CollectionAssert.AreEquivalent(new[] { ImageSlot.BootTv, ImageSlot.BootDrc, ImageSlot.Icon, ImageSlot.BootLogo }, _composer.Composed.Select(c => c.Slot).ToArray());
+        var tv = _composer.Composed.Single(c => c.Slot == ImageSlot.BootTv).Request;
+        Assert.AreEqual("nes", tv.Frame!.Key);
+        Assert.AreEqual(@"C:\shot.png", tv.ScreenshotPath);
+        Assert.AreEqual("Game", tv.NameLine1);
+        Assert.AreEqual(1985, tv.ReleaseYear);
+        Assert.AreEqual(2, tv.Players);
+        Assert.AreEqual("icon-nes-1", _composer.Composed.Single(c => c.Slot == ImageSlot.Icon).Request.Frame!.Key);
+        Assert.AreEqual("Short", _composer.Composed.Single(c => c.Slot == ImageSlot.BootLogo).Request.LogoText);
+        Assert.IsNotNull(vm.TvPreviewPath);
+        Assert.IsNotNull(vm.GamePadPreviewPath);
         Assert.IsNotNull(vm.IconPreviewPath);
-        StringAssert.StartsWith(vm.PreviewPath!, Path.Combine(_work, "artwork", "preview"));
+        Assert.IsNotNull(vm.LogoPreviewPath);
+        StringAssert.StartsWith(vm.TvPreviewPath!, Path.Combine(_work, "artwork", "preview"));
         Assert.IsFalse(vm.IsRendering);
     }
 
@@ -117,16 +153,18 @@ public class ArtworkBuilderViewModelTests
         _scheduler.RunDue(ArtworkBuilderViewModel.PreviewDelay);
         await vm.PreviewRender;
 
-        Assert.IsNull(_composer.Composed[0].Request.ReleaseYear);
-        Assert.IsNull(_composer.Composed[0].Request.Players);
+        var tv = _composer.Composed.Single(c => c.Slot == ImageSlot.BootTv).Request;
+        Assert.IsNull(tv.ReleaseYear);
+        Assert.IsNull(tv.Players);
     }
 
     [TestMethod]
-    public async Task ApplyCommand_Ready_DrawsAllThreeAndRaisesApplied()
+    public async Task ApplyCommand_Ready_DrawsAllFourAndRaisesApplied()
     {
         var vm = Create();
         vm.Refresh(SourceConsole.Nes, "Game");
         vm.ScreenshotPath = @"C:\shot.png";
+        vm.GamePadFrame = vm.GamePadFrames.Single(f => f.Key == "boot-plain");
         ArtworkBuiltEventArgs? built = null;
         vm.Applied += (_, e) => built = e;
 
@@ -136,8 +174,10 @@ public class ArtworkBuilderViewModelTests
         StringAssert.EndsWith(built!.IconPath, "iconTex.png");
         StringAssert.EndsWith(built.BootTvPath, "bootTvTex.png");
         StringAssert.EndsWith(built.BootDrcPath, "bootDrcTex.png");
-        Assert.AreEqual(Path.GetDirectoryName(built.IconPath), Path.GetDirectoryName(built.BootDrcPath), "one folder per build");
-        CollectionAssert.AreEquivalent(new[] { ImageSlot.Icon, ImageSlot.BootTv, ImageSlot.BootDrc }, _composer.Composed.Select(c => c.Slot).ToArray());
+        StringAssert.EndsWith(built.BootLogoPath, "bootLogoTex.png");
+        Assert.AreEqual(Path.GetDirectoryName(built.IconPath), Path.GetDirectoryName(built.BootLogoPath), "one folder per build");
+        Assert.AreEqual("nes", _composer.Composed.Single(c => c.Slot == ImageSlot.BootTv).Request.Frame!.Key);
+        Assert.AreEqual("boot-plain", _composer.Composed.Single(c => c.Slot == ImageSlot.BootDrc).Request.Frame!.Key, "the GamePad keeps its own frame");
         Assert.AreEqual(0, _dialogs.Errors.Count);
     }
 

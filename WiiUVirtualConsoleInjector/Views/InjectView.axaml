@@ -198,58 +198,82 @@
 
                         <!-- Build from a screenshot -->
                         <Border Classes="card" Margin="0,0,0,18" DataContext="{Binding ArtworkBuilder}">
-                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="22">
-                                <StackPanel Grid.Column="0" Spacing="12">
+                            <StackPanel Spacing="14">
+                                <StackPanel Spacing="2">
                                     <TextBlock FontSize="13" FontWeight="Bold" Text="Build from a screenshot" />
-                                    <TextBlock Classes="hint" FontSize="12" Text="Dresses a screenshot in a console frame and writes the icon and both boot screens." Margin="0,-6,0,0" />
-                                    <StackPanel Spacing="4">
+                                    <TextBlock Classes="hint" FontSize="12" Text="Dresses a screenshot in a frame per image and writes all four slots below." />
+                                </StackPanel>
+
+                                <!-- Inputs -->
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="14" RowDefinitions="Auto,Auto,Auto" RowSpacing="12">
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Spacing="4">
                                         <TextBlock Classes="label" Text="Screenshot" />
                                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                                             <TextBox Grid.Column="0" Text="{Binding ScreenshotPath}" PlaceholderText="Pick an image of the game" FontSize="12" />
                                             <Button Grid.Column="1" Classes="sm" Content="Browse…" Command="{Binding PickScreenshotCommand}" />
                                         </Grid>
                                     </StackPanel>
-                                    <StackPanel Spacing="4">
-                                        <TextBlock Classes="label" Text="Frame" />
-                                        <ComboBox ItemsSource="{Binding Templates}" SelectedItem="{Binding SelectedTemplate}" HorizontalAlignment="Stretch" />
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Spacing="4">
+                                        <TextBlock Classes="label" Text="Name, line 1" />
+                                        <TextBox Text="{Binding NameLine1}" />
                                     </StackPanel>
-                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                                        <StackPanel Grid.Column="0" Spacing="4">
-                                            <TextBlock Classes="label" Text="Name, line 1" />
-                                            <TextBox Text="{Binding NameLine1}" />
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="1" Spacing="4">
-                                            <TextBlock Classes="label" Text="Name, line 2" />
-                                            <TextBox Text="{Binding NameLine2}" PlaceholderText="Optional" />
-                                        </StackPanel>
-                                    </Grid>
-                                    <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="12">
-                                        <StackPanel Grid.Column="0" Spacing="4">
+                                    <StackPanel Grid.Row="1" Grid.Column="1" Spacing="4">
+                                        <TextBlock Classes="label" Text="Name, line 2" />
+                                        <TextBox Text="{Binding NameLine2}" PlaceholderText="Optional" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Spacing="12">
+                                        <StackPanel Spacing="4">
                                             <TextBlock Classes="label" Text="Released" />
                                             <TextBox Classes="mono" Text="{Binding ReleaseYear}" MaxLength="4" Width="90" PlaceholderText="Year" />
                                         </StackPanel>
-                                        <StackPanel Grid.Column="1" Spacing="4">
+                                        <StackPanel Spacing="4">
                                             <TextBlock Classes="label" Text="Players" />
                                             <ComboBox ItemsSource="{Binding PlayerChoices}" SelectedItem="{Binding Players}" Width="90" />
                                         </StackPanel>
-                                        <Button Grid.Column="2" Classes="primary sm" Content="Use these images" Command="{Binding ApplyCommand}" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
-                                    </Grid>
-                                </StackPanel>
-                                <StackPanel Grid.Column="1" Spacing="10" Width="384">
-                                    <Border ClipToBounds="True" CornerRadius="8" Width="384" Height="216" Background="{DynamicResource SubtleBrush}">
-                                        <Panel>
-                                            <TextBlock Classes="fine" Text="Preview" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding PreviewPath, Converter={x:Static conv:FileImageConverter.IsMissing}}" />
-                                            <Image Source="{Binding PreviewPath, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="Uniform" />
-                                        </Panel>
-                                    </Border>
-                                    <StackPanel Orientation="Horizontal" Spacing="10">
-                                        <Border ClipToBounds="True" CornerRadius="12" Width="96" Height="96" Background="{DynamicResource SubtleBrush}">
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="2" Grid.Column="1" Spacing="4">
+                                        <TextBlock Classes="label" Text="Boot logo text" />
+                                        <TextBox Text="{Binding LogoText}" PlaceholderText="Optional" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- One frame and preview per slot -->
+                                <WrapPanel ItemSpacing="18" LineSpacing="16">
+                                    <StackPanel Spacing="6" Width="336">
+                                        <TextBlock Classes="label" Text="TV boot screen" />
+                                        <ComboBox ItemsSource="{Binding TvFrames}" SelectedItem="{Binding TvFrame}" HorizontalAlignment="Stretch" />
+                                        <Border ClipToBounds="True" CornerRadius="8" Width="336" Height="189" Background="{DynamicResource SubtleBrush}">
+                                            <Image Source="{Binding TvPreviewPath, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="Uniform" />
+                                        </Border>
+                                    </StackPanel>
+                                    <StackPanel Spacing="6" Width="336">
+                                        <TextBlock Classes="label" Text="GamePad boot screen" />
+                                        <ComboBox ItemsSource="{Binding GamePadFrames}" SelectedItem="{Binding GamePadFrame}" HorizontalAlignment="Stretch" />
+                                        <Border ClipToBounds="True" CornerRadius="8" Width="336" Height="189" Background="{DynamicResource SubtleBrush}">
+                                            <Image Source="{Binding GamePadPreviewPath, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="Uniform" />
+                                        </Border>
+                                    </StackPanel>
+                                    <StackPanel Spacing="6" Width="200">
+                                        <TextBlock Classes="label" Text="Icon" />
+                                        <ComboBox ItemsSource="{Binding IconFrames}" SelectedItem="{Binding IconFrame}" HorizontalAlignment="Stretch" />
+                                        <Border ClipToBounds="True" CornerRadius="16" Width="128" Height="128" HorizontalAlignment="Left" Background="{DynamicResource SubtleBrush}">
                                             <Image Source="{Binding IconPreviewPath, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="Uniform" />
                                         </Border>
-                                        <TextBlock Classes="hint" FontSize="12" Text="Rendering…" VerticalAlignment="Center" IsVisible="{Binding IsRendering}" />
                                     </StackPanel>
+                                    <StackPanel Spacing="6" Width="200">
+                                        <TextBlock Classes="label" Text="Boot logo" />
+                                        <ComboBox ItemsSource="{Binding LogoFrames}" SelectedItem="{Binding LogoFrame}" HorizontalAlignment="Stretch" />
+                                        <Border ClipToBounds="True" CornerRadius="6" Width="170" Height="42" HorizontalAlignment="Left" Background="{DynamicResource SubtleBrush}">
+                                            <Image Source="{Binding LogoPreviewPath, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="None" />
+                                        </Border>
+                                    </StackPanel>
+                                </WrapPanel>
+
+                                <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Right">
+                                    <TextBlock Classes="hint" FontSize="12" Text="Rendering…" VerticalAlignment="Center" IsVisible="{Binding IsRendering}" />
+                                    <Button Classes="primary sm" Content="Use these images" Command="{Binding ApplyCommand}" />
                                 </StackPanel>
-                            </Grid>
+                            </StackPanel>
                         </Border>
 
                         <WrapPanel ItemSpacing="22" LineSpacing="22">
@@ -337,17 +361,30 @@
 
                         <!-- Boot sound -->
                         <Border Classes="divider" Margin="0,18,0,0" Padding="0,16,0,0" Width="560" HorizontalAlignment="Left">
-                            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
-                                <Image Grid.Column="0" Classes="glyph" Source="{Binding BootSound.Glyph, Converter={x:Static conv:AssetConverter.Bitmap}}" VerticalAlignment="Bottom" Margin="0,0,0,7" />
-                                <StackPanel Grid.Column="1" Spacing="4">
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
+                                <StackPanel Grid.Column="0" Spacing="4">
                                     <TextBlock Classes="label" Text="{Binding BootSound.Label}" />
                                     <TextBox Text="{Binding BootSound.Path}" IsReadOnly="True" PlaceholderText="Optional" />
                                 </StackPanel>
+                                <Button Grid.Column="1" Classes="sm icon" Command="{Binding PreviewSoundCommand}" VerticalAlignment="Bottom" ToolTip.Tip="Play it as the console will">
+                                    <Panel>
+                                        <Viewbox Width="14" Height="14" IsVisible="{Binding !IsPlayingSound}">
+                                            <Canvas Width="24" Height="24">
+                                                <Path Classes="btn-glyph" Fill="{DynamicResource ButtonTextBrush}" Data="M7 4.5v15l12-7.5Z" />
+                                            </Canvas>
+                                        </Viewbox>
+                                        <Viewbox Width="14" Height="14" IsVisible="{Binding IsPlayingSound}">
+                                            <Canvas Width="24" Height="24">
+                                                <Path Classes="btn-glyph" Fill="{DynamicResource ButtonTextBrush}" Data="M6 6h12v12H6Z" />
+                                            </Canvas>
+                                        </Viewbox>
+                                    </Panel>
+                                </Button>
                                 <Button Grid.Column="2" Classes="sm" Content="Pick" Command="{Binding BootSound.PickCommand}" IsEnabled="{Binding !IsRunning}" VerticalAlignment="Bottom" />
                                 <Button Grid.Column="3" Classes="ghost sm" Content="Clear" Command="{Binding BootSound.ClearCommand}" IsEnabled="{Binding !IsRunning}" VerticalAlignment="Bottom" />
                             </Grid>
                         </Border>
-                        <TextBlock Classes="fine" Text="{Binding BootSound.Hint}" Margin="32,6,0,0" />
+                        <TextBlock Classes="fine" Text="{Binding BootSound.Hint}" Margin="0,6,0,0" />
                     </StackPanel>
 
                     <!-- 5. Options -->

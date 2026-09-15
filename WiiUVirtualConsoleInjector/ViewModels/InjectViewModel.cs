@@ -44,6 +44,7 @@ public sealed partial class InjectViewModel : PageViewModel
     private readonly INavigationService _navigation;
     private readonly ISdCard _sdCard;
     private readonly ISettingsService _settings;
+    private readonly ISoundPlayer _sounds;
     private CancellationTokenSource? _cancellation;
 
     [ObservableProperty]
@@ -54,8 +55,10 @@ public sealed partial class InjectViewModel : PageViewModel
     [NotifyPropertyChangedFor(nameof(ReviewGame))]
     private bool _gamePad;
     [ObservableProperty]
+    private bool _isPlayingSound;
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanInject))]
-    [NotifyCanExecuteChangedFor(nameof(InjectCommand), nameof(CancelCommand))]
+    [NotifyCanExecuteChangedFor(nameof(InjectCommand), nameof(CancelCommand), nameof(PreviewSoundCommand))]
     private bool _isRunning;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanInject), nameof(HasMissingKeys), nameof(MissingKeysHint))]
@@ -100,7 +103,8 @@ public sealed partial class InjectViewModel : PageViewModel
     /// <param name="navigation">Lets the page jump to Bases and Keys.</param>
     /// <param name="sdCard">Copies the finished title to the card.</param>
     /// <param name="artwork">Builds icons and boot screens from a screenshot.</param>
-    public InjectViewModel(IBaseService bases, IDialogService dialogs, IInjectionServiceFactory injections, ISettingsService settings, INavigationService navigation, ISdCard sdCard, ArtworkBuilderViewModel artwork)
+    /// <param name="sounds">Plays the boot sound back.</param>
+    public InjectViewModel(IBaseService bases, IDialogService dialogs, IInjectionServiceFactory injections, ISettingsService settings, INavigationService navigation, ISdCard sdCard, ArtworkBuilderViewModel artwork, ISoundPlayer sounds)
         : base("Inject", "inject-icon.png", "M12 3v11 M7.5 10.5L12 15l4.5-4.5 M4 17.5V19a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5")
     {
         _bases = bases ?? throw new ArgumentNullException(nameof(bases));
@@ -110,6 +114,8 @@ public sealed partial class InjectViewModel : PageViewModel
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
         _sdCard = sdCard ?? throw new ArgumentNullException(nameof(sdCard));
         ArtworkBuilder = artwork ?? throw new ArgumentNullException(nameof(artwork));
+        _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
+        _sounds.Stopped += (_, _) => IsPlayingSound = false;
 
         Icon = new PathFieldViewModel(dialogs, "Icon", "128 × 128", ImageFilters) { Glyph = "camera.png" };
         BootTv = new PathFieldViewModel(dialogs, "TV boot screen", "1280 × 720", ImageFilters) { Glyph = "camera.png" };
@@ -121,6 +127,15 @@ public sealed partial class InjectViewModel : PageViewModel
             Icon.Path = built.IconPath;
             BootTv.Path = built.BootTvPath;
             BootDrc.Path = built.BootDrcPath;
+            BootLogo.Path = built.BootLogoPath;
+        };
+        BootSound.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(PathFieldViewModel.Path))
+            {
+                _sounds.Stop();
+                PreviewSoundCommand.NotifyCanExecuteChanged();
+            }
         };
 
         _selectedConsole = SourceConsole.Nes;
@@ -204,6 +219,10 @@ public sealed partial class InjectViewModel : PageViewModel
     /// </summary>
     public bool HasMissingKeys => MissingKeys.Count > 0;
 
+    /// <summary>
+    /// True when a boot sound is chosen and nothing is being injected.
+    /// </summary>
+    public bool CanPreviewSound => BootSound.HasPath && !IsRunning;
     /// <summary>
     /// True once a ROM is picked.
     /// </summary>
@@ -517,6 +536,30 @@ public sealed partial class InjectViewModel : PageViewModel
     private void ManageBases() => _navigation.Show<BasesViewModel>();
 
     /// <summary>
+    /// Plays the chosen boot sound as the console will, or stops it when it is already playing.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanPreviewSound))]
+    private async Task PreviewSoundAsync()
+    {
+        if (IsPlayingSound)
+        {
+            _sounds.Stop();
+            return;
+        }
+
+        try
+        {
+            _sounds.Play(BootSound.Path!);
+            IsPlayingSound = true;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidDataException or NotSupportedException or InvalidOperationException)
+        {
+            IsPlayingSound = false;
+            await _dialogs.ShowErrorAsync("Boot sound", e.Message).ConfigureAwait(true);
+        }
+    }
+
+    /// <summary>
     /// Advances one step.
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanGoNext))]
@@ -528,13 +571,15 @@ public sealed partial class InjectViewModel : PageViewModel
             Step = 3;
     }
 
-    partial void OnNameChanged(string? value) => ArtworkBuilder.Refresh(SelectedConsole, value);
+    partial void OnNameChanged(string? value) => ArtworkBuilder.Refresh(SelectedConsole, value, ShortName);
+
+    partial void OnShortNameChanged(string? value) => ArtworkBuilder.Refresh(SelectedConsole, Name, value);
 
     partial void OnSelectedConsoleChanged(SourceConsole value)
     {
         RomPath = null;
         CurrentOptions = CreateOptions(value);
-        ArtworkBuilder.Refresh(value, Name);
+        ArtworkBuilder.Refresh(value, Name, ShortName);
         Refresh();
         if (Step == 1)
             Step = 2;

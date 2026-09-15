@@ -16,6 +16,7 @@ public class InjectViewModelTests
     private InjectDialogService _dialogs = null!;
     private RecordingInjectionServiceFactory _factory = null!;
     private FakeSdCard _sdCard = null!;
+    private FakeSoundPlayer _sounds = null!;
     private InjectSettingsService _settings = null!;
     private readonly NavigationService _navigation = new();
 
@@ -28,6 +29,7 @@ public class InjectViewModelTests
         _factory = new RecordingInjectionServiceFactory();
         _settings = new InjectSettingsService();
         _sdCard = new FakeSdCard();
+        _sounds = new FakeSoundPlayer();
         foreach (var console in Enum.GetValues<SourceConsole>())
             _bases.Add(Base(console, 0x1000 + (uint)console, console + " Base"));
     }
@@ -35,13 +37,14 @@ public class InjectViewModelTests
     [TestMethod]
     public void Constructor_NullArguments_ThrowsArgumentNullException()
     {
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(null!, _dialogs, _factory, _settings, _navigation, _sdCard, Builder()));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, null!, _factory, _settings, _navigation, _sdCard, Builder()));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, null!, _settings, _navigation, _sdCard, Builder()));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, null!, _navigation, _sdCard, Builder()));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, null!, _sdCard, Builder()));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, null!, Builder()));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(null!, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, null!, _factory, _settings, _navigation, _sdCard, Builder(), _sounds));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, null!, _settings, _navigation, _sdCard, Builder(), _sounds));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, null!, _navigation, _sdCard, Builder(), _sounds));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, null!, _sdCard, Builder(), _sounds));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, null!, Builder(), _sounds));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, null!, _sounds));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), null!));
     }
 
     [TestMethod]
@@ -471,7 +474,7 @@ public class InjectViewModelTests
         Assert.AreEqual(0, _dialogs.FilePicks.Count);
     }
 
-    private InjectViewModel Create() => new(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, Builder());
+    private InjectViewModel Create() => new(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds);
 
     [TestMethod]
     public async Task InjectCommand_CopyToSdCardOn_CopiesThePackedTitleAndReportsWhereItLanded()
@@ -514,6 +517,75 @@ public class InjectViewModelTests
         StringAssert.Contains(_dialogs.Errors.Single().Message, "card full");
         StringAssert.Contains(_dialogs.Infos.Single().Message, _factory.Service.OutputDirectory!);
         Assert.AreEqual("Done", vm.Status);
+    }
+
+    [TestMethod]
+    public async Task PreviewSoundCommand_NoSound_IsOff()
+    {
+        var vm = Create();
+
+        Assert.IsFalse(vm.CanPreviewSound);
+        Assert.IsFalse(vm.PreviewSoundCommand.CanExecute(null));
+        vm.BootSound.Path = @"C:\boot.wav";
+        Assert.IsTrue(vm.PreviewSoundCommand.CanExecute(null));
+    }
+
+    [TestMethod]
+    public async Task PreviewSoundCommand_PlaysThenStopsThenFollowsTheEnd()
+    {
+        var vm = Create();
+        vm.BootSound.Path = @"C:\boot.wav";
+
+        await vm.PreviewSoundCommand.ExecuteAsync(null);
+        Assert.IsTrue(vm.IsPlayingSound);
+        CollectionAssert.AreEqual(new[] { @"C:\boot.wav" }, _sounds.Played);
+
+        await vm.PreviewSoundCommand.ExecuteAsync(null);
+        Assert.IsFalse(vm.IsPlayingSound, "second press stops");
+
+        await vm.PreviewSoundCommand.ExecuteAsync(null);
+        _sounds.Finish();
+        Assert.IsFalse(vm.IsPlayingSound, "playback ending clears the state");
+    }
+
+    [TestMethod]
+    public async Task PreviewSoundCommand_ChangingTheSound_StopsPlayback()
+    {
+        var vm = Create();
+        vm.BootSound.Path = @"C:\boot.wav";
+        await vm.PreviewSoundCommand.ExecuteAsync(null);
+
+        vm.BootSound.Path = @"C:\other.wav";
+
+        Assert.IsFalse(vm.IsPlayingSound);
+    }
+
+    [TestMethod]
+    public async Task PreviewSoundCommand_PlayerFails_ShowsTheError()
+    {
+        var vm = Create();
+        vm.BootSound.Path = @"C:\boot.wav";
+        _sounds.Failure = new InvalidDataException("not audio");
+
+        await vm.PreviewSoundCommand.ExecuteAsync(null);
+
+        Assert.IsFalse(vm.IsPlayingSound);
+        StringAssert.Contains(_dialogs.Errors.Single().Message, "not audio");
+    }
+
+    [TestMethod]
+    public async Task Artwork_Applied_FillsAllFourSlots()
+    {
+        var vm = Ready();
+        vm.Step = 4;
+        vm.ArtworkBuilder.ScreenshotPath = @"C:\shot.png";
+
+        await vm.ArtworkBuilder.ApplyCommand.ExecuteAsync(null);
+
+        StringAssert.EndsWith(vm.Icon.Path!, "iconTex.png");
+        StringAssert.EndsWith(vm.BootTv.Path!, "bootTvTex.png");
+        StringAssert.EndsWith(vm.BootDrc.Path!, "bootDrcTex.png");
+        StringAssert.EndsWith(vm.BootLogo.Path!, "bootLogoTex.png");
     }
 
     private ArtworkBuilderViewModel Builder() => new(new FakeArtworkComposer(), _dialogs, new FakeUiScheduler(), () => _settings.WorkPath);

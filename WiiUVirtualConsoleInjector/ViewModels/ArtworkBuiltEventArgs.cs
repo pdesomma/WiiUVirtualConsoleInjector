@@ -1,7 +1,7 @@
 namespace WiiUVirtualConsoleInjector.ViewModels;
 
 /// <summary>
-/// The three images a build produced.
+/// The four images a build produced.
 /// </summary>
 public sealed class ArtworkBuiltEventArgs : EventArgs
 {
@@ -11,17 +11,23 @@ public sealed class ArtworkBuiltEventArgs : EventArgs
     /// <param name="iconPath">Menu icon PNG.</param>
     /// <param name="bootTvPath">TV boot screen PNG.</param>
     /// <param name="bootDrcPath">GamePad boot screen PNG.</param>
-    public ArtworkBuiltEventArgs(string iconPath, string bootTvPath, string bootDrcPath)
+    /// <param name="bootLogoPath">Boot logo PNG.</param>
+    public ArtworkBuiltEventArgs(string iconPath, string bootTvPath, string bootDrcPath, string bootLogoPath)
     {
         IconPath = iconPath ?? throw new ArgumentNullException(nameof(iconPath));
         BootTvPath = bootTvPath ?? throw new ArgumentNullException(nameof(bootTvPath));
         BootDrcPath = bootDrcPath ?? throw new ArgumentNullException(nameof(bootDrcPath));
+        BootLogoPath = bootLogoPath ?? throw new ArgumentNullException(nameof(bootLogoPath));
     }
 
     /// <summary>
     /// GamePad boot screen PNG.
     /// </summary>
     public string BootDrcPath { get; }
+    /// <summary>
+    /// Boot logo PNG.
+    /// </summary>
+    public string BootLogoPath { get; }
     /// <summary>
     /// TV boot screen PNG.
     /// </summary>

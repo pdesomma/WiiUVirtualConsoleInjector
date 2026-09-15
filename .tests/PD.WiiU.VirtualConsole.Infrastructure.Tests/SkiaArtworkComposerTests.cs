@@ -1,4 +1,4 @@
-﻿using SkiaSharp;
+using SkiaSharp;
 using WiiUSharp;
 
 namespace PD.WiiU.VirtualConsole.Infrastructure.Tests;
@@ -25,13 +25,12 @@ public class SkiaArtworkComposerTests
     }
 
     [TestMethod]
-    public async Task ComposeAsync_IconWithoutAFrame_PutsTheScreenshotInItsWindowOnTheDarkGround()
+    public async Task ComposeAsync_PlainIcon_PutsTheScreenshotInItsWindowOnTheDarkGround()
     {
         var composer = new SkiaArtworkComposer(_root);
-        var request = new ArtworkRequest(Template(null, null)) { ScreenshotPath = _screenshot };
         var output = Path.Combine(_root, "icon.png");
 
-        await composer.ComposeAsync(request, ImageSlot.Icon, output);
+        await composer.ComposeAsync(new ArtworkRequest(null) { ScreenshotPath = _screenshot }, ImageSlot.Icon, output);
 
         using var icon = SKBitmap.Decode(output);
         Assert.AreEqual(ImageSlot.Icon.Width, icon.Width);
@@ -43,11 +42,12 @@ public class SkiaArtworkComposerTests
     [TestMethod]
     public async Task ComposeAsync_IconWithAFrame_DrawsTheFrameOverTheScreenshot()
     {
-        var frame = Write("IconFrame.png", 128, 128, new SKColor(0, 0, 255, 255));
+        var art = Write("IconFrame.png", 128, 128, SKColors.Blue);
+        var frame = new ArtworkFrame("t", "Test", ImageSlot.Icon, null, Path.GetFileName(art), ArtworkFrames.IconBadged);
         var composer = new SkiaArtworkComposer(_root);
         var output = Path.Combine(_root, "icon.png");
 
-        await composer.ComposeAsync(new ArtworkRequest(Template(null, Path.GetFileName(frame))) { ScreenshotPath = _screenshot }, ImageSlot.Icon, output);
+        await composer.ComposeAsync(new ArtworkRequest(frame) { ScreenshotPath = _screenshot }, ImageSlot.Icon, output);
 
         using var icon = SKBitmap.Decode(output);
         Assert.AreEqual(SKColors.Blue, icon.GetPixel(64, 50));
@@ -59,7 +59,7 @@ public class SkiaArtworkComposerTests
         var composer = new SkiaArtworkComposer(_root);
         var output = Path.Combine(_root, "icon.png");
 
-        await composer.ComposeAsync(new ArtworkRequest(Template(null, null)), ImageSlot.Icon, output);
+        await composer.ComposeAsync(new ArtworkRequest(null), ImageSlot.Icon, output);
 
         using var icon = SKBitmap.Decode(output);
         Assert.AreEqual(SKColors.Black, icon.GetPixel(64, 50));
@@ -70,13 +70,7 @@ public class SkiaArtworkComposerTests
     {
         var composer = new SkiaArtworkComposer(_root);
         var output = Path.Combine(_root, "boot.png");
-        var request = new ArtworkRequest(Template(null, null))
-        {
-            ScreenshotPath = _screenshot,
-            NameLine1 = "Test",
-            ReleaseYear = 1985,
-            Players = 2,
-        };
+        var request = new ArtworkRequest(null) { ScreenshotPath = _screenshot, NameLine1 = "Test", ReleaseYear = 1985, Players = 2 };
 
         await composer.ComposeAsync(request, ImageSlot.BootTv, output);
 
@@ -91,42 +85,83 @@ public class SkiaArtworkComposerTests
     }
 
     [TestMethod]
-    public async Task ComposeAsync_GamePadBootScreen_IsTheSameImageAtGamePadSize()
+    public async Task ComposeAsync_GamePadBootScreen_TakesATvFrameAtGamePadSize()
     {
+        var art = Write("Tv.png", 1280, 720, new SKColor(0, 255, 0, 40));
+        var frame = new ArtworkFrame("t", "Test", ImageSlot.BootTv, null, Path.GetFileName(art), ArtworkFrames.BootGba);
         var composer = new SkiaArtworkComposer(_root);
         var output = Path.Combine(_root, "drc.png");
 
-        await composer.ComposeAsync(new ArtworkRequest(Template(null, null)) { ScreenshotPath = _screenshot }, ImageSlot.BootDrc, output);
+        await composer.ComposeAsync(new ArtworkRequest(frame) { ScreenshotPath = _screenshot }, ImageSlot.BootDrc, output);
 
         using var drc = SKBitmap.Decode(output);
         Assert.AreEqual(ImageSlot.BootDrc.Width, drc.Width);
         Assert.AreEqual(ImageSlot.BootDrc.Height, drc.Height);
-        Assert.AreEqual(SKColors.Red, drc.GetPixel(200, 266));
+        var inWindow = drc.GetPixel(200, 266);
+        Assert.IsTrue(inWindow.Red > 200 && inWindow.Green > 20, "screenshot tinted by the frame");
     }
 
     [TestMethod]
-    public async Task ComposeAsync_BootLogoSlotOrNulls_Throw()
+    public async Task ComposeAsync_BootLogo_IsLogoSizedWithCentredText()
+    {
+        var art = Write("Pill.png", 170, 42, new SKColor(255, 255, 255, 0));
+        var frame = new ArtworkFrame("t", "Pill", ImageSlot.BootLogo, null, Path.GetFileName(art), null);
+        var composer = new SkiaArtworkComposer(_root);
+        var output = Path.Combine(_root, "logo.png");
+
+        await composer.ComposeAsync(new ArtworkRequest(frame) { LogoText = "Super Metroid" }, ImageSlot.BootLogo, output);
+
+        using var logo = SKBitmap.Decode(output);
+        Assert.AreEqual(ImageSlot.BootLogo.Width, logo.Width);
+        Assert.AreEqual(ImageSlot.BootLogo.Height, logo.Height);
+        Assert.AreEqual(new SKColor(30, 30, 30), logo.GetPixel(2, 2), "dark ground");
+        Assert.IsTrue(HasInkOn(logo, new SKColor(30, 30, 30), 18, 5, 134, 32), "text drawn inside the pill");
+    }
+
+    [TestMethod]
+    public async Task ComposeAsync_LogoWithLongText_ShrinksToFit()
     {
         var composer = new SkiaArtworkComposer(_root);
-        var request = new ArtworkRequest(Template(null, null));
+        var output = Path.Combine(_root, "logo.png");
 
-        await Assert.ThrowsExactlyAsync<NotSupportedException>(() => composer.ComposeAsync(request, ImageSlot.BootLogo, Path.Combine(_root, "x.png")));
+        await composer.ComposeAsync(new ArtworkRequest(null) { LogoText = "An Unreasonably Long Game Title Here" }, ImageSlot.BootLogo, output);
+
+        using var logo = SKBitmap.Decode(output);
+        Assert.IsFalse(HasInkOn(logo, new SKColor(30, 30, 30), 0, 0, 16, 42), "nothing spills past the left of the text box");
+        Assert.IsFalse(HasInkOn(logo, new SKColor(30, 30, 30), 154, 0, 16, 42), "nothing spills past the right of the text box");
+    }
+
+    [TestMethod]
+    public async Task ComposeAsync_FrameForAnotherSlot_Throws()
+    {
+        var composer = new SkiaArtworkComposer(_root);
+        var icon = new ArtworkFrame("i", "Icon", ImageSlot.Icon, null, null, ArtworkFrames.IconStandard);
+
+        await Assert.ThrowsExactlyAsync<ArgumentException>(() => composer.ComposeAsync(new ArtworkRequest(icon), ImageSlot.BootTv, Path.Combine(_root, "x.png")));
+    }
+
+    [TestMethod]
+    public async Task ComposeAsync_Nulls_Throw()
+    {
+        var composer = new SkiaArtworkComposer(_root);
+        var request = new ArtworkRequest(null);
+
         await Assert.ThrowsExactlyAsync<ArgumentNullException>(() => composer.ComposeAsync(null!, ImageSlot.Icon, Path.Combine(_root, "x.png")));
         await Assert.ThrowsExactlyAsync<ArgumentNullException>(() => composer.ComposeAsync(request, null!, Path.Combine(_root, "x.png")));
         await Assert.ThrowsExactlyAsync<ArgumentException>(() => composer.ComposeAsync(request, ImageSlot.Icon, " "));
     }
 
     [TestMethod]
-    public async Task ComposeAsync_EveryBundledTemplate_HasItsFramesEmbedded()
+    public async Task ComposeAsync_EveryBundledFrame_HasItsArtEmbedded()
     {
         var composer = new SkiaArtworkComposer();
-        foreach (var template in ArtworkTemplates.All)
+        foreach (var frame in ArtworkFrames.All.Where(f => !f.IsPlain))
         {
-            var output = Path.Combine(_root, template.Key + ".png");
-            await composer.ComposeAsync(new ArtworkRequest(template) { ScreenshotPath = _screenshot }, ImageSlot.Icon, output);
+            var output = Path.Combine(_root, frame.Key + ".png");
+            await composer.ComposeAsync(new ArtworkRequest(frame) { ScreenshotPath = _screenshot, LogoText = "x" }, frame.Slot, output);
 
-            using var icon = SKBitmap.Decode(output);
-            Assert.IsFalse(IsBlank(icon), template.Key + " drew nothing");
+            using var image = SKBitmap.Decode(output);
+            Assert.IsFalse(IsBlank(image), frame.Key + " drew nothing");
         }
     }
 
@@ -148,11 +183,13 @@ public class SkiaArtworkComposerTests
         Assert.AreEqual(fallback, composer.CaptionFontFamily, "a missing file falls back");
     }
 
-    private static bool HasInk(SKBitmap bitmap, int x, int y, int width, int height)
+    private static bool HasInk(SKBitmap bitmap, int x, int y, int width, int height) => HasInkOn(bitmap, SKColors.White, x, y, width, height);
+
+    private static bool HasInkOn(SKBitmap bitmap, SKColor ground, int x, int y, int width, int height)
     {
         for (var row = y; row < y + height; row++)
             for (var column = x; column < x + width; column++)
-                if (bitmap.GetPixel(column, row) != SKColors.White)
+                if (bitmap.GetPixel(column, row) != ground)
                     return true;
 
         return false;
@@ -161,16 +198,13 @@ public class SkiaArtworkComposerTests
     private static bool IsBlank(SKBitmap bitmap)
     {
         var first = bitmap.GetPixel(0, 0);
-        for (var y = 0; y < bitmap.Height; y += 4)
-            for (var x = 0; x < bitmap.Width; x += 4)
+        for (var y = 0; y < bitmap.Height; y += 2)
+            for (var x = 0; x < bitmap.Width; x += 2)
                 if (bitmap.GetPixel(x, y) != first)
                     return false;
 
         return true;
     }
-
-    private static ArtworkTemplate Template(string? bootFrame, string? iconFrame) =>
-        new("test", "Test", SourceConsole.Nes, ArtworkLayout.Standard, bootFrame, iconFrame);
 
     private string Write(string name, int width, int height, SKColor colour)
     {

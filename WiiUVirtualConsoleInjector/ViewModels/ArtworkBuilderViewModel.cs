@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PD.WiiU.VirtualConsole;
@@ -9,12 +9,12 @@ using WiiUVirtualConsoleInjector.Services;
 namespace WiiUVirtualConsoleInjector.ViewModels;
 
 /// <summary>
-/// Builds the icon and boot screens from a screenshot: frame, captions, a live preview, and applying the result to the artwork slots.
+/// Builds the icon, both boot screens and the boot logo from a screenshot: a frame per slot, captions, live previews, and applying the result to the slots.
 /// </summary>
 public sealed partial class ArtworkBuilderViewModel : ViewModelBase
 {
     /// <summary>
-    /// How long typing settles before the preview is redrawn.
+    /// How long typing settles before the previews are redrawn.
     /// </summary>
     public static readonly TimeSpan PreviewDelay = TimeSpan.FromMilliseconds(200);
 
@@ -28,18 +28,30 @@ public sealed partial class ArtworkBuilderViewModel : ViewModelBase
     private IDisposable? _pending;
     private int _renders;
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ApplyCommand))]
+    private ArtworkFrame? _gamePadFrame;
+    [ObservableProperty]
+    private string? _gamePadPreviewPath;
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ApplyCommand))]
+    private ArtworkFrame? _iconFrame;
+    [ObservableProperty]
     private string? _iconPreviewPath;
     [ObservableProperty]
     private bool _isRendering;
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ApplyCommand))]
+    private ArtworkFrame? _logoFrame;
+    [ObservableProperty]
+    private string? _logoPreviewPath;
+    [ObservableProperty]
+    private string? _logoText;
+    [ObservableProperty]
     private string? _nameLine1;
     [ObservableProperty]
     private string? _nameLine2;
     [ObservableProperty]
     private string? _players;
-    [ObservableProperty]
-    private string? _previewPath;
     [ObservableProperty]
     private string? _releaseYear;
     [ObservableProperty]
@@ -47,14 +59,16 @@ public sealed partial class ArtworkBuilderViewModel : ViewModelBase
     private string? _screenshotPath;
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ApplyCommand))]
-    private ArtworkTemplate? _selectedTemplate;
+    private ArtworkFrame? _tvFrame;
+    [ObservableProperty]
+    private string? _tvPreviewPath;
 
     /// <summary>
     /// Creates a new instance of the <see cref="ArtworkBuilderViewModel"/> class.
     /// </summary>
     /// <param name="composer">Draws the images.</param>
     /// <param name="dialogs">Screenshot picker and errors.</param>
-    /// <param name="scheduler">Debounces the preview.</param>
+    /// <param name="scheduler">Debounces the previews.</param>
     /// <param name="workFolder">Folder previews and results are written under.</param>
     public ArtworkBuilderViewModel(IArtworkComposer composer, IDialogService dialogs, IUiScheduler scheduler, Func<string> workFolder)
     {
@@ -66,14 +80,26 @@ public sealed partial class ArtworkBuilderViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Raised with the icon, TV and GamePad paths once a build is applied.
+    /// Raised with the four image paths once a build is applied.
     /// </summary>
     public event EventHandler<ArtworkBuiltEventArgs>? Applied;
 
     /// <summary>
-    /// True when there is enough to draw something.
+    /// True when there is enough to draw: a screenshot and a frame choice for every slot.
     /// </summary>
-    public bool CanApply => SelectedTemplate is not null && !string.IsNullOrWhiteSpace(ScreenshotPath);
+    public bool CanApply => !string.IsNullOrWhiteSpace(ScreenshotPath) && TvFrame is not null && GamePadFrame is not null && IconFrame is not null && LogoFrame is not null;
+    /// <summary>
+    /// Frames on offer for the GamePad boot screen; the same art as the TV.
+    /// </summary>
+    public ObservableCollection<ArtworkFrame> GamePadFrames { get; } = new();
+    /// <summary>
+    /// Frames on offer for the menu icon.
+    /// </summary>
+    public ObservableCollection<ArtworkFrame> IconFrames { get; } = new();
+    /// <summary>
+    /// Frames on offer for the boot logo.
+    /// </summary>
+    public ObservableCollection<ArtworkFrame> LogoFrames { get; } = new();
     /// <summary>
     /// Player counts to choose from; blank leaves the line off.
     /// </summary>
@@ -83,61 +109,72 @@ public sealed partial class ArtworkBuilderViewModel : ViewModelBase
     /// </summary>
     public Task PreviewRender { get; private set; } = Task.CompletedTask;
     /// <summary>
-    /// Frames for the console being injected.
+    /// Frames on offer for the TV boot screen.
     /// </summary>
-    public ObservableCollection<ArtworkTemplate> Templates { get; } = new();
+    public ObservableCollection<ArtworkFrame> TvFrames { get; } = new();
 
     /// <summary>
-    /// Offers the frames for a console and seeds the name lines; keeps the frame when it still applies.
+    /// Offers the frames for a console and seeds the text; keeps each frame choice when it still applies.
     /// </summary>
     /// <param name="console">Console being injected.</param>
     /// <param name="longName">Long name from the wizard, comma-separated lines.</param>
-    public void Refresh(SourceConsole console, string? longName)
+    /// <param name="shortName">Short name from the wizard, or null.</param>
+    public void Refresh(SourceConsole console, string? longName, string? shortName = null)
     {
-        var previous = SelectedTemplate?.Key;
-        Templates.Clear();
-        foreach (var template in ArtworkTemplates.For(console))
-            Templates.Add(template);
-        SelectedTemplate = Templates.FirstOrDefault(t => t.Key == previous) ?? Templates.FirstOrDefault();
+        TvFrame = Reload(TvFrames, ArtworkFrames.For(ImageSlot.BootTv, console), TvFrame);
+        GamePadFrame = Reload(GamePadFrames, ArtworkFrames.For(ImageSlot.BootDrc, console), GamePadFrame);
+        IconFrame = Reload(IconFrames, ArtworkFrames.For(ImageSlot.Icon, console), IconFrame);
+        LogoFrame = Reload(LogoFrames, ArtworkFrames.For(ImageSlot.BootLogo, console), LogoFrame);
 
         var lines = (longName ?? string.Empty).Split(',').Select(l => l.Trim()).Where(l => l.Length > 0).ToArray();
         NameLine1 = lines.Length > 0 ? lines[0] : null;
         NameLine2 = lines.Length > 1 ? string.Join(" ", lines.Skip(1)) : null;
+        LogoText = string.IsNullOrWhiteSpace(shortName) ? NameLine1 : shortName!.Trim();
     }
 
     /// <summary>
-    /// The images as the inputs describe them right now.
+    /// What one slot should show right now.
     /// </summary>
-    private ArtworkRequest Request() => new(SelectedTemplate!)
+    /// <param name="slot">Slot to describe.</param>
+    private ArtworkRequest Request(ImageSlot slot) => new(FrameFor(slot))
     {
         ScreenshotPath = string.IsNullOrWhiteSpace(ScreenshotPath) ? null : ScreenshotPath,
-        NameLine1 = string.IsNullOrWhiteSpace(NameLine1) ? null : NameLine1!.Trim(),
-        NameLine2 = string.IsNullOrWhiteSpace(NameLine2) ? null : NameLine2!.Trim(),
+        NameLine1 = Clean(NameLine1),
+        NameLine2 = Clean(NameLine2),
+        LogoText = Clean(LogoText),
         ReleaseYear = int.TryParse(ReleaseYear, out var year) && year > 0 ? year : null,
         Players = int.TryParse(Players, out var players) && players > 0 ? players : null,
     };
 
     /// <summary>
-    /// Draws all three images into a fresh folder and hands them to the slots.
+    /// The frame chosen for a slot.
+    /// </summary>
+    /// <param name="slot">Slot to look up.</param>
+    private ArtworkFrame? FrameFor(ImageSlot slot) =>
+        slot == ImageSlot.BootTv ? TvFrame
+        : slot == ImageSlot.BootDrc ? GamePadFrame
+        : slot == ImageSlot.Icon ? IconFrame
+        : LogoFrame;
+
+    /// <summary>
+    /// Draws all four images into a fresh folder and hands them to the slots.
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanApply))]
     private async Task ApplyAsync()
     {
         var folder = Path.Combine(_workFolder(), "artwork", Guid.NewGuid().ToString("N"));
-        var request = Request();
+        var jobs = new[] { ImageSlot.Icon, ImageSlot.BootTv, ImageSlot.BootDrc, ImageSlot.BootLogo }
+            .Select(slot => (Slot: slot, Request: Request(slot), Path: Path.Combine(folder, slot.Name + ".png")))
+            .ToArray();
         try
         {
             IsRendering = true;
-            var icon = Path.Combine(folder, "iconTex.png");
-            var tv = Path.Combine(folder, "bootTvTex.png");
-            var drc = Path.Combine(folder, "bootDrcTex.png");
             await Task.Run(async () =>
             {
-                await _composer.ComposeAsync(request, ImageSlot.Icon, icon).ConfigureAwait(false);
-                await _composer.ComposeAsync(request, ImageSlot.BootTv, tv).ConfigureAwait(false);
-                await _composer.ComposeAsync(request, ImageSlot.BootDrc, drc).ConfigureAwait(false);
+                foreach (var job in jobs)
+                    await _composer.ComposeAsync(job.Request, job.Slot, job.Path).ConfigureAwait(false);
             }).ConfigureAwait(true);
-            Applied?.Invoke(this, new ArtworkBuiltEventArgs(icon, tv, drc));
+            Applied?.Invoke(this, new ArtworkBuiltEventArgs(jobs[0].Path, jobs[1].Path, jobs[2].Path, jobs[3].Path));
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException)
         {
@@ -166,48 +203,45 @@ public sealed partial class ArtworkBuilderViewModel : ViewModelBase
     private void SchedulePreview()
     {
         _pending?.Dispose();
-        if (SelectedTemplate is null)
-        {
-            PreviewPath = null;
-            IconPreviewPath = null;
-            return;
-        }
-
         _pending = _scheduler.Delay(PreviewDelay, () => PreviewRender = RenderPreviewAsync());
     }
 
     /// <summary>
-    /// Draws the TV screen and icon previews into the work folder; a newer render wins.
+    /// Draws all four previews into the work folder; a newer render wins.
     /// </summary>
     private async Task RenderPreviewAsync()
     {
         var render = ++_renders;
-        var request = Request();
         var folder = Path.Combine(_workFolder(), "artwork", "preview");
-        var tv = Path.Combine(folder, $"tv-{render}.png");
-        var icon = Path.Combine(folder, $"icon-{render}.png");
+        var jobs = new[] { ImageSlot.BootTv, ImageSlot.BootDrc, ImageSlot.Icon, ImageSlot.BootLogo }
+            .Select(slot => (Slot: slot, Request: Request(slot), Path: Path.Combine(folder, $"{slot.Name}-{render}.png")))
+            .ToArray();
         try
         {
             IsRendering = true;
             await Task.Run(async () =>
             {
-                await _composer.ComposeAsync(request, ImageSlot.BootTv, tv).ConfigureAwait(false);
-                await _composer.ComposeAsync(request, ImageSlot.Icon, icon).ConfigureAwait(false);
+                foreach (var job in jobs)
+                    await _composer.ComposeAsync(job.Request, job.Slot, job.Path).ConfigureAwait(false);
             }).ConfigureAwait(true);
             if (render != _renders)
                 return;
 
-            var oldTv = PreviewPath;
-            var oldIcon = IconPreviewPath;
-            PreviewPath = tv;
-            IconPreviewPath = icon;
-            Forget(oldTv);
-            Forget(oldIcon);
+            Forget(TvPreviewPath);
+            Forget(GamePadPreviewPath);
+            Forget(IconPreviewPath);
+            Forget(LogoPreviewPath);
+            TvPreviewPath = jobs[0].Path;
+            GamePadPreviewPath = jobs[1].Path;
+            IconPreviewPath = jobs[2].Path;
+            LogoPreviewPath = jobs[3].Path;
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException)
         {
-            PreviewPath = null;
+            TvPreviewPath = null;
+            GamePadPreviewPath = null;
             IconPreviewPath = null;
+            LogoPreviewPath = null;
         }
         finally
         {
@@ -215,6 +249,12 @@ public sealed partial class ArtworkBuilderViewModel : ViewModelBase
                 IsRendering = false;
         }
     }
+
+    /// <summary>
+    /// Trimmed text, or null when blank.
+    /// </summary>
+    /// <param name="text">Text to clean.</param>
+    private static string? Clean(string? text) => string.IsNullOrWhiteSpace(text) ? null : text!.Trim();
 
     /// <summary>
     /// Deletes a superseded preview file; a locked file is left for the work folder sweep.
@@ -237,6 +277,29 @@ public sealed partial class ArtworkBuilderViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Refills a frame list and returns the choice to keep: the previous one when still offered, else the first.
+    /// </summary>
+    /// <param name="list">List to refill.</param>
+    /// <param name="frames">Frames now on offer.</param>
+    /// <param name="previous">Frame chosen before.</param>
+    private static ArtworkFrame? Reload(ObservableCollection<ArtworkFrame> list, IReadOnlyList<ArtworkFrame> frames, ArtworkFrame? previous)
+    {
+        list.Clear();
+        foreach (var frame in frames)
+            list.Add(frame);
+
+        return list.FirstOrDefault(f => f.Key == previous?.Key) ?? list.FirstOrDefault();
+    }
+
+    partial void OnGamePadFrameChanged(ArtworkFrame? value) => SchedulePreview();
+
+    partial void OnIconFrameChanged(ArtworkFrame? value) => SchedulePreview();
+
+    partial void OnLogoFrameChanged(ArtworkFrame? value) => SchedulePreview();
+
+    partial void OnLogoTextChanged(string? value) => SchedulePreview();
+
     partial void OnNameLine1Changed(string? value) => SchedulePreview();
 
     partial void OnNameLine2Changed(string? value) => SchedulePreview();
@@ -247,5 +310,5 @@ public sealed partial class ArtworkBuilderViewModel : ViewModelBase
 
     partial void OnScreenshotPathChanged(string? value) => SchedulePreview();
 
-    partial void OnSelectedTemplateChanged(ArtworkTemplate? value) => SchedulePreview();
+    partial void OnTvFrameChanged(ArtworkFrame? value) => SchedulePreview();
 }
