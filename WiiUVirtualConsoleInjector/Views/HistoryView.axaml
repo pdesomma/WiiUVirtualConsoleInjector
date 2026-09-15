@@ -32,25 +32,47 @@
         <Style Selector="Button.tile:pressed">
             <Setter Property="RenderTransform" Value="scale(0.97)" />
         </Style>
+        <!-- Glass frame: a rounded pane of translucent white that catches the light at the top, like the Wii U menu -->
         <Style Selector="Border.tile-frame">
             <Setter Property="Width" Value="128" />
             <Setter Property="Height" Value="128" />
-            <Setter Property="CornerRadius" Value="16" />
-            <Setter Property="Background" Value="{DynamicResource TileFrameBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+            <Setter Property="CornerRadius" Value="17" />
+            <Setter Property="Padding" Value="6" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="5" />
-            <Setter Property="BoxShadow" Value="0 3 8 0 #26000000" />
+            <Setter Property="BorderBrush" Value="{DynamicResource TileEdgeBrush}" />
+            <Setter Property="Background">
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Offset="0" Color="{DynamicResource TileGlassTop}" />
+                    <GradientStop Offset="0.5" Color="{DynamicResource TileGlassMiddle}" />
+                    <GradientStop Offset="1" Color="{DynamicResource TileGlassBottom}" />
+                </LinearGradientBrush>
+            </Setter>
+            <Setter Property="BoxShadow" Value="0 4 10 0 #2E000000, inset 0 1 0 0 #B3FFFFFF" />
             <Setter Property="ClipToBounds" Value="True" />
         </Style>
         <Style Selector="Button.tile:pointerover Border.tile-frame">
             <Setter Property="BorderBrush" Value="{DynamicResource CyanFocusBrush}" />
-            <Setter Property="BoxShadow" Value="0 0 0 2 #8000AACC, 0 4 12 0 #33000000" />
+            <Setter Property="BoxShadow" Value="0 0 0 2 #8000AACC, 0 5 14 0 #38000000, inset 0 1 0 0 #B3FFFFFF" />
         </Style>
         <Style Selector="Border.tile-icon">
             <Setter Property="CornerRadius" Value="12" />
             <Setter Property="ClipToBounds" Value="True" />
             <Setter Property="Background" Value="{DynamicResource SubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#33000000" />
+        </Style>
+        <!-- Sheen across the top of the icon -->
+        <Style Selector="Border.tile-sheen">
+            <Setter Property="CornerRadius" Value="12,12,0,0" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Height" Value="52" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="Background">
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Offset="0" Color="#66FFFFFF" />
+                    <GradientStop Offset="1" Color="#0AFFFFFF" />
+                </LinearGradientBrush>
+            </Setter>
         </Style>
         <Style Selector="TextBlock.tile-name">
             <Setter Property="FontSize" Value="12.5" />
@@ -129,6 +151,7 @@
                                                             <Image Source="{Binding Console, Converter={x:Static conv:ConsoleConverters.Icon}}" IsVisible="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).IsDark}" />
                                                             <Image Source="{Binding Console, Converter={x:Static conv:ConsoleConverters.DarkIcon}}" IsVisible="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).IsLight}" />
                                                         </Panel>
+                                                        <Border Classes="tile-sheen" />
                                                     </Panel>
                                                 </Border>
                                             </Border>
