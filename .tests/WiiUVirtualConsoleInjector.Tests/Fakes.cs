@@ -304,3 +304,34 @@ internal sealed class FakeInjectionServiceFactory : IInjectionServiceFactory
 
     public IReadOnlyList<string> MissingKeys(SourceConsole console) => Array.Empty<string>();
 }
+
+internal sealed class FakeInjectionHistory : IInjectionHistory
+{
+    public List<(InjectionRecord Record, byte[]? IconTga)> Added { get; } = new();
+    public Exception? AddError { get; set; }
+    public List<InjectionRecord> Records { get; } = new();
+    public List<string> Removed { get; } = new();
+
+    public event EventHandler? Changed;
+
+    public InjectionRecord Add(InjectionRecord record, byte[]? iconTga)
+    {
+        if (AddError is not null)
+            throw AddError;
+        Added.Add((record, iconTga));
+        Records.Insert(0, record);
+        Changed?.Invoke(this, EventArgs.Empty);
+        return record;
+    }
+
+    public IReadOnlyList<InjectionRecord> All() => Records.ToArray();
+
+    public void RaiseChanged() => Changed?.Invoke(this, EventArgs.Empty);
+
+    public void Remove(string id)
+    {
+        Removed.Add(id);
+        Records.RemoveAll(r => r.Id == id);
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+}

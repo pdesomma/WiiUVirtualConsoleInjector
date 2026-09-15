@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole;
+﻿using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Options;
 
 namespace WiiUVirtualConsoleInjector.ViewModels.Options;
@@ -19,4 +19,9 @@ public sealed class NoOptionsViewModel : ConsoleOptionsViewModel
 
     /// <inheritdoc/>
     public override IConsoleOptions? Build() => null;
+
+    /// <inheritdoc/>
+    public override void Load(IConsoleOptions? options)
+    {
+    }
 }

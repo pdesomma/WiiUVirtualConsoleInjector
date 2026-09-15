@@ -646,7 +646,7 @@ public class InjectViewModelTests
         vm.ProductId = "ABCD";
         vm.Format = OutputFormat.Loadiine;
         vm.Icon.Path = @"C:\icon.png";
-        vm.BootSound.Path = @"C:\boot.wav";
+        vm.BootSound.Path = @"C:oot.wav";
         ((SnesOptionsViewModel)vm.CurrentOptions).PixelPerfect = true;
         _factory.Service.IconTga = new byte[] { 1, 2, 3 };
 
@@ -662,7 +662,7 @@ public class InjectViewModelTests
         Assert.AreEqual("ABCD", record.ProductId);
         Assert.AreEqual(OutputFormat.Loadiine, record.Format);
         Assert.AreEqual(@"C:\icon.png", record.Artwork.Icon);
-        Assert.AreEqual(@"C:\boot.wav", record.BootSoundPath);
+        Assert.AreEqual(@"C:oot.wav", record.BootSoundPath);
         Assert.IsTrue(((SnesOptions)record.Options!).PixelPerfect);
         Assert.AreEqual(_factory.Service.OutputDirectory, record.OutputDirectory);
         Assert.AreEqual(TitleIdentity.Of(_factory.Service.Received.Game), record.Identity);
@@ -710,10 +710,10 @@ public class InjectViewModelTests
         Assert.IsTrue(vm.GamePad);
         Assert.AreEqual(OutputFormat.Loadiine, vm.Format);
         Assert.AreEqual(@"C:\h\icon.png", vm.Icon.Path);
-        Assert.AreEqual(@"C:\h\tv.png", vm.BootTv.Path);
+        Assert.AreEqual(@"C:\h	v.png", vm.BootTv.Path);
         Assert.AreEqual(@"C:\h\drc.png", vm.BootDrc.Path);
         Assert.AreEqual(@"C:\h\logo.png", vm.BootLogo.Path);
-        Assert.AreEqual(@"C:\h\boot.wav", vm.BootSound.Path);
+        Assert.AreEqual(@"C:\hoot.wav", vm.BootSound.Path);
         var wii = (WiiOptionsViewModel)vm.CurrentOptions;
         Assert.AreEqual(WiiVideoMode.Pal60, wii.VideoMode);
         Assert.IsTrue(wii.LrPatch);
@@ -762,74 +762,14 @@ public class InjectViewModelTests
         new("abc", DateTimeOffset.Now, SourceConsole.Wii, new TitleId(TitleType.Game, 0x1000 + (uint)SourceConsole.Wii), @"C:\wii.iso", "Wii Game",
             new TitleIdentity(new TitleId(TitleType.Demo, 0x31323334), new GroupId(0x3456), new ProductCode(ProductCode.EShop, "WXYZ")))
         {
-            Artwork = new Artwork { Icon = @"C:\h\icon.png", BootTv = @"C:\h\tv.png", BootDrc = @"C:\h\drc.png", BootLogo = @"C:\h\logo.png" },
-            BootSoundPath = @"C:\h\boot.wav",
+            Artwork = new Artwork { Icon = @"C:\h\icon.png", BootTv = @"C:\h	v.png", BootDrc = @"C:\h\drc.png", BootLogo = @"C:\h\logo.png" },
+            BootSoundPath = @"C:\hoot.wav",
             Format = OutputFormat.Loadiine,
             GamePad = true,
             Options = new WiiOptions { VideoMode = WiiVideoMode.Pal60, LrPatch = true, TargetRegion = Region.Europe },
             ProductId = "WXYZ",
             ShortName = "Wii",
         };
-
-    [TestMethod]
-    public async Task StartOverCommand_BlankWizard_ClearsWithoutAsking()
-    {
-        var vm = Create();
-        vm.Step = 3;
-
-        await vm.StartOverCommand.ExecuteAsync(null);
-
-        Assert.AreEqual(0, _dialogs.Confirms.Count);
-        Assert.AreEqual(1, vm.Step);
-    }
-
-    [TestMethod]
-    public async Task StartOverCommand_Confirmed_ClearsEverything()
-    {
-        var vm = Ready(SourceConsole.Snes, @"C:\game.sfc");
-        vm.Step = 4;
-        vm.Icon.Path = @"C:\icon.png";
-        _dialogs.ConfirmResult = true;
-
-        await vm.StartOverCommand.ExecuteAsync(null);
-
-        Assert.AreEqual(1, _dialogs.Confirms.Count);
-        Assert.AreEqual(1, vm.Step);
-        Assert.AreEqual(SourceConsole.Nes, vm.SelectedConsole);
-        Assert.IsNull(vm.RomPath);
-        Assert.IsNull(vm.Name);
-        Assert.IsNull(vm.Icon.Path);
-    }
-
-    [TestMethod]
-    public async Task StartOverCommand_Declined_KeepsEverything()
-    {
-        var vm = Ready(SourceConsole.Snes, @"C:\game.sfc");
-        vm.Step = 4;
-        _dialogs.ConfirmResult = false;
-
-        await vm.StartOverCommand.ExecuteAsync(null);
-
-        Assert.AreEqual(4, vm.Step);
-        Assert.AreEqual(@"C:\game.sfc", vm.RomPath);
-        Assert.AreEqual("Game", vm.Name);
-    }
-
-    [TestMethod]
-    public void ArrowNavigation_Wizard_TurnsSteps()
-    {
-        IArrowNavigation vm = Create();
-
-        Assert.AreEqual("Next step", vm.NextHint);
-        Assert.AreEqual("Previous step", vm.PreviousHint);
-        Assert.IsTrue(vm.NextCommand.CanExecute(null));
-        Assert.IsFalse(vm.PreviousCommand.CanExecute(null));
-
-        vm.NextCommand.Execute(null);
-
-        Assert.AreEqual(2, ((InjectViewModel)vm).Step);
-        Assert.IsTrue(vm.PreviousCommand.CanExecute(null));
-    }
 
     [TestMethod]
     public async Task InjectCommand_Succeeds_ClearsEveryFieldAndReturnsToTheFirstStep()

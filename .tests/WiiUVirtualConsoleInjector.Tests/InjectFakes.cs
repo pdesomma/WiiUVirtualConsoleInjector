@@ -106,6 +106,7 @@ internal static class InjectFakes
 
     internal sealed class RecordingInjectionService : IInjectionService
     {
+        public byte[]? IconTga { get; set; }
         public Action? OnStart { get; set; }
         public Exception? Throws { get; set; }
         public Injection? Received { get; private set; }
@@ -127,7 +128,7 @@ internal static class InjectFakes
             cancellationToken.ThrowIfCancellationRequested();
             if (Throws is not null)
                 throw Throws;
-            return new InjectedTitle(injection.Game, outputDirectory);
+            return new InjectedTitle(injection.Game, outputDirectory) { IconTga = IconTga };
         }
     }
 

@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Options;
 
@@ -22,4 +22,7 @@ public sealed partial class NesOptionsViewModel : ConsoleOptionsViewModel
 
     /// <inheritdoc/>
     public override IConsoleOptions? Build() => new NesOptions { PixelPerfect = PixelPerfect };
+
+    /// <inheritdoc/>
+    public override void Load(IConsoleOptions? options) => PixelPerfect = (options as NesOptions)?.PixelPerfect ?? false;
 }

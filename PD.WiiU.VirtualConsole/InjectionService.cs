@@ -100,7 +100,7 @@ public sealed class InjectionService : IInjectionService
                 await Run(InjectionStep.Pack, "Packing", progress,
                     () => _packer.PackAsync(title, folder, Detail(InjectionStep.Pack, progress), cancellationToken)).ConfigureAwait(false);
 
-            return new InjectedTitle(injection.Game, folder);
+            return new InjectedTitle(injection.Game, folder) { IconTga = ReadIcon(title) };
         }
         finally
         {
@@ -124,6 +124,16 @@ public sealed class InjectionService : IInjectionService
     {
         var layout = new BaseInspection(title).Layout();
         return layout.Passed ? injector.Inspect(title) : layout.Issues;
+    }
+
+    /// <summary>
+    /// The staged icon, read before the work folder goes.
+    /// </summary>
+    /// <param name="title">Staged title.</param>
+    private static byte[]? ReadIcon(TitleDirectory title)
+    {
+        var path = Path.Combine(title.Meta, ImageSlot.Icon.FileName);
+        return File.Exists(path) ? File.ReadAllBytes(path) : null;
     }
 
     private static Task RequireUsable(IReadOnlyList<BaseIssue> issues)

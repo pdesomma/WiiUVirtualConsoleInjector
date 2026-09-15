@@ -1,4 +1,4 @@
-namespace WiiUVirtualConsoleInjector;
+﻿namespace WiiUVirtualConsoleInjector;
 
 /// <summary>
 /// Where the application keeps its per-user files.
@@ -34,6 +34,10 @@ public sealed class AppPaths
     /// Default output folder when the user has not chosen one.
     /// </summary>
     public string DefaultOutputPath => Path.Combine(DataFolder, "output");
+    /// <summary>
+    /// Folder the injection history lives in.
+    /// </summary>
+    public string HistoryFolder => Path.Combine(DataFolder, "history");
     /// <summary>
     /// The user's keys.
     /// </summary>

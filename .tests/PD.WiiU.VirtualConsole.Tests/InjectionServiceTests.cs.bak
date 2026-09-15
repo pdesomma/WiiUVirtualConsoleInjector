@@ -64,7 +64,7 @@ public class InjectionServiceTests
     {
         var images = new FakeImageConverter();
         var service = Service(images: images, packer: new FakeTitlePacker());
-        var injection = new Injection(TestTitle.Base(), Rom(), TestTitle.Game()) { Artwork = new Artwork { Icon = @"C:\art\icon.png" } };
+        var injection = new Injection(TestTitle.Base(), Rom(), TestTitle.Game()) { Artwork = new Artwork { Icon = @"C:rt\icon.png" } };
 
         var result = await service.InjectAsync(injection, Work(), Output());
 

@@ -79,9 +79,34 @@
 
         <!-- Content -->
         <Border Background="{DynamicResource PageGradientBrush}">
-            <ScrollViewer Padding="24,20">
-                <ContentControl Content="{Binding CurrentPage}" />
-            </ScrollViewer>
+            <Panel>
+                <ScrollViewer Padding="24,20">
+                    <ContentControl Content="{Binding CurrentPage}" />
+                </ScrollViewer>
+
+                <!-- Side arrows: the mockup's glossy chevron, pinned to the middle of the view so scrolling never hides them -->
+                <Button Classes="arrow" Command="{Binding Arrows.PreviousCommand}" IsVisible="{Binding HasArrows}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="28,0,0,0" ToolTip.Tip="{Binding Arrows.PreviousHint}">
+                    <Viewbox Width="76" Height="130" RenderTransformOrigin="50%,50%">
+                        <Viewbox.RenderTransform>
+                            <ScaleTransform ScaleX="-1" />
+                        </Viewbox.RenderTransform>
+                        <Canvas Width="200" Height="300">
+                            <Path Classes="arrow-top" Data="M 50 20 C 40 10, 30 25, 45 60 C 55 90, 55 120, 50 150 L 180 150 Z" />
+                            <Path Classes="arrow-bottom" Data="M 50 150 C 55 180, 55 210, 45 240 C 30 275, 40 290, 50 280 L 180 150 Z" />
+                            <Path Classes="arrow-edge" Data="M 50 20 C 40 10, 30 25, 45 60 C 55 90, 55 210, 45 240 C 30 275, 40 290, 50 280 L 180 150 Z" />
+                        </Canvas>
+                    </Viewbox>
+                </Button>
+                <Button Classes="arrow" Command="{Binding Arrows.NextCommand}" IsVisible="{Binding HasArrows}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,28,0" ToolTip.Tip="{Binding Arrows.NextHint}">
+                    <Viewbox Width="76" Height="130">
+                        <Canvas Width="200" Height="300">
+                            <Path Classes="arrow-top" Data="M 50 20 C 40 10, 30 25, 45 60 C 55 90, 55 120, 50 150 L 180 150 Z" />
+                            <Path Classes="arrow-bottom" Data="M 50 150 C 55 180, 55 210, 45 240 C 30 275, 40 290, 50 280 L 180 150 Z" />
+                            <Path Classes="arrow-edge" Data="M 50 20 C 40 10, 30 25, 45 60 C 55 90, 55 210, 45 240 C 30 275, 40 290, 50 280 L 180 150 Z" />
+                        </Canvas>
+                    </Viewbox>
+                </Button>
+            </Panel>
         </Border>
     </DockPanel>
 
