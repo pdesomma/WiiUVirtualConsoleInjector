@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole;
+﻿using PD.WiiU.VirtualConsole;
 
 namespace WiiUVirtualConsoleInjector.ViewModels;
 
@@ -12,11 +12,12 @@ public sealed class BaseChoice
     /// </summary>
     /// <param name="base">The base.</param>
     /// <param name="status">Its status in the store.</param>
-    public BaseChoice(BaseTitle @base, BaseStatus status, bool keysOk = true)
+    public BaseChoice(BaseTitle @base, BaseStatus status, bool keysOk = true, bool hasTitleKey = false)
     {
         Base = @base ?? throw new ArgumentNullException(nameof(@base));
         Status = status;
         KeysOk = keysOk;
+        HasTitleKey = hasTitleKey;
     }
 
     /// <summary>
@@ -32,6 +33,10 @@ public sealed class BaseChoice
     /// <summary>
     /// True when the base can be injected into.
     /// </summary>
+    /// <summary>
+    /// True when this base's own title key has been added.
+    /// </summary>
+    public bool HasTitleKey { get; }
     public bool IsPresent => Status == BaseStatus.Present;
 
     /// <summary>

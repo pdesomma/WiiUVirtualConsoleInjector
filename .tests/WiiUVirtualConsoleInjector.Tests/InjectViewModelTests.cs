@@ -67,6 +67,19 @@ public class InjectViewModelTests
     }
 
     [TestMethod]
+    public void Bases_TitleKeyStored_ShowsOnTheChoice()
+    {
+        var keyed = Base(SourceConsole.Nes, 0x2000, "Keyed");
+        _bases.Add(keyed);
+        _bases.Keyed.Add(keyed.TitleId);
+
+        var vm = Create();
+
+        Assert.IsTrue(vm.Bases.Single(b => b.Base.TitleId.Equals(keyed.TitleId)).HasTitleKey);
+        Assert.IsFalse(vm.Bases.First(b => !b.Base.TitleId.Equals(keyed.TitleId)).HasTitleKey, "present or not, the glyph is about the key");
+    }
+
+    [TestMethod]
     public void SelectedConsole_Changed_SwapsOptionsReloadsBasesAndClearsRom()
     {
         var vm = Ready();

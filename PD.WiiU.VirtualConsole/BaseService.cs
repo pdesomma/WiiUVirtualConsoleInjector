@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole.Ports;
+﻿using PD.WiiU.VirtualConsole.Ports;
 
 namespace PD.WiiU.VirtualConsole;
 
@@ -39,6 +39,16 @@ public sealed class BaseService : IBaseService
         var commonKey = _keys.CommonKey ?? throw new InvalidOperationException("The common key has not been supplied.");
         var titleKey = _keys.GetTitleKey(@base.TitleId) ?? throw new InvalidOperationException($"No title key has been supplied for {@base}.");
         return _downloader.DownloadAsync(@base, titleKey, commonKey, progress, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    /// <inheritdoc/>
+    public bool HasTitleKey(BaseTitle @base)
+    {
+        if (@base is null)
+            throw new ArgumentNullException(nameof(@base));
+
+        return _keys.GetTitleKey(@base.TitleId) is not null;
     }
 
     /// <inheritdoc/>
