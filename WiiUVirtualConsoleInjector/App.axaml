@@ -143,7 +143,7 @@
                 <GradientStop Offset="0" Color="#61FFFFFF" />
                 <GradientStop Offset="0.55" Color="#00FFFFFF" />
             </LinearGradientBrush>
-            <FontFamily x:Key="UiFont">Segoe UI, Nunito, sans-serif</FontFamily>
+            <FontFamily x:Key="UiFont">avares://WiiUVirtualConsoleInjector/Assets/Fonts#Nunito, Segoe UI, sans-serif</FontFamily>
             <FontFamily x:Key="MonoFont">Cascadia Mono, Consolas, monospace</FontFamily>
         </ResourceDictionary>
     </Application.Resources>
