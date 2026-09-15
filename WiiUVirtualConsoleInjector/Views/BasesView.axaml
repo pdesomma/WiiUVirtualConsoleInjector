@@ -101,17 +101,12 @@
                             <DataTemplate x:DataType="vm:BaseRowViewModel">
                                 <Border BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,0,1" Padding="0,14">
                                     <StackPanel Spacing="8">
-                                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-                                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                                <TextBlock Classes="base-name" Text="{Binding Name}" />
-                                                <TextBlock Classes="base-region" Text="{Binding Region}" />
-                                                <TextBlock Classes="base-id mono" Text="{Binding TitleId}" />
-                                                <TextBlock Classes="base-id" Text="(custom)" IsVisible="{Binding IsCustom}" />
-                                            </StackPanel>
-                                            <Button Grid.Column="1" Classes="sm primary" Content="Download" Command="{Binding DownloadCommand}" IsVisible="{Binding !DownloadCommand.IsRunning}" />
-                                            <Button Grid.Column="1" Classes="sm ghost" Content="Cancel" Command="{Binding DownloadCancelCommand}" IsVisible="{Binding DownloadCommand.IsRunning}" />
-                                            <Button Grid.Column="2" Classes="sm" Content="Inspect" Command="{Binding InspectCommand}" />
-                                        </Grid>
+                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                            <TextBlock Classes="base-name" Text="{Binding Name}" />
+                                            <TextBlock Classes="base-region" Text="{Binding Region}" />
+                                            <TextBlock Classes="base-id mono" Text="{Binding TitleId}" />
+                                            <TextBlock Classes="base-id" Text="(custom)" IsVisible="{Binding IsCustom}" />
+                                        </StackPanel>
                                         <Grid ColumnDefinitions="64,*,Auto" ColumnSpacing="8">
                                             <TextBlock Grid.Column="0" Classes="hint" Text="Title key" VerticalAlignment="Center" />
                                             <TextBox Grid.Column="1" Classes="mono title-key" Text="{Binding TitleKey}" PlaceholderText="32 hex characters; empty to clear" />
@@ -119,6 +114,12 @@
                                                 <TextBlock Text="✓" IsVisible="{Binding IsTitleKeyValid}" />
                                             </Border>
                                         </Grid>
+                                        <!-- Actions sit under the key they depend on -->
+                                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                                            <Button Classes="sm primary" Content="Download" Command="{Binding DownloadCommand}" IsVisible="{Binding !DownloadCommand.IsRunning}" ToolTip.ShowOnDisabled="True" ToolTip.Tip="{Binding DownloadHint}" />
+                                            <Button Classes="sm ghost" Content="Cancel" Command="{Binding DownloadCancelCommand}" IsVisible="{Binding DownloadCommand.IsRunning}" />
+                                            <Button Classes="sm" Content="Inspect" Command="{Binding InspectCommand}" ToolTip.ShowOnDisabled="True" ToolTip.Tip="{Binding InspectHint}" />
+                                        </StackPanel>
                                         <TextBlock Classes="hint" Text="{Binding ProgressText}" IsVisible="{Binding ProgressText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
                                     </StackPanel>
                                 </Border>
