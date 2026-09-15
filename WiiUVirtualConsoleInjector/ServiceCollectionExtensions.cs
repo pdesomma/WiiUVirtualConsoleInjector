@@ -1,4 +1,4 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Infrastructure;
@@ -30,7 +30,8 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton(paths);
         services.AddSingleton<ISettingsStore>(new JsonSettingsStore(paths.SettingsFile));
-        services.AddSingleton<IKeyStore>(new JsonKeyStore(paths.KeysFile));
+        services.AddSingleton<IToastService>(new AvaloniaToastService(owner));
+        services.AddSingleton<IKeyStore>(p => new ToastingKeyStore(new JsonKeyStore(paths.KeysFile), p.GetRequiredService<IToastService>()));
         services.AddSingleton<ISettingsService, SettingsService>();
         services.AddSingleton(BaseCatalog.Bundled());
         services.AddSingleton(new HttpClient());
