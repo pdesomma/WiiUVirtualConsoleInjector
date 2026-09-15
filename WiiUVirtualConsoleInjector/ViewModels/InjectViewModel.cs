@@ -718,6 +718,8 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
 
     partial void OnNameChanged(string? value) => ArtworkBuilder.Refresh(SelectedConsole, value, ShortName);
 
+    partial void OnRomPathChanged(string? value) => MissingKeys = _injections.MissingKeys(SelectedConsole, value);
+
     partial void OnShortNameChanged(string? value) => ArtworkBuilder.Refresh(SelectedConsole, Name, value);
 
     partial void OnSelectedConsoleChanged(SourceConsole value)
@@ -764,7 +766,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     private void Refresh()
     {
         var previous = SelectedBase?.Base.TitleId;
-        MissingKeys = _injections.MissingKeys(SelectedConsole);
+        MissingKeys = _injections.MissingKeys(SelectedConsole, RomPath);
         var step = Step;
         Bases.Clear();
         foreach (var @base in _bases.Available(SelectedConsole))

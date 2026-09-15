@@ -139,7 +139,7 @@ public class InjectWizardTests
     [TestMethod]
     public void Refresh_MissingKeys_MarksBasesUnusable()
     {
-        _factory.Missing = _ => new[] { "Wii U common key" };
+        _factory.Missing = (_, _) => new[] { "Wii U common key" };
         var vm = Create();
         vm.Step = 2;
 

@@ -49,10 +49,9 @@ public sealed class InjectionServiceFactory : IInjectionServiceFactory
             new Tg16RomInjector(),
             new MsxRomInjector(),
             new GameCubeRomInjector(),
+            // without the Wii common key it still serves NKit images, homebrew and channels; GameCube reads the NFS key from the base itself
+            new WiiRomInjector(_keys.WiiCommonKey),
         };
-        // only Wii discs need the Wii common key; GameCube reads the NFS key from the base itself
-        if (_keys.WiiCommonKey is { } wiiKey)
-            injectors.Add(new WiiRomInjector(wiiKey));
 
         return new InjectionService(
             new DirectoryBaseStore(_settings.BasePath),
@@ -63,12 +62,12 @@ public sealed class InjectionServiceFactory : IInjectionServiceFactory
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<string> MissingKeys(SourceConsole console)
+    public IReadOnlyList<string> MissingKeys(SourceConsole console, string? romPath = null)
     {
         var missing = new List<string>();
         if (_keys.CommonKey is null)
             missing.Add(WiiUCommonKeyName);
-        if (console == SourceConsole.Wii && _keys.WiiCommonKey is null)
+        if (console == SourceConsole.Wii && _keys.WiiCommonKey is null && romPath is not null && WiiRomInjector.NeedsCommonKey(romPath))
             missing.Add(WiiCommonKeyName);
         return missing;
     }

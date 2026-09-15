@@ -164,18 +164,22 @@ public class InjectViewModelTests
     [TestMethod]
     public void CanInject_MissingKeys_FalseWithHint()
     {
-        _factory.Missing = c => c == SourceConsole.Wii ? new[] { "Wii U common key", "Wii common key" } : Array.Empty<string>();
+        _factory.Missing = (c, rom) => c == SourceConsole.Wii && rom is not null ? new[] { "Wii U common key", "Wii common key" } : Array.Empty<string>();
         var vm = Ready();
         Assert.IsTrue(vm.CanInject);
         Assert.IsFalse(vm.HasMissingKeys);
         Assert.IsNull(vm.MissingKeysHint);
 
         vm.SelectedConsole = SourceConsole.Wii;
+        Assert.IsFalse(vm.HasMissingKeys, "nothing to complain about until the ROM is known");
         vm.RomPath = @"C:\game.iso";
 
         Assert.IsFalse(vm.CanInject);
         Assert.IsTrue(vm.HasMissingKeys);
         StringAssert.Contains(vm.MissingKeysHint, "Wii U common key and Wii common key");
+
+        vm.RomPath = null;
+        Assert.IsFalse(vm.HasMissingKeys, "recomputed as the ROM changes");
     }
 
     [TestMethod]

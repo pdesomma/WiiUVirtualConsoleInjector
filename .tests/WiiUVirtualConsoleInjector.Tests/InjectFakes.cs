@@ -138,7 +138,7 @@ internal static class InjectFakes
     internal sealed class RecordingInjectionServiceFactory : IInjectionServiceFactory
     {
         public int Created { get; private set; }
-        public Func<SourceConsole, IReadOnlyList<string>> Missing { get; set; } = _ => Array.Empty<string>();
+        public Func<SourceConsole, string?, IReadOnlyList<string>> Missing { get; set; } = (_, _) => Array.Empty<string>();
         public RecordingInjectionService Service { get; } = new();
 
         public IInjectionService Create()
@@ -147,6 +147,6 @@ internal static class InjectFakes
             return Service;
         }
 
-        public IReadOnlyList<string> MissingKeys(SourceConsole console) => Missing(console);
+        public IReadOnlyList<string> MissingKeys(SourceConsole console, string? romPath = null) => Missing(console, romPath);
     }
 }

@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole;
+﻿using PD.WiiU.VirtualConsole;
 
 namespace WiiUVirtualConsoleInjector.Services;
 
@@ -17,5 +17,6 @@ public interface IInjectionServiceFactory
     /// Names of keys an inject for the console still needs; empty when it can run.
     /// </summary>
     /// <param name="console">Console the ROM is for.</param>
-    IReadOnlyList<string> MissingKeys(SourceConsole console);
+    /// <param name="romPath">The ROM, when picked; a Wii image only needs the Wii common key when it is encrypted.</param>
+    IReadOnlyList<string> MissingKeys(SourceConsole console, string? romPath = null);
 }
