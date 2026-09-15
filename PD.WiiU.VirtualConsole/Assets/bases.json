@@ -1,0 +1,752 @@
+[
+  {
+    "titleId": "0005000010153000",
+    "name": "Dr. Mario",
+    "region": "Japan",
+    "console": "Nes"
+  },
+  {
+    "titleId": "0005000010153100",
+    "name": "Dr. Mario",
+    "region": "UnitedStates",
+    "console": "Nes"
+  },
+  {
+    "titleId": "0005000010153200",
+    "name": "Dr. Mario",
+    "region": "Europe",
+    "console": "Nes"
+  },
+  {
+    "titleId": "0005000010133100",
+    "name": "EarthBound Beginnings",
+    "region": "UnitedStates",
+    "console": "Nes"
+  },
+  {
+    "titleId": "0005000010133200",
+    "name": "EarthBound Beginnings",
+    "region": "Europe",
+    "console": "Nes"
+  },
+  {
+    "titleId": "0005000010107700",
+    "name": "Kirby's Adventure",
+    "region": "Japan",
+    "console": "Nes"
+  },
+  {
+    "titleId": "0005000010107800",
+    "name": "Kirby's Adventure",
+    "region": "UnitedStates",
+    "console": "Nes"
+  },
+  {
+    "titleId": "0005000010107900",
+    "name": "Kirby's Adventure",
+    "region": "Europe",
+    "console": "Nes"
+  },
+  {
+    "titleId": "00050000101A0700",
+    "name": "Metal Slader Glory",
+    "region": "Japan",
+    "console": "Nes"
+  },
+  {
+    "titleId": "000500001012F300",
+    "name": "Metroid",
+    "region": "Japan",
+    "console": "Nes"
+  },
+  {
+    "titleId": "000500001012F400",
+    "name": "Metroid",
+    "region": "UnitedStates",
+    "console": "Nes"
+  },
+  {
+    "titleId": "000500001012F500",
+    "name": "Metroid",
+    "region": "Europe",
+    "console": "Nes"
+  },
+  {
+    "titleId": "0005000010133000",
+    "name": "MOTHER",
+    "region": "Japan",
+    "console": "Nes"
+  },
+  {
+    "titleId": "0005000010108A00",
+    "name": "Punch-Out!!",
+    "region": "Japan",
+    "console": "Nes"
+  },
+  {
+    "titleId": "0005000010108C00",
+    "name": "Punch-Out!!",
+    "region": "Europe",
+    "console": "Nes"
+  },
+  {
+    "titleId": "0005000010108B00",
+    "name": "Punch-Out!! Featuring Mr. Dream",
+    "region": "UnitedStates",
+    "console": "Nes"
+  },
+  {
+    "titleId": "0005000010109400",
+    "name": "Donkey Kong Country",
+    "region": "Japan",
+    "console": "Snes"
+  },
+  {
+    "titleId": "0005000010109500",
+    "name": "Donkey Kong Country",
+    "region": "UnitedStates",
+    "console": "Snes"
+  },
+  {
+    "titleId": "0005000010109600",
+    "name": "Donkey Kong Country",
+    "region": "Europe",
+    "console": "Snes"
+  },
+  {
+    "titleId": "0005000010133400",
+    "name": "EarthBound",
+    "region": "UnitedStates",
+    "console": "Snes"
+  },
+  {
+    "titleId": "0005000010133500",
+    "name": "EarthBound",
+    "region": "Europe",
+    "console": "Snes"
+  },
+  {
+    "titleId": "0005000010115200",
+    "name": "Kirby's Dream Land 3",
+    "region": "Japan",
+    "console": "Snes"
+  },
+  {
+    "titleId": "0005000010115300",
+    "name": "Kirby's Dream Land 3",
+    "region": "UnitedStates",
+    "console": "Snes"
+  },
+  {
+    "titleId": "0005000010115400",
+    "name": "Kirby's Dream Land 3",
+    "region": "Europe",
+    "console": "Snes"
+  },
+  {
+    "titleId": "0005000010133300",
+    "name": "MOTHER 2: Gyiyg Strikes Back!",
+    "region": "Japan",
+    "console": "Snes"
+  },
+  {
+    "titleId": "000500001010A800",
+    "name": "Super Mario Kart",
+    "region": "Japan",
+    "console": "Snes"
+  },
+  {
+    "titleId": "000500001010A900",
+    "name": "Super Mario Kart",
+    "region": "UnitedStates",
+    "console": "Snes"
+  },
+  {
+    "titleId": "000500001010AA00",
+    "name": "Super Mario Kart",
+    "region": "Europe",
+    "console": "Snes"
+  },
+  {
+    "titleId": "0005000010108E00",
+    "name": "Super Mario World",
+    "region": "Japan",
+    "console": "Snes"
+  },
+  {
+    "titleId": "0005000010108F00",
+    "name": "Super Mario World",
+    "region": "UnitedStates",
+    "console": "Snes"
+  },
+  {
+    "titleId": "0005000010109000",
+    "name": "Super Mario World",
+    "region": "Europe",
+    "console": "Snes"
+  },
+  {
+    "titleId": "000500001010A500",
+    "name": "Super Metroid",
+    "region": "Japan",
+    "console": "Snes"
+  },
+  {
+    "titleId": "000500001010A600",
+    "name": "Super Metroid",
+    "region": "UnitedStates",
+    "console": "Snes"
+  },
+  {
+    "titleId": "000500001010A700",
+    "name": "Super Metroid",
+    "region": "Europe",
+    "console": "Snes"
+  },
+  {
+    "titleId": "0005000010159000",
+    "name": "Super Punch-Out!!",
+    "region": "Japan",
+    "console": "Snes"
+  },
+  {
+    "titleId": "0005000010159100",
+    "name": "Super Punch-Out!!",
+    "region": "UnitedStates",
+    "console": "Snes"
+  },
+  {
+    "titleId": "0005000010159200",
+    "name": "Super Punch-Out!!",
+    "region": "Europe",
+    "console": "Snes"
+  },
+  {
+    "titleId": "00050000101A5A00",
+    "name": "1080° Snowboarding",
+    "region": "Japan",
+    "console": "N64"
+  },
+  {
+    "titleId": "00050000101A5B00",
+    "name": "1080° Snowboarding",
+    "region": "UnitedStates",
+    "console": "N64"
+  },
+  {
+    "titleId": "0005000010199100",
+    "name": "Donkey Kong 64",
+    "region": "Japan",
+    "console": "N64"
+  },
+  {
+    "titleId": "0005000010199200",
+    "name": "Donkey Kong 64",
+    "region": "UnitedStates",
+    "console": "N64"
+  },
+  {
+    "titleId": "0005000010199300",
+    "name": "Donkey Kong 64",
+    "region": "Europe",
+    "console": "N64"
+  },
+  {
+    "titleId": "00050000101E6400",
+    "name": "Excitebike 64",
+    "region": "Japan",
+    "console": "N64"
+  },
+  {
+    "titleId": "00050000101E6500",
+    "name": "Excitebike 64",
+    "region": "UnitedStates",
+    "console": "N64"
+  },
+  {
+    "titleId": "00050000101EBB00",
+    "name": "F-Zero X",
+    "region": "Japan",
+    "console": "N64"
+  },
+  {
+    "titleId": "00050000101EBC00",
+    "name": "F-Zero X",
+    "region": "UnitedStates",
+    "console": "N64"
+  },
+  {
+    "titleId": "00050000101A5800",
+    "name": "Mario Golf",
+    "region": "Japan",
+    "console": "N64"
+  },
+  {
+    "titleId": "00050000101A5900",
+    "name": "Mario Golf",
+    "region": "UnitedStates",
+    "console": "N64"
+  },
+  {
+    "titleId": "00050000101C5C00",
+    "name": "Mario Party 2",
+    "region": "Japan",
+    "console": "N64"
+  },
+  {
+    "titleId": "00050000101C5D00",
+    "name": "Mario Party 2",
+    "region": "UnitedStates",
+    "console": "N64"
+  },
+  {
+    "titleId": "0005000010199600",
+    "name": "Paper Mario",
+    "region": "Japan",
+    "console": "N64"
+  },
+  {
+    "titleId": "0005000010199700",
+    "name": "Paper Mario",
+    "region": "UnitedStates",
+    "console": "N64"
+  },
+  {
+    "titleId": "0005000010199800",
+    "name": "Paper Mario",
+    "region": "Europe",
+    "console": "N64"
+  },
+  {
+    "titleId": "00050000101B4700",
+    "name": "Sin & Punishment",
+    "region": "Japan",
+    "console": "N64"
+  },
+  {
+    "titleId": "00050000101B4800",
+    "name": "Sin & Punishment",
+    "region": "UnitedStates",
+    "console": "N64"
+  },
+  {
+    "titleId": "0005000010199400",
+    "name": "Super Mario 64",
+    "region": "Japan",
+    "console": "N64"
+  },
+  {
+    "titleId": "0005000010199500",
+    "name": "Super Mario 64",
+    "region": "UnitedStates",
+    "console": "N64"
+  },
+  {
+    "titleId": "00050000101BAE00",
+    "name": "The Legend of Zelda: Majora's Mask",
+    "region": "Japan",
+    "console": "N64"
+  },
+  {
+    "titleId": "00050000101BAF00",
+    "name": "The Legend of Zelda: Majora's Mask",
+    "region": "UnitedStates",
+    "console": "N64"
+  },
+  {
+    "titleId": "00050000101BB000",
+    "name": "The Legend of Zelda: Majora's Mask",
+    "region": "Europe",
+    "console": "N64"
+  },
+  {
+    "titleId": "0005000010157300",
+    "name": "Mario & Luigi: Superstar Saga",
+    "region": "Japan",
+    "console": "Gba"
+  },
+  {
+    "titleId": "0005000010157400",
+    "name": "Mario & Luigi: Superstar Saga",
+    "region": "UnitedStates",
+    "console": "Gba"
+  },
+  {
+    "titleId": "0005000010157500",
+    "name": "Mario & Luigi: Superstar Saga",
+    "region": "Europe",
+    "console": "Gba"
+  },
+  {
+    "titleId": "00050000101C3A00",
+    "name": "Rockman EXE 4.5 Real Operation",
+    "region": "Japan",
+    "console": "Gba"
+  },
+  {
+    "titleId": "000500001015E300",
+    "name": "The Legend of Zelda: The Minish Cap",
+    "region": "Japan",
+    "console": "Gba"
+  },
+  {
+    "titleId": "000500001015E400",
+    "name": "The Legend of Zelda: The Minish Cap",
+    "region": "UnitedStates",
+    "console": "Gba"
+  },
+  {
+    "titleId": "000500001015E500",
+    "name": "The Legend of Zelda: The Minish Cap",
+    "region": "Europe",
+    "console": "Gba"
+  },
+  {
+    "titleId": "00050000101B3700",
+    "name": "Fire Emblem: Shadow Dragon",
+    "region": "Japan",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101B3800",
+    "name": "Fire Emblem: Shadow Dragon",
+    "region": "UnitedStates",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101B3900",
+    "name": "Fire Emblem: Shadow Dragon",
+    "region": "Europe",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101DA100",
+    "name": "Mario Hoops 3-on-3",
+    "region": "Japan",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101DA200",
+    "name": "Mario Hoops 3-on-3",
+    "region": "UnitedStates",
+    "console": "Nds"
+  },
+  {
+    "titleId": "0005000010195600",
+    "name": "Mario Kart DS",
+    "region": "Japan",
+    "console": "Nds"
+  },
+  {
+    "titleId": "0005000010195700",
+    "name": "Mario Kart DS",
+    "region": "UnitedStates",
+    "console": "Nds"
+  },
+  {
+    "titleId": "0005000010195800",
+    "name": "Mario Kart DS",
+    "region": "Europe",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101D2200",
+    "name": "Mario Party DS",
+    "region": "Japan",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101D2300",
+    "name": "Mario Party DS",
+    "region": "UnitedStates",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101D2400",
+    "name": "Mario Party DS",
+    "region": "Europe",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101DA300",
+    "name": "Mario Slam Basketball",
+    "region": "Europe",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101B3A00",
+    "name": "Metroid Prime Hunters",
+    "region": "Japan",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101B3B00",
+    "name": "Metroid Prime Hunters",
+    "region": "UnitedStates",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101B3C00",
+    "name": "Metroid Prime Hunters",
+    "region": "Europe",
+    "console": "Nds"
+  },
+  {
+    "titleId": "0005000010195900",
+    "name": "New Super Mario Bros.",
+    "region": "Japan",
+    "console": "Nds"
+  },
+  {
+    "titleId": "0005000010195A00",
+    "name": "New Super Mario Bros.",
+    "region": "UnitedStates",
+    "console": "Nds"
+  },
+  {
+    "titleId": "0005000010195B00",
+    "name": "New Super Mario Bros.",
+    "region": "Europe",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101E6C00",
+    "name": "Picross 3D",
+    "region": "Japan",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101E6D00",
+    "name": "Picross 3D",
+    "region": "UnitedStates",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101E6E00",
+    "name": "Picross 3D",
+    "region": "Europe",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101C3300",
+    "name": "Super Mario 64 DS",
+    "region": "Japan",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101C3400",
+    "name": "Super Mario 64 DS",
+    "region": "UnitedStates",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101C3500",
+    "name": "Super Mario 64 DS",
+    "region": "Europe",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101B8B00",
+    "name": "The Legend of Zelda: Spirit Tracks",
+    "region": "Japan",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101B8C00",
+    "name": "The Legend of Zelda: Spirit Tracks",
+    "region": "UnitedStates",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101B8D00",
+    "name": "The Legend of Zelda: Spirit Tracks",
+    "region": "Europe",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101A1E00",
+    "name": "WarioWare: Touched!",
+    "region": "Japan",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101A1F00",
+    "name": "WarioWare: Touched!",
+    "region": "UnitedStates",
+    "console": "Nds"
+  },
+  {
+    "titleId": "00050000101A2000",
+    "name": "WarioWare: Touched!",
+    "region": "Europe",
+    "console": "Nds"
+  },
+  {
+    "titleId": "0005000010179D00",
+    "name": "Yoshi Touch & Go",
+    "region": "Japan",
+    "console": "Nds"
+  },
+  {
+    "titleId": "0005000010179E00",
+    "name": "Yoshi Touch & Go",
+    "region": "UnitedStates",
+    "console": "Nds"
+  },
+  {
+    "titleId": "0005000010179F00",
+    "name": "Yoshi Touch & Go",
+    "region": "Europe",
+    "console": "Nds"
+  },
+  {
+    "titleId": "0005000010198800",
+    "name": "Yoshi's Island DS",
+    "region": "Japan",
+    "console": "Nds"
+  },
+  {
+    "titleId": "0005000010198900",
+    "name": "Yoshi's Island DS",
+    "region": "UnitedStates",
+    "console": "Nds"
+  },
+  {
+    "titleId": "0005000010198A00",
+    "name": "Yoshi's Island DS",
+    "region": "Europe",
+    "console": "Nds"
+  },
+  {
+    "titleId": "000500001015C900",
+    "name": "BOMBERMAN '94",
+    "region": "Japan",
+    "console": "Tg16"
+  },
+  {
+    "titleId": "0005000010166D00",
+    "name": "BOMBERMAN '94",
+    "region": "UnitedStates",
+    "console": "Tg16"
+  },
+  {
+    "titleId": "0005000010166E00",
+    "name": "BOMBERMAN '94",
+    "region": "Europe",
+    "console": "Tg16"
+  },
+  {
+    "titleId": "000500001015D000",
+    "name": "LORDS OF THUNDER",
+    "region": "Japan",
+    "console": "Tg16"
+  },
+  {
+    "titleId": "0005000010167B00",
+    "name": "LORDS OF THUNDER",
+    "region": "UnitedStates",
+    "console": "Tg16"
+  },
+  {
+    "titleId": "0005000010167C00",
+    "name": "LORDS OF THUNDER",
+    "region": "Europe",
+    "console": "Tg16"
+  },
+  {
+    "titleId": "0005000010170800",
+    "name": "R-TYPE",
+    "region": "Japan",
+    "console": "Tg16"
+  },
+  {
+    "titleId": "0005000010163200",
+    "name": "R-TYPE",
+    "region": "UnitedStates",
+    "console": "Tg16"
+  },
+  {
+    "titleId": "000500001016A500",
+    "name": "R-TYPE",
+    "region": "Europe",
+    "console": "Tg16"
+  },
+  {
+    "titleId": "0005000010194A00",
+    "name": "Castlevania",
+    "region": "Japan",
+    "console": "Msx"
+  },
+  {
+    "titleId": "0005000010195400",
+    "name": "Goemon",
+    "region": "Japan",
+    "console": "Msx"
+  },
+  {
+    "titleId": "0005000010168A00",
+    "name": "NEMESIS3 THE EVE OF DESTRUCTION",
+    "region": "Japan",
+    "console": "Msx"
+  },
+  {
+    "titleId": "00050000101B2400",
+    "name": "Project Zero 2: Wii Edition",
+    "region": "Europe",
+    "console": "Wii"
+  },
+  {
+    "titleId": "00050000101B0600",
+    "name": "Rhythm Heaven Fever",
+    "region": "Japan",
+    "console": "Wii"
+  },
+  {
+    "titleId": "00050000101B0700",
+    "name": "Rhythm Heaven Fever",
+    "region": "UnitedStates",
+    "console": "Wii"
+  },
+  {
+    "titleId": "00050000101B0800",
+    "name": "Rhythm Heaven Fever",
+    "region": "Europe",
+    "console": "Wii"
+  },
+  {
+    "titleId": "00050000101BD000",
+    "name": "Super Paper Mario",
+    "region": "Japan",
+    "console": "Wii"
+  },
+  {
+    "titleId": "00050000101BD100",
+    "name": "Super Paper Mario",
+    "region": "UnitedStates",
+    "console": "Wii"
+  },
+  {
+    "titleId": "00050000101BD200",
+    "name": "Super Paper Mario",
+    "region": "Europe",
+    "console": "Wii"
+  },
+  {
+    "titleId": "000500001019D700",
+    "name": "Xenoblade Chronicles",
+    "region": "Japan",
+    "console": "Wii"
+  },
+  {
+    "titleId": "000500001019D800",
+    "name": "Xenoblade Chronicles",
+    "region": "UnitedStates",
+    "console": "Wii"
+  },
+  {
+    "titleId": "000500001019D900",
+    "name": "Xenoblade Chronicles",
+    "region": "Europe",
+    "console": "Wii"
+  }
+]

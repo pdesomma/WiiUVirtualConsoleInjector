@@ -81,3 +81,33 @@ internal sealed class FakeTitlePacker : ITitlePacker
         return Task.CompletedTask;
     }
 }
+
+internal sealed class FakeKeyStore : IKeyStore
+{
+    private readonly Dictionary<TitleId, WiiUSharp.Nus.EncryptedTitleKey> _titleKeys = new();
+
+    public WiiUSharp.Nus.CommonKey? CommonKey { get; set; }
+
+    public WiiUSharp.Nus.EncryptedTitleKey? GetTitleKey(TitleId titleId) => _titleKeys.TryGetValue(titleId, out var key) ? key : null;
+
+    public void SetTitleKey(TitleId titleId, WiiUSharp.Nus.EncryptedTitleKey? titleKey)
+    {
+        if (titleKey is null)
+            _titleKeys.Remove(titleId);
+        else
+            _titleKeys[titleId] = titleKey.Value;
+    }
+}
+
+internal sealed class FakeBaseDownloader : IBaseDownloader
+{
+    public List<(BaseTitle Base, WiiUSharp.Nus.EncryptedTitleKey TitleKey, WiiUSharp.Nus.CommonKey CommonKey)> Calls { get; } = new();
+    public string Root { get; init; } = Path.Combine(Path.GetTempPath(), "PD.WiiU.VirtualConsole.Tests", "store");
+
+    public Task<TitleDirectory> DownloadAsync(BaseTitle @base, WiiUSharp.Nus.EncryptedTitleKey titleKey, WiiUSharp.Nus.CommonKey commonKey, IProgress<BaseDownloadProgress>? progress = null, CancellationToken cancellationToken = default)
+    {
+        Calls.Add((@base, titleKey, commonKey));
+        progress?.Report(new BaseDownloadProgress(BaseDownloadPhase.Downloading, "title.tmd", 1, 1, 0, null));
+        return Task.FromResult(new TitleDirectory(Path.Combine(Root, @base.TitleId.ToString())));
+    }
+}
