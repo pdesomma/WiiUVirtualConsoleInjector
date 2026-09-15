@@ -1,4 +1,4 @@
-using SkiaSharp;
+﻿using SkiaSharp;
 using WiiUSharp;
 
 namespace PD.WiiU.VirtualConsole.Infrastructure.Tests;
@@ -25,7 +25,7 @@ public class SkiaArtworkComposerTests
     }
 
     [TestMethod]
-    public async Task ComposeAsync_PlainIcon_PutsTheScreenshotInItsWindowOnTheDarkGround()
+    public async Task ComposeAsync_NoOverlay_TheScreenshotFillsTheWholeIcon()
     {
         var composer = new SkiaArtworkComposer(_root);
         var output = Path.Combine(_root, "icon.png");
@@ -35,6 +35,21 @@ public class SkiaArtworkComposerTests
         using var icon = SKBitmap.Decode(output);
         Assert.AreEqual(ImageSlot.Icon.Width, icon.Width);
         Assert.AreEqual(ImageSlot.Icon.Height, icon.Height);
+        Assert.AreEqual(SKColors.Red, icon.GetPixel(64, 50));
+        Assert.AreEqual(SKColors.Red, icon.GetPixel(0, 0), "edge to edge");
+        Assert.AreEqual(SKColors.Red, icon.GetPixel(127, 127), "no caption along the bottom");
+    }
+
+    [TestMethod]
+    public async Task ComposeAsync_GenericIconOverlay_KeepsTheGroundAroundTheWindow()
+    {
+        Write("Icon.png", 128, 128, new SKColor(0, 0, 0, 0));
+        var composer = new SkiaArtworkComposer(_root);
+        var output = Path.Combine(_root, "icon.png");
+
+        await composer.ComposeAsync(new ArtworkRequest(ArtworkFrames.Find("icon-vc")) { ScreenshotPath = _screenshot }, ImageSlot.Icon, output);
+
+        using var icon = SKBitmap.Decode(output);
         Assert.AreEqual(SKColors.Red, icon.GetPixel(64, 50), "the screenshot fills its window");
         Assert.AreEqual(new SKColor(30, 30, 30), icon.GetPixel(1, 1), "the ground shows around it");
     }
@@ -66,7 +81,7 @@ public class SkiaArtworkComposerTests
     }
 
     [TestMethod]
-    public async Task ComposeAsync_BootScreen_IsTvSizedWithTheScreenshotAndCaptions()
+    public async Task ComposeAsync_BootScreenNoOverlay_TheScreenshotFillsTheScreenUnderTheCaptions()
     {
         var composer = new SkiaArtworkComposer(_root);
         var output = Path.Combine(_root, "boot.png");
@@ -77,11 +92,27 @@ public class SkiaArtworkComposerTests
         using var boot = SKBitmap.Decode(output);
         Assert.AreEqual(ImageSlot.BootTv.Width, boot.Width);
         Assert.AreEqual(ImageSlot.BootTv.Height, boot.Height);
+        Assert.AreEqual(SKColors.Red, boot.GetPixel(300, 400));
+        Assert.AreEqual(SKColors.Red, boot.GetPixel(10, 10), "edge to edge, no white ground");
+        Assert.AreEqual(SKColors.Red, boot.GetPixel(1279, 719));
+        Assert.IsTrue(HasInkOn(boot, SKColors.Red, 578, 340, 400, 60), "the name is drawn");
+        Assert.IsTrue(HasInkOn(boot, SKColors.Red, 586, 450, 400, 45), "the release year is drawn");
+        Assert.IsTrue(HasInkOn(boot, SKColors.Red, 586, 496, 400, 45), "the player count is drawn");
+    }
+
+    [TestMethod]
+    public async Task ComposeAsync_BootScreenWithOverlay_KeepsTheWindowAndWhiteGround()
+    {
+        var art = Write("Tv.png", 1280, 720, new SKColor(0, 0, 0, 0));
+        var frame = new ArtworkFrame("t", "Test", ImageSlot.BootTv, null, Path.GetFileName(art), ArtworkFrames.BootStandard);
+        var composer = new SkiaArtworkComposer(_root);
+        var output = Path.Combine(_root, "boot.png");
+
+        await composer.ComposeAsync(new ArtworkRequest(frame) { ScreenshotPath = _screenshot }, ImageSlot.BootTv, output);
+
+        using var boot = SKBitmap.Decode(output);
         Assert.AreEqual(SKColors.Red, boot.GetPixel(300, 400), "the screenshot fills its window");
         Assert.AreEqual(SKColors.White, boot.GetPixel(10, 10), "the ground is white");
-        Assert.IsTrue(HasInk(boot, 578, 340, 400, 60), "the name is drawn");
-        Assert.IsTrue(HasInk(boot, 586, 450, 400, 45), "the release year is drawn");
-        Assert.IsTrue(HasInk(boot, 586, 496, 400, 45), "the player count is drawn");
     }
 
     [TestMethod]
