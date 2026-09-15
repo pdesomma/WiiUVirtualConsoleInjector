@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using WiiSharp;
 
 namespace PD.WiiU.VirtualConsole.Wii.Tests;
@@ -73,6 +73,28 @@ internal static class FakeRetailDisc
     /// <summary>
     /// The same disc as a retail-style encrypted image.
     /// </summary>
+    /// <summary>
+    /// The disc as NKit stores it: plaintext partition with the hash blocks stripped, its length rewritten, the NKit block at 0x200.
+    /// </summary>
+    /// <param name="dol">main.dol to place.</param>
+    /// <param name="region">Region area preset.</param>
+    public static byte[] Nkit(byte[] dol, DiscRegion region = DiscRegion.UnitedStates)
+    {
+        var plain = Plain(dol, region);
+        var partition = WiiDisc.Read(new MemoryStream(plain)).DataPartitions[0];
+        var output = new MemoryStream();
+        output.Write(plain, 0, (int)partition.DataStart);
+        var clusters = (int)(partition.Header.DataSize / DiscFormat.ClusterSize);
+        for (var c = 0; c < clusters; c++)
+            output.Write(plain, (int)(partition.DataStart + c * DiscFormat.ClusterSize + DiscFormat.ClusterHashSize), DiscFormat.ClusterDataSize);
+        var bytes = output.ToArray();
+        WriteUInt32(bytes, (int)(partition.Offset + 0x2BC), (uint)((clusters * DiscFormat.ClusterDataSize) >> 2));
+        bytes[0x60] = 1;
+        bytes[0x61] = 1;
+        new NkitHeader(isWii: true, sourceCrc: 0x12345678, sourceLength: plain.Length).Write(bytes);
+        return bytes;
+    }
+
     public static byte[] Encrypted(byte[] dol, DiscRegion region = DiscRegion.UnitedStates)
     {
         var output = new MemoryStream();

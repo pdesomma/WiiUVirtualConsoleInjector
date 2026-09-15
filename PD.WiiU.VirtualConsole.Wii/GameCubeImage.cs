@@ -1,4 +1,4 @@
-using WiiSharp;
+﻿using WiiSharp;
 
 namespace PD.WiiU.VirtualConsole.Wii;
 
@@ -8,17 +8,38 @@ namespace PD.WiiU.VirtualConsole.Wii;
 public static class GameCubeImage
 {
     /// <summary>
-    /// Opens a .iso or .gcm directly or decodes a .gcz on the fly; the returned disposable owns the container.
+    /// True when the image carries NKit's block at 0x200; leaves the position at 0.
+    /// </summary>
+    /// <param name="image">Seekable image.</param>
+    public static bool IsNkit(Stream image)
+    {
+        if (image is null)
+            throw new ArgumentNullException(nameof(image));
+
+        var head = new byte[NkitHeader.Offset + 4];
+        image.Position = 0;
+        var read = 0;
+        while (read < head.Length)
+        {
+            var n = image.Read(head, read, head.Length - read);
+            if (n == 0)
+                break;
+            read += n;
+        }
+        image.Position = 0;
+        return read == head.Length && NkitHeader.IsPresent(head);
+    }
+
+    /// <summary>
+    /// Opens a .iso or .gcm directly or decodes a .gcz on the fly, NKit or not; the returned disposable owns the container.
     /// </summary>
     /// <param name="path">Image path.</param>
     /// <param name="image">Seekable plain image.</param>
-    /// <exception cref="NotSupportedException">Any other extension, or an NKit image.</exception>
+    /// <exception cref="NotSupportedException">Any other extension.</exception>
     public static IDisposable Open(string path, out Stream image)
     {
         if (path is null)
             throw new ArgumentNullException(nameof(path));
-        if (path.IndexOf(".nkit.", StringComparison.OrdinalIgnoreCase) >= 0)
-            throw new NotSupportedException("NKit images are not supported; convert to a plain ISO or GCZ first.");
 
         var extension = Path.GetExtension(path);
         if (string.Equals(extension, ".iso", StringComparison.OrdinalIgnoreCase) || string.Equals(extension, ".gcm", StringComparison.OrdinalIgnoreCase))

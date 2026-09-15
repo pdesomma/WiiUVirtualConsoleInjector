@@ -1,4 +1,4 @@
-using WiiSharp;
+﻿using WiiSharp;
 
 namespace PD.WiiU.VirtualConsole.Wii.Tests;
 
@@ -61,6 +61,30 @@ public class WiiDiscRebuilderTests
         var boot = PartitionSystemFiles.Read(output, partition).Boot;
         var stored = Read(new PartitionDataStream(output, partition), Offset(boot, 0x420), 0x300);
         Assert.IsTrue(stored.Skip(0x100).All(b => b == 0xAB));
+    }
+
+    [TestMethod]
+    public void Rebuild_NkitDisc_ReadsTheBarePartition()
+    {
+        var nkit = new MemoryStream(FakeRetailDisc.Nkit(FakeRetailDisc.Dol(), DiscRegion.Europe));
+        var output = new MemoryStream();
+
+        var result = WiiDiscRebuilder.Rebuild(nkit, output);
+
+        var disc = WiiDisc.Read(output);
+        var partition = disc.DataPartitions[0];
+        Assert.AreEqual(FakeRetailDisc.GameId, disc.Header.GameId);
+        Assert.AreEqual(DiscRegion.Europe, RegionArea.Read(output).Region);
+        Assert.AreEqual(partition.Offset, result.Partition.Start);
+        var boot = PartitionSystemFiles.Read(output, partition).Boot;
+        var data = new PartitionDataStream(output, partition);
+        var files = Fst.Parse(Read(data, Offset(boot, 0x424), (int)Offset(boot, 0x428)));
+        CollectionAssert.AreEqual(FakeRetailDisc.Files.Select(f => f.Path).ToArray(), files.Select(f => f.Path).ToArray());
+        CollectionAssert.AreEqual(FakeRetailDisc.Files[0].Content, Read(data, files[0].Offset, (int)files[0].Length));
+        Assert.IsFalse(WiiDiscRebuilder.IsNkit(output));
+        Assert.IsTrue(WiiDiscRebuilder.IsNkit(nkit));
+        Assert.IsFalse(WiiDiscRebuilder.IsNkit(new MemoryStream(new byte[16])));
+        Assert.ThrowsExactly<ArgumentNullException>(() => WiiDiscRebuilder.IsNkit(null!));
     }
 
     [TestMethod]

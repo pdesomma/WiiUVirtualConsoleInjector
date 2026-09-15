@@ -1,4 +1,4 @@
-using WiiSharp;
+﻿using WiiSharp;
 
 namespace PD.WiiU.VirtualConsole.Wii;
 
@@ -13,7 +13,7 @@ public static class WiiDiscRebuilder
     public const int FileAlignment = 0x20;
 
     /// <summary>
-    /// Rebuilds the first data partition; other partitions are dropped.
+    /// Rebuilds the first data partition; other partitions are dropped. An NKit image is read as is: its partition is plaintext and stored without hash blocks.
     /// </summary>
     /// <param name="plainDisc">Seekable disc whose partition data is plaintext.</param>
     /// <param name="output">Seekable destination.</param>
@@ -31,8 +31,9 @@ public static class WiiDiscRebuilder
             throw new InvalidDataException("Disc has no data partition.");
 
         var partition = disc.DataPartitions[0];
-        var system = PartitionSystemFiles.Read(plainDisc, partition);
-        var data = new PartitionDataStream(plainDisc, partition);
+        var hashed = !IsNkit(plainDisc);
+        var system = PartitionSystemFiles.Read(plainDisc, partition, hashed);
+        var data = new PartitionDataStream(plainDisc, partition, hashed);
         var boot = system.Boot;
         var dolOffset = (long)ReadUInt32(boot, 0x420) << 2;
         var fstOffset = (long)ReadUInt32(boot, 0x424) << 2;
@@ -52,6 +53,18 @@ public static class WiiDiscRebuilder
         foreach (var file in Fst.Parse(ReadAt(data, fstOffset, fstSize)))
             builder.Files.Add(new DiscFile(file.Path, new SliceStream(data, file.Offset, file.Length)));
         return builder.Build(output, cancellationToken);
+    }
+
+    /// <summary>
+    /// True when the image carries NKit's block at 0x200.
+    /// </summary>
+    /// <param name="disc">Seekable disc image.</param>
+    public static bool IsNkit(Stream disc)
+    {
+        if (disc is null)
+            throw new ArgumentNullException(nameof(disc));
+
+        return disc.Length >= NkitHeader.Offset + 4 && NkitHeader.IsPresent(ReadAt(disc, 0, NkitHeader.Offset + 4));
     }
 
     private static byte[] ReadAt(Stream stream, long position, int count)

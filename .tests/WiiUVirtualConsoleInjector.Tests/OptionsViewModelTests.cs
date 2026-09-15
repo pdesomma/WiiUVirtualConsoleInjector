@@ -95,13 +95,15 @@ public class OptionsViewModelTests
     [TestMethod]
     public void GameCube_Build_MapsEveryProperty()
     {
-        var vm = new GameCubeOptionsViewModel(_dialogs) { ForceFourByThree = true };
+        var vm = new GameCubeOptionsViewModel(_dialogs) { ForceFourByThree = true, KeepFullImage = true };
         vm.Forwarder.Path = @"C:\forwarder.dol";
         vm.SecondDisc.Path = @"C:\disc2.gcm";
 
         var built = (GameCubeOptions)vm.Build()!;
 
         Assert.IsTrue(built.ForceFourByThree);
+        Assert.IsTrue(built.KeepFullImage);
+        Assert.IsFalse(((GameCubeOptions)new GameCubeOptionsViewModel(_dialogs).Build()!).KeepFullImage, "compaction is the default");
         Assert.AreEqual(@"C:\forwarder.dol", built.ForwarderPath);
         Assert.AreEqual(@"C:\disc2.gcm", built.SecondDiscPath);
     }
@@ -277,8 +279,9 @@ public class OptionsViewModelTests
         Assert.IsTrue(wii.Passthrough && wii.TrimDisc);
 
         var cube = new GameCubeOptionsViewModel(_dialogs);
-        cube.Load(new GameCubeOptions { ForceFourByThree = true, ForwarderPath = @"C:\n.dol", SecondDiscPath = @"C:\d2.iso" });
+        cube.Load(new GameCubeOptions { ForceFourByThree = true, KeepFullImage = true, ForwarderPath = @"C:\n.dol", SecondDiscPath = @"C:\d2.iso" });
         Assert.IsTrue(cube.ForceFourByThree);
+        Assert.IsTrue(cube.KeepFullImage);
         Assert.AreEqual(@"C:\n.dol", cube.Forwarder.Path);
         Assert.AreEqual(@"C:\d2.iso", cube.SecondDisc.Path);
 

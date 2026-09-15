@@ -1,4 +1,4 @@
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using System.Text;
 using WiiSharp;
 
@@ -13,6 +13,20 @@ internal static class FakeGameCube
     public const string Title = "Super Smash Bros Melee";
     public const int BlockSize = 0x400;
 
+    /// <summary>
+    /// Where the one-file table sits.
+    /// </summary>
+    public const int FstOffset = 0x500;
+    /// <summary>
+    /// Where the one file starts; the zero gap ahead of it compacts to a record.
+    /// </summary>
+    public const int FileOffset = 0x600;
+
+    /// <summary>
+    /// A tiny but well-formed image: header, a one-file table, a zero gap and the file to the end.
+    /// </summary>
+    /// <param name="length">Whole image length.</param>
+    /// <param name="seed">Varies the header and payload bytes.</param>
     public static byte[] Image(int length = 0x2345, byte seed = 1)
     {
         var bytes = Enumerable.Range(0, length).Select(i => (byte)(i * seed + 3)).ToArray();
@@ -23,9 +37,28 @@ internal static class FakeGameCube
         bytes[0x1D] = 0x33;
         bytes[0x1E] = 0x9F;
         bytes[0x1F] = 0x3D;
-        Array.Clear(bytes, 0x20, 0x40);
+        Array.Clear(bytes, 0x20, 0x420);
         Encoding.ASCII.GetBytes(Title).CopyTo(bytes, 0x20);
+
+        var fst = Fst.Build(new[] { new FstFile("data.bin", FileOffset << 2, length - FileOffset) });
+        WriteUInt32(bytes, 0x420, 0x440);
+        WriteUInt32(bytes, 0x424, FstOffset);
+        WriteUInt32(bytes, 0x428, (uint)fst.Length);
+        WriteUInt32(bytes, 0x42C, (uint)fst.Length);
+        fst.CopyTo(bytes, FstOffset);
+        Array.Clear(bytes, FstOffset + fst.Length, FileOffset - FstOffset - fst.Length);
         return bytes;
+    }
+
+    /// <summary>
+    /// The NKit form of <see cref="Image"/>, as the injector stores it.
+    /// </summary>
+    /// <param name="image">Full image.</param>
+    public static byte[] Compact(byte[] image)
+    {
+        var output = new MemoryStream();
+        NkitGameCube.Compact(new MemoryStream(image), output);
+        return output.ToArray();
     }
 
     public static byte[] Gcz(byte[] plain)
@@ -126,5 +159,13 @@ internal static class FakeGameCube
         var adler = Adler(plain);
         output.Write(new[] { (byte)(adler >> 24), (byte)(adler >> 16), (byte)(adler >> 8), (byte)adler }, 0, 4);
         return output.ToArray();
+    }
+
+    private static void WriteUInt32(byte[] bytes, int offset, uint value)
+    {
+        bytes[offset] = (byte)(value >> 24);
+        bytes[offset + 1] = (byte)(value >> 16);
+        bytes[offset + 2] = (byte)(value >> 8);
+        bytes[offset + 3] = (byte)value;
     }
 }

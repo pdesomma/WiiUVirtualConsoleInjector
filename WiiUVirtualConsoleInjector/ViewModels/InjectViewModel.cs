@@ -20,7 +20,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     public const string WarningTitle = "Warning";
 
     private const string DialogTitle = "Inject";
-    private const string GczWarning = "GCZ images take longer to inject and produce a larger title than an ISO or GCM.\n\nContinue anyway?";
+    private const string GczWarning = "GCZ images take longer to inject than an ISO or GCM, since they are decoded first.\n\nContinue anyway?";
     private const string NdsWarning = "You can only inject NDS ROMs that are not DSi Enhanced (example for not working: Pokémon Black & White).\n\nIf attempting to inject a DSi Enhanced ROM, we will not give you any support with fixing said injection.\n\nContinue?";
     private const string SnesWarning = "You can only inject SNES ROMs that are not using any Co-Processors (example for not working: Star Fox).\n\nIf attempting to inject a ROM in need of a Co-Processor, we will not give you any support with fixing said injection.\n\nContinue?";
 
