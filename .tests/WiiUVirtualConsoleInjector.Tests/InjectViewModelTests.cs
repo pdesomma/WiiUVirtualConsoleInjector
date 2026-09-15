@@ -593,6 +593,37 @@ public class InjectViewModelTests
         Assert.IsNull(vm.Icon.Path, "still untouched");
     }
 
+    [TestMethod]
+    public async Task Format_DefaultsToWupAndFlowsIntoTheInjection()
+    {
+        var vm = Ready();
+        Assert.AreEqual(OutputFormat.Wup, vm.Format);
+        StringAssert.Contains(vm.ReviewOutput, "install");
+        CollectionAssert.AreEqual(new[] { OutputFormat.Wup, OutputFormat.Loadiine }, vm.Formats.ToArray());
+
+        vm.Format = OutputFormat.Loadiine;
+        StringAssert.Contains(vm.ReviewOutput, "wiiu/games");
+        await vm.InjectCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(OutputFormat.Loadiine, _factory.Service.Received!.Format);
+    }
+
+    [TestMethod]
+    public void Constructor_Default_OffersOverlaysForTheStartingConsoleWithoutAnyClick()
+    {
+        var vm = Create();
+
+        Assert.IsTrue(vm.ArtworkBuilder.Icon.Overlays.Count > 0, "icon overlays");
+        Assert.IsTrue(vm.ArtworkBuilder.Tv.Overlays.Count > 0, "tv overlays");
+        Assert.IsTrue(vm.ArtworkBuilder.GamePad.Overlays.Count > 0, "gamepad overlays");
+        Assert.IsTrue(vm.ArtworkBuilder.Logo.Overlays.Count > 0, "logo overlays");
+        Assert.AreEqual("icon-nes-1", vm.ArtworkBuilder.Icon.Overlay!.Key);
+        Assert.IsTrue(vm.ArtworkBuilder.Logo.CanBuild);
+
+        vm.ArtworkBuilder.Icon.SourcePath = @"C:\shot.png";
+        Assert.IsTrue(vm.ArtworkBuilder.Icon.BuildCommand.CanExecute(null), "a source image is enough on the starting console");
+    }
+
     private ArtworkBuilderViewModel Builder() => new(new FakeArtworkComposer(), _dialogs, () => _settings.WorkPath);
 
     private InjectViewModel Ready(SourceConsole console = SourceConsole.Nes, string rom = @"C:\game.nes")

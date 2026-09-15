@@ -570,6 +570,17 @@
                                 <TextBlock Classes="summary-label" Text="Game" />
                                 <TextBlock Classes="summary-value" Text="{Binding ReviewGame}" />
                             </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <TextBlock Classes="summary-label" Text="Output" VerticalAlignment="Center" />
+                                <ComboBox ItemsSource="{Binding Formats}" SelectedItem="{Binding Format}" Width="130" IsEnabled="{Binding !IsRunning}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="vc:OutputFormat">
+                                            <TextBlock Text="{Binding, Converter={x:Static conv:FormatConverters.Name}}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBlock Classes="hint" FontSize="12" Text="{Binding ReviewOutput}" VerticalAlignment="Center" />
+                            </StackPanel>
                         </StackPanel>
 
                         <Border Classes="banner-warning" Margin="0,0,0,14" IsVisible="{Binding HasMissingKeys}">

@@ -1,12 +1,16 @@
-using PD.WiiU.VirtualConsole.Ports;
+﻿using PD.WiiU.VirtualConsole.Ports;
 
 namespace PD.WiiU.VirtualConsole;
 
 /// <summary>
-/// Default <see cref="ISdCard"/>: picks the likeliest removable drive and copies titles into its install folder.
+/// Default <see cref="ISdCard"/>: picks the likeliest removable drive and copies titles into its install or wiiu/games folder.
 /// </summary>
 public sealed class SdCard : ISdCard
 {
+    /// <summary>
+    /// Folder on the card that Loadiine reads titles from.
+    /// </summary>
+    public const string GamesFolder = "wiiu/games";
     /// <summary>
     /// Folder on the card that WUP Installer reads titles from.
     /// </summary>
@@ -36,7 +40,8 @@ public sealed class SdCard : ISdCard
         var files = Directory.GetFiles(titleDirectory, "*", SearchOption.AllDirectories);
         RequireRoom(files, root);
 
-        var destination = Path.Combine(root, InstallFolder, Path.GetFileName(titleDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)));
+        var name = Path.GetFileName(titleDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        var destination = Path.Combine(root, name.StartsWith(InjectionService.LoadiinePrefix, StringComparison.OrdinalIgnoreCase) ? GamesFolder : InstallFolder, name);
         Directory.CreateDirectory(destination);
         foreach (var file in files)
         {

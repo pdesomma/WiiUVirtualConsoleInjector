@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole.Ports;
+﻿using PD.WiiU.VirtualConsole.Ports;
 
 namespace PD.WiiU.VirtualConsole.Tests;
 
@@ -67,6 +67,20 @@ public class SdCardTests
         Assert.AreEqual("tmd", File.ReadAllText(Path.Combine(destination, "title.tmd")));
         Assert.AreEqual("app", File.ReadAllText(Path.Combine(destination, "code", "app.xml")));
         CollectionAssert.AreEquivalent(new[] { "title.tmd", "app.xml" }, reported);
+    }
+
+    [TestMethod]
+    public async Task CopyAsync_LoadiineTitle_LandsUnderWiiuGames()
+    {
+        var card = new SdCard(new FakeRemovableDrives());
+        var title = Path.Combine(_root, "source", "[LOADIINE]Test");
+        Directory.CreateDirectory(Path.Combine(title, "code"));
+        File.WriteAllText(Path.Combine(title, "code", "app.xml"), "app");
+
+        var destination = await card.CopyAsync(title, _root);
+
+        Assert.AreEqual(Path.Combine(_root, SdCard.GamesFolder, "[LOADIINE]Test"), destination);
+        Assert.AreEqual("app", File.ReadAllText(Path.Combine(destination, "code", "app.xml")));
     }
 
     [TestMethod]
