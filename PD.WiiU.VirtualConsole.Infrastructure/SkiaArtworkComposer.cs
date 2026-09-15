@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using PD.WiiU.VirtualConsole.Ports;
 using SkiaSharp;
 using WiiUSharp;
@@ -21,7 +21,6 @@ public sealed class SkiaArtworkComposer : IArtworkComposer
 
     private static readonly SKColor DarkGround = new(30, 30, 30);
     private static readonly SKColor Fill = new(32, 32, 32);
-    private static readonly SKColor IconText = new(147, 149, 152);
     private static readonly SKColor LogoInk = new(180, 180, 180);
     private static readonly SKColor Outline = new(222, 222, 222);
     private static readonly SKColor Shadow = new(190, 190, 190);
@@ -70,7 +69,7 @@ public sealed class SkiaArtworkComposer : IArtworkComposer
     }
 
     /// <summary>
-    /// The 128x128 menu icon: dark ground, screenshot, frame; the plain one is captioned "Virtual Console".
+    /// The 128x128 menu icon: dark ground, screenshot, then the overlay when there is one.
     /// </summary>
     /// <param name="request">What to draw.</param>
     private SKBitmap DrawIcon(ArtworkRequest request)
@@ -82,15 +81,8 @@ public sealed class SkiaArtworkComposer : IArtworkComposer
 
         using var frame = LoadFrame(request.Frame);
         if (frame is not null)
-        {
             canvas.DrawImage(frame, new SKRect(0, 0, ImageSlot.Icon.Width, ImageSlot.Icon.Height));
-            return bitmap;
-        }
 
-        var text = "Virtual Console";
-        using var font = Font(text, 9.2f, bold: true);
-        using var paint = new SKPaint { Color = IconText, IsAntialias = true };
-        canvas.DrawText(text, (ImageSlot.Icon.Width - font.MeasureText(text)) / 2, 119, font, paint);
         return bitmap;
     }
 

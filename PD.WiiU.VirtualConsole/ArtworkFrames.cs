@@ -1,4 +1,4 @@
-using WiiUSharp;
+﻿using WiiUSharp;
 
 namespace PD.WiiU.VirtualConsole;
 
@@ -24,9 +24,17 @@ public static class ArtworkFrames
     /// </summary>
     public static readonly PixelRect BootWii = new(224, 200, 832, 333);
     /// <summary>
-    /// Screenshot window on the plain icon.
+    /// Screenshot window on the generic Virtual Console icon.
     /// </summary>
     public static readonly PixelRect IconStandard = new(3, 9, 122, 92);
+    /// <summary>
+    /// The whole icon, for no overlay at all.
+    /// </summary>
+    public static readonly PixelRect IconFull = new(0, 0, 128, 128);
+    /// <summary>
+    /// The whole boot screen, for no overlay at all.
+    /// </summary>
+    public static readonly PixelRect BootFull = new(0, 0, 1280, 720);
     /// <summary>
     /// Screenshot window on the console icons, which carry a badge along the top.
     /// </summary>
@@ -60,7 +68,7 @@ public static class ArtworkFrames
         Boot("wii-narrow", "Wii, 4:3", SourceConsole.Wii, "wii3New.png", BootStandard),
         Boot("homebrew", "Homebrew", SourceConsole.Wii, "homebrew.png", BootWii),
         Boot("homebrew-2", "Homebrew, second", SourceConsole.Wii, "homebrew2.png", BootWii),
-        Boot("boot-plain", "None", null, null, BootStandard),
+        Boot("boot-plain", "None", null, null, BootFull),
 
         // Icons
         Icon("icon-vc", "Virtual Console", null, "Icon.png", IconStandard),
@@ -87,7 +95,7 @@ public static class ArtworkFrames
         Icon("icon-wii", "Wii", SourceConsole.Wii, "Wii2.png", IconBadged),
         Icon("icon-wii-2", "Wii, style 2", SourceConsole.Wii, "WiiIcon.png", IconBadged),
         Icon("icon-homebrew", "Homebrew", SourceConsole.Wii, "HBICON.png", IconBadged),
-        Icon("icon-plain", "None", null, null, IconStandard),
+        Icon("icon-plain", "None", null, null, IconFull),
 
         // Boot logos
         new("logo-pill", "Pill", ImageSlot.BootLogo, null, "bootLogoTex.png", null),
@@ -123,11 +131,11 @@ public static class ArtworkFrames
     }
 
     /// <summary>
-    /// The screenshot window a plain image of the slot uses.
+    /// The screenshot window with no overlay: the whole image.
     /// </summary>
     /// <param name="slot">Slot being drawn.</param>
     public static PixelRect? DefaultWindow(ImageSlot slot) =>
-        slot == ImageSlot.Icon ? IconStandard : slot == ImageSlot.BootLogo ? null : BootStandard;
+        slot == ImageSlot.Icon ? IconFull : slot == ImageSlot.BootLogo ? null : BootFull;
 
     private static ArtworkFrame Boot(string key, string name, SourceConsole? console, string? resource, PixelRect window) =>
         new(key, name, ImageSlot.BootTv, console, resource, window);

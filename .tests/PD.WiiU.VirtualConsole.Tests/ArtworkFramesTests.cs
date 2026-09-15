@@ -1,4 +1,4 @@
-using WiiUSharp;
+﻿using WiiUSharp;
 
 namespace PD.WiiU.VirtualConsole.Tests;
 
@@ -63,12 +63,14 @@ public class ArtworkFramesTests
     }
 
     [TestMethod]
-    public void DefaultWindow_PerSlot()
+    public void DefaultWindow_NoOverlay_IsTheWholeImage()
     {
-        Assert.AreEqual(ArtworkFrames.IconStandard, ArtworkFrames.DefaultWindow(ImageSlot.Icon));
-        Assert.AreEqual(ArtworkFrames.BootStandard, ArtworkFrames.DefaultWindow(ImageSlot.BootTv));
-        Assert.AreEqual(ArtworkFrames.BootStandard, ArtworkFrames.DefaultWindow(ImageSlot.BootDrc));
+        Assert.AreEqual(ArtworkFrames.IconFull, ArtworkFrames.DefaultWindow(ImageSlot.Icon));
+        Assert.AreEqual(ArtworkFrames.BootFull, ArtworkFrames.DefaultWindow(ImageSlot.BootTv));
+        Assert.AreEqual(ArtworkFrames.BootFull, ArtworkFrames.DefaultWindow(ImageSlot.BootDrc));
         Assert.IsNull(ArtworkFrames.DefaultWindow(ImageSlot.BootLogo));
+        Assert.AreEqual(ArtworkFrames.IconFull, ArtworkFrames.Find("icon-plain")!.Window);
+        Assert.AreEqual(ArtworkFrames.BootFull, ArtworkFrames.Find("boot-plain")!.Window);
     }
 
     [TestMethod]
