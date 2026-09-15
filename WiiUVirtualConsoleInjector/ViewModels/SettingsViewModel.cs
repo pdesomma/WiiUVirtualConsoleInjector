@@ -35,6 +35,7 @@ public sealed class SettingsViewModel : PageViewModel
         WorkFolder = new FolderSettingViewModel("Work folder", () => settings.WorkPath, (s, v) => s with { WorkPath = v }, settings, dialogs, links);
         Folders = new[] { BaseFolder, OutputFolder, WorkFolder };
         SdCard = new SdCardSettingViewModel(sdCard, settings, links);
+        CaptionFont = new CaptionFontSettingViewModel(settings, dialogs);
         Warnings = Enum.GetValues<InjectionWarning>().Select(w => new WarningSettingViewModel(w, settings)).ToArray();
         DataFolder = paths.DataFolder;
     }
@@ -43,6 +44,10 @@ public sealed class SettingsViewModel : PageViewModel
     /// Where bases are kept.
     /// </summary>
     public FolderSettingViewModel BaseFolder { get; }
+    /// <summary>
+    /// Which font generated boot screens are lettered in.
+    /// </summary>
+    public CaptionFontSettingViewModel CaptionFont { get; }
     /// <summary>
     /// The SD card and whether finished titles are copied to it.
     /// </summary>

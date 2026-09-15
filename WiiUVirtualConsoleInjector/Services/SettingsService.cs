@@ -1,4 +1,5 @@
 ﻿using PD.WiiU.VirtualConsole;
+using PD.WiiU.VirtualConsole.Infrastructure;
 using PD.WiiU.VirtualConsole.Ports;
 
 namespace WiiUVirtualConsoleInjector.Services;
@@ -40,6 +41,8 @@ public sealed class SettingsService : ISettingsService
     /// <inheritdoc/>
     public string BasePath => Current.BasePath ?? _paths.DefaultBasePath;
 
+    /// <inheritdoc/>
+    public string? CaptionFontPath => CaptionFont.Locate(Current.CaptionFontPath, CaptionFont.LegacyToolFolders());
     /// <inheritdoc/>
     public AppSettings Current { get; private set; }
 

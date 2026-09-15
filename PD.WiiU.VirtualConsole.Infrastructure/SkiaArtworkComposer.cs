@@ -24,16 +24,26 @@ public sealed class SkiaArtworkComposer : IArtworkComposer
     private static readonly SKColor Outline = new(222, 222, 222);
     private static readonly SKColor Shadow = new(190, 190, 190);
 
+    private readonly Func<string?> _captionFontPath;
     private readonly string? _frameDirectory;
+    private SKTypeface? _captionTypeface;
+    private string? _captionTypefacePath;
 
     /// <summary>
     /// Creates a new instance of the <see cref="SkiaArtworkComposer"/> class.
     /// </summary>
     /// <param name="frameDirectory">Folder holding frame files; null to use the embedded ones.</param>
-    public SkiaArtworkComposer(string? frameDirectory = null)
+    /// <param name="captionFontPath">Resolves the caption font file each time one is drawn; null or a missing file falls back to the bundled UI font.</param>
+    public SkiaArtworkComposer(string? frameDirectory = null, Func<string?>? captionFontPath = null)
     {
         _frameDirectory = frameDirectory;
+        _captionFontPath = captionFontPath ?? (() => null);
     }
+
+    /// <summary>
+    /// Family name of the font captions are drawn in right now.
+    /// </summary>
+    public string CaptionFontFamily => CaptionTypeface()?.FamilyName ?? FallbackTypeface(SKFontStyle.Bold).FamilyName;
 
     /// <inheritdoc/>
     public Task ComposeAsync(ArtworkRequest request, ImageSlot slot, string destinationPath, CancellationToken cancellationToken = default)
@@ -128,7 +138,7 @@ public sealed class SkiaArtworkComposer : IArtworkComposer
     /// <param name="y">Text baseline.</param>
     /// <param name="shadowWidth">Width of the outer stroke.</param>
     /// <param name="outlineWidth">Width of the inner stroke.</param>
-    private static void DrawCaption(SKCanvas canvas, string text, float size, bool bold, float x, float y, float shadowWidth, float outlineWidth)
+    private void DrawCaption(SKCanvas canvas, string text, float size, bool bold, float x, float y, float shadowWidth, float outlineWidth)
     {
         using var font = Font(text, size, bold);
         using var shadow = new SKPaint { Color = Shadow, IsAntialias = true, Style = SKPaintStyle.Stroke, StrokeWidth = shadowWidth, StrokeJoin = SKStrokeJoin.Round };
@@ -166,10 +176,10 @@ public sealed class SkiaArtworkComposer : IArtworkComposer
     /// <param name="text">Text to be drawn.</param>
     /// <param name="size">Point size.</param>
     /// <param name="bold">True for the heavier weight.</param>
-    private static SKFont Font(string text, float size, bool bold)
+    private SKFont Font(string text, float size, bool bold)
     {
         var style = bold ? SKFontStyle.Bold : SKFontStyle.Normal;
-        var typeface = SKTypeface.FromFamilyName("Nunito", style) ?? SKTypeface.FromFamilyName("Trebuchet MS", style) ?? SKTypeface.Default;
+        var typeface = CaptionTypeface() ?? FallbackTypeface(style);
         var font = new SKFont(typeface, size) { Subpixel = true, Edging = SKFontEdging.SubpixelAntialias };
         var missing = text.FirstOrDefault(c => !char.IsWhiteSpace(c) && !font.ContainsGlyph(c));
         if (missing == default)
@@ -182,6 +192,28 @@ public sealed class SkiaArtworkComposer : IArtworkComposer
         font.Dispose();
         return new SKFont(fallback, size) { Subpixel = true, Edging = SKFontEdging.SubpixelAntialias };
     }
+
+    /// <summary>
+    /// The chosen caption typeface, reloaded when the path changes; null when there is none or it cannot be read.
+    /// </summary>
+    private SKTypeface? CaptionTypeface()
+    {
+        var path = _captionFontPath();
+        if (string.Equals(path, _captionTypefacePath, StringComparison.OrdinalIgnoreCase))
+            return _captionTypeface;
+
+        _captionTypeface?.Dispose();
+        _captionTypefacePath = path;
+        _captionTypeface = path is not null && File.Exists(path) ? SKTypeface.FromFile(path) : null;
+        return _captionTypeface;
+    }
+
+    /// <summary>
+    /// The bundled UI font, or the closest system face.
+    /// </summary>
+    /// <param name="style">Weight wanted.</param>
+    private static SKTypeface FallbackTypeface(SKFontStyle style) =>
+        SKTypeface.FromFamilyName("Nunito", style) ?? SKTypeface.FromFamilyName("Trebuchet MS", style) ?? SKTypeface.Default;
 
     /// <summary>
     /// Reads a frame from the folder given at construction, else from the embedded copies; null when there is no frame.

@@ -69,6 +69,7 @@ internal static class InjectFakes
 
         public string BasePath { get; set; } = Path.Combine(Path.GetTempPath(), "InjectTests", "bases");
         public AppSettings Current { get; set; } = new();
+        public string? CaptionFontPath => Current.CaptionFontPath;
         public string SdPath => Current.SdPath ?? string.Empty;
         public string OutputPath { get; set; } = Path.Combine(Path.GetTempPath(), "InjectTests", "out");
         public string WorkPath { get; set; } = Path.Combine(Path.GetTempPath(), "InjectTests", "work");

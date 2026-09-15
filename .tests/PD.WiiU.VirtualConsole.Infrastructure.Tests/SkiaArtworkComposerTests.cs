@@ -130,6 +130,24 @@ public class SkiaArtworkComposerTests
         }
     }
 
+    [TestMethod]
+    public void CaptionFontFamily_FontFileGiven_UsesItAndFollowsChanges()
+    {
+        var legacy = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "UWUVCI AIO", "bin", "Tools", CaptionFont.LegacyFileName);
+        if (!File.Exists(legacy))
+            Assert.Inconclusive("the previous application's font is not on this machine");
+
+        string? path = null;
+        var composer = new SkiaArtworkComposer(_root, () => path);
+        var fallback = composer.CaptionFontFamily;
+
+        path = legacy;
+        StringAssert.Contains(composer.CaptionFontFamily, "Rodin");
+
+        path = Path.Combine(_root, "missing.otf");
+        Assert.AreEqual(fallback, composer.CaptionFontFamily, "a missing file falls back");
+    }
+
     private static bool HasInk(SKBitmap bitmap, int x, int y, int width, int height)
     {
         for (var row = y; row < y + height; row++)
