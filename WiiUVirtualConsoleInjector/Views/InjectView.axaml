@@ -3,6 +3,7 @@
              xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels"
              xmlns:vc="using:PD.WiiU.VirtualConsole"
              xmlns:conv="using:WiiUVirtualConsoleInjector.Converters"
+             xmlns:behaviors="using:WiiUVirtualConsoleInjector.Behaviors"
              x:Class="WiiUVirtualConsoleInjector.Views.InjectView"
              x:DataType="vm:InjectViewModel">
 
@@ -337,7 +338,7 @@
                                      Foreground="{DynamicResource CyanBrush}" Background="{DynamicResource DividerBrush}" />
 
                         <Border Classes="log" Margin="0,14,0,0" IsVisible="{Binding !!Log.Count}">
-                            <ScrollViewer>
+                            <ScrollViewer behaviors:AutoScroll.ToEnd="True">
                                 <ItemsControl ItemsSource="{Binding Log}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="x:String">
