@@ -261,37 +261,45 @@
         </Setter>
         <Setter Property="Width" Value="132" />
         <Setter Property="Height" Value="132" />
-        <Setter Property="CornerRadius" Value="29" />
-        <Setter Property="Padding" Value="12" />
-        <Setter Property="Background" Value="{DynamicResource TileFrameBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+        <Setter Property="CornerRadius" Value="18" />
+        <Setter Property="Padding" Value="7" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TileEdgeBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="BoxShadow" Value="inset 0 1 0 0 #CCFFFFFF, 0 3 3 0 #1A000000, 0 6 12 0 #14000000" />
+        <!-- Glass: the same pane as the history tiles -->
+        <Setter Property="Background">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Offset="0" Color="{DynamicResource TileGlassTop}" />
+                <GradientStop Offset="0.5" Color="{DynamicResource TileGlassMiddle}" />
+                <GradientStop Offset="1" Color="{DynamicResource TileGlassBottom}" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="BoxShadow" Value="0 4 10 0 #2E000000, inset 0 1 0 0 #B3FFFFFF" />
     </Style>
     <Style Selector="ListBox.tiles ListBoxItem:selected Border.tile-frame">
         <Setter Property="BorderBrush" Value="{DynamicResource CyanBrush}" />
         <Setter Property="BorderThickness" Value="3" />
-        <Setter Property="Padding" Value="10" />
-        <Setter Property="BoxShadow" Value="0 0 14 0 #5900AACC, 0 3 3 0 #1A000000, 0 6 12 0 #1A000000" />
+        <Setter Property="Padding" Value="5" />
+        <Setter Property="BoxShadow" Value="0 0 14 0 #5900AACC, 0 4 10 0 #2E000000, inset 0 1 0 0 #B3FFFFFF" />
     </Style>
     <Style Selector="ListBox.tiles ListBoxItem:pointerover Border.tile-frame">
         <Setter Property="BorderBrush" Value="{DynamicResource CyanRingBrush}" />
-        <Setter Property="BoxShadow" Value="inset 0 1 0 0 #CCFFFFFF, 0 5 6 0 #22000000, 0 10 20 0 #1F000000" />
+        <Setter Property="BoxShadow" Value="0 5 14 0 #38000000, inset 0 1 0 0 #B3FFFFFF" />
     </Style>
     <Style Selector="ListBox.tiles ListBoxItem:pointerover:selected Border.tile-frame">
         <Setter Property="BorderBrush" Value="{DynamicResource CyanBrush}" />
-        <Setter Property="BoxShadow" Value="0 0 18 0 #7300AACC, 0 5 6 0 #22000000, 0 10 20 0 #1F000000" />
+        <Setter Property="BoxShadow" Value="0 0 18 0 #7300AACC, 0 5 14 0 #38000000, inset 0 1 0 0 #B3FFFFFF" />
     </Style>
     <Style Selector="ListBox.tiles Border.tile-panel">
-        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="CornerRadius" Value="12" />
         <Setter Property="Background" Value="{DynamicResource TileGradientBrush}" />
-        <Setter Property="BorderBrush" Value="#14000000" />
+        <Setter Property="BorderBrush" Value="#33000000" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="ClipToBounds" Value="True" />
     </Style>
     <Style Selector="ListBox.tiles Border.tile-gloss">
         <Setter Property="Background" Value="{DynamicResource TileGlossBrush}" />
-        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="CornerRadius" Value="12,12,0,0" />
+        <Setter Property="Margin" Value="1" />
         <Setter Property="Height" Value="60" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="IsHitTestVisible" Value="False" />
