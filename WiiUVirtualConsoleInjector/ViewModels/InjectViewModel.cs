@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PD.WiiU.VirtualConsole;
+using WiiUSharp;
 using WiiUVirtualConsoleInjector.Services;
 using WiiUVirtualConsoleInjector.ViewModels.Options;
 
@@ -122,13 +123,7 @@ public sealed partial class InjectViewModel : PageViewModel
         BootDrc = new PathFieldViewModel(dialogs, "GamePad boot screen", "854 × 480", ImageFilters) { Glyph = "camera.png" };
         BootLogo = new PathFieldViewModel(dialogs, "Boot logo", "170 × 42", ImageFilters) { Glyph = "camera.png" };
         BootSound = new PathFieldViewModel(dialogs, "Boot sound", "wav, mp3, aiff", SoundFilters) { Glyph = "speaker.png" };
-        ArtworkBuilder.Applied += (_, built) =>
-        {
-            Icon.Path = built.IconPath;
-            BootTv.Path = built.BootTvPath;
-            BootDrc.Path = built.BootDrcPath;
-            BootLogo.Path = built.BootLogoPath;
-        };
+        ArtworkBuilder.Built += (_, built) => SlotFor(built.Slot).Path = built.Path;
         BootSound.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(PathFieldViewModel.Path))
@@ -528,6 +523,16 @@ public sealed partial class InjectViewModel : PageViewModel
             return null;
         }
     }
+
+    /// <summary>
+    /// The artwork field a slot's image lands in.
+    /// </summary>
+    /// <param name="slot">Slot that was built.</param>
+    private PathFieldViewModel SlotFor(ImageSlot slot) =>
+        slot == ImageSlot.Icon ? Icon
+        : slot == ImageSlot.BootTv ? BootTv
+        : slot == ImageSlot.BootDrc ? BootDrc
+        : BootLogo;
 
     /// <summary>
     /// Shows the Bases and Keys page.

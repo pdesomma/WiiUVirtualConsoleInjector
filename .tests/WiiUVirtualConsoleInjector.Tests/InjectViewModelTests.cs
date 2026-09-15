@@ -574,21 +574,26 @@ public class InjectViewModelTests
     }
 
     [TestMethod]
-    public async Task Artwork_Applied_FillsAllFourSlots()
+    public async Task Artwork_BuiltForOneSlot_FillsOnlyThatSlot()
     {
         var vm = Ready();
         vm.Step = 4;
         vm.ArtworkBuilder.ScreenshotPath = @"C:\shot.png";
 
-        await vm.ArtworkBuilder.ApplyCommand.ExecuteAsync(null);
+        await vm.ArtworkBuilder.BuildCommand.ExecuteAsync(ImageSlot.BootTv);
 
-        StringAssert.EndsWith(vm.Icon.Path!, "iconTex.png");
         StringAssert.EndsWith(vm.BootTv.Path!, "bootTvTex.png");
-        StringAssert.EndsWith(vm.BootDrc.Path!, "bootDrcTex.png");
+        Assert.IsNull(vm.Icon.Path);
+        Assert.IsNull(vm.BootDrc.Path);
+        Assert.IsNull(vm.BootLogo.Path);
+
+        await vm.ArtworkBuilder.BuildCommand.ExecuteAsync(ImageSlot.BootLogo);
+
         StringAssert.EndsWith(vm.BootLogo.Path!, "bootLogoTex.png");
+        Assert.IsNull(vm.Icon.Path, "still untouched");
     }
 
-    private ArtworkBuilderViewModel Builder() => new(new FakeArtworkComposer(), _dialogs, new FakeUiScheduler(), () => _settings.WorkPath);
+    private ArtworkBuilderViewModel Builder() => new(new FakeArtworkComposer(), _dialogs, () => _settings.WorkPath);
 
     private InjectViewModel Ready(SourceConsole console = SourceConsole.Nes, string rom = @"C:\game.nes")
     {

@@ -9,7 +9,6 @@ public class ArtworkBuilderViewModelTests
 {
     private FakeArtworkComposer _composer = null!;
     private FakeDialogService _dialogs = null!;
-    private FakeUiScheduler _scheduler = null!;
     private string _work = null!;
 
     [TestInitialize]
@@ -18,7 +17,6 @@ public class ArtworkBuilderViewModelTests
         SynchronizationContext.SetSynchronizationContext(new InjectFakes.InlineSynchronizationContext());
         _composer = new FakeArtworkComposer();
         _dialogs = new FakeDialogService();
-        _scheduler = new FakeUiScheduler();
         _work = Path.Combine(Path.GetTempPath(), "artwork-vm-" + Guid.NewGuid().ToString("N"));
     }
 
@@ -32,10 +30,9 @@ public class ArtworkBuilderViewModelTests
     [TestMethod]
     public void Constructor_NullArguments_ThrowsArgumentNullException()
     {
-        Assert.ThrowsExactly<ArgumentNullException>(() => new ArtworkBuilderViewModel(null!, _dialogs, _scheduler, () => _work));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new ArtworkBuilderViewModel(_composer, null!, _scheduler, () => _work));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new ArtworkBuilderViewModel(_composer, _dialogs, null!, () => _work));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new ArtworkBuilderViewModel(_composer, _dialogs, _scheduler, null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new ArtworkBuilderViewModel(null!, _dialogs, () => _work));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new ArtworkBuilderViewModel(_composer, null!, () => _work));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new ArtworkBuilderViewModel(_composer, _dialogs, null!));
     }
 
     [TestMethod]
@@ -98,104 +95,95 @@ public class ArtworkBuilderViewModelTests
     }
 
     [TestMethod]
-    public void CanApply_NeedsAScreenshotAndEveryFrame()
+    public void CanBuild_ScreenshotSlotsNeedAScreenshotTheLogoDoesNot()
     {
         var vm = Create();
-        Assert.IsFalse(vm.CanApply, "no frames yet");
-
         vm.Refresh(SourceConsole.Nes, "Game");
-        Assert.IsFalse(vm.CanApply, "no screenshot yet");
+
+        Assert.IsFalse(vm.CanBuild(ImageSlot.Icon));
+        Assert.IsFalse(vm.CanBuild(ImageSlot.BootTv));
+        Assert.IsFalse(vm.CanBuild(ImageSlot.BootDrc));
+        Assert.IsTrue(vm.CanBuild(ImageSlot.BootLogo));
+        Assert.IsFalse(vm.CanBuild(null));
 
         vm.ScreenshotPath = @"C:\shot.png";
-        Assert.IsTrue(vm.CanApply);
-        Assert.IsTrue(vm.ApplyCommand.CanExecute(null));
+
+        Assert.IsTrue(vm.CanBuild(ImageSlot.Icon));
+        Assert.IsTrue(vm.BuildCommand.CanExecute(ImageSlot.BootTv));
     }
 
     [TestMethod]
-    public async Task Inputs_Changed_RedrawAllFourPreviewsOnceTheyHaveSettled()
+    public async Task BuildCommand_OneSlot_DrawsOnlyThatSlotWithItsOwnFrame()
     {
         var vm = Create();
         vm.Refresh(SourceConsole.Nes, "Game", "Short");
         vm.ScreenshotPath = @"C:\shot.png";
         vm.ReleaseYear = "1985";
         vm.Players = "2";
-        Assert.AreEqual(0, _composer.Composed.Count, "nothing until the inputs settle");
+        vm.GamePadFrame = vm.GamePadFrames.Single(f => f.Key == "boot-plain");
+        var built = new List<ArtworkBuiltEventArgs>();
+        vm.Built += (_, e) => built.Add(e);
 
-        _scheduler.RunDue(ArtworkBuilderViewModel.PreviewDelay);
-        await vm.PreviewRender;
+        await vm.BuildCommand.ExecuteAsync(ImageSlot.BootDrc);
 
-        Assert.AreEqual(0, _scheduler.Pending.Count, "one render for the whole burst");
-        CollectionAssert.AreEquivalent(new[] { ImageSlot.BootTv, ImageSlot.BootDrc, ImageSlot.Icon, ImageSlot.BootLogo }, _composer.Composed.Select(c => c.Slot).ToArray());
-        var tv = _composer.Composed.Single(c => c.Slot == ImageSlot.BootTv).Request;
-        Assert.AreEqual("nes", tv.Frame!.Key);
-        Assert.AreEqual(@"C:\shot.png", tv.ScreenshotPath);
-        Assert.AreEqual("Game", tv.NameLine1);
-        Assert.AreEqual(1985, tv.ReleaseYear);
-        Assert.AreEqual(2, tv.Players);
-        Assert.AreEqual("icon-nes-1", _composer.Composed.Single(c => c.Slot == ImageSlot.Icon).Request.Frame!.Key);
-        Assert.AreEqual("Short", _composer.Composed.Single(c => c.Slot == ImageSlot.BootLogo).Request.LogoText);
-        Assert.IsNotNull(vm.TvPreviewPath);
-        Assert.IsNotNull(vm.GamePadPreviewPath);
-        Assert.IsNotNull(vm.IconPreviewPath);
-        Assert.IsNotNull(vm.LogoPreviewPath);
-        StringAssert.StartsWith(vm.TvPreviewPath!, Path.Combine(_work, "artwork", "preview"));
-        Assert.IsFalse(vm.IsRendering);
+        var only = _composer.Composed.Single();
+        Assert.AreEqual(ImageSlot.BootDrc, only.Slot);
+        Assert.AreEqual("boot-plain", only.Request.Frame!.Key, "the GamePad's own frame, not the TV's");
+        Assert.AreEqual(@"C:\shot.png", only.Request.ScreenshotPath);
+        Assert.AreEqual("Game", only.Request.NameLine1);
+        Assert.AreEqual(1985, only.Request.ReleaseYear);
+        Assert.AreEqual(2, only.Request.Players);
+        Assert.AreEqual(ImageSlot.BootDrc, built.Single().Slot);
+        StringAssert.EndsWith(built.Single().Path, "bootDrcTex.png");
+        StringAssert.StartsWith(built.Single().Path, Path.Combine(_work, "artwork"));
+        Assert.IsFalse(vm.IsBuilding);
     }
 
     [TestMethod]
-    public async Task Inputs_BlankYearAndPlayers_LeaveThoseLinesOff()
+    public async Task BuildCommand_Logo_NeedsNoScreenshotAndUsesTheLogoText()
     {
         var vm = Create();
-        vm.Refresh(SourceConsole.Nes, "Game");
-        vm.ReleaseYear = "abc";
-        vm.Players = "";
+        vm.Refresh(SourceConsole.Nes, "Game", "Short");
 
-        _scheduler.RunDue(ArtworkBuilderViewModel.PreviewDelay);
-        await vm.PreviewRender;
+        await vm.BuildCommand.ExecuteAsync(ImageSlot.BootLogo);
 
-        var tv = _composer.Composed.Single(c => c.Slot == ImageSlot.BootTv).Request;
-        Assert.IsNull(tv.ReleaseYear);
-        Assert.IsNull(tv.Players);
+        var only = _composer.Composed.Single();
+        Assert.AreEqual(ImageSlot.BootLogo, only.Slot);
+        Assert.AreEqual("logo-pill", only.Request.Frame!.Key);
+        Assert.AreEqual("Short", only.Request.LogoText);
+        Assert.IsNull(only.Request.ScreenshotPath);
     }
 
     [TestMethod]
-    public async Task ApplyCommand_Ready_DrawsAllFourAndRaisesApplied()
+    public async Task BuildCommand_TwiceForTheSameSlot_WritesToDifferentFiles()
     {
         var vm = Create();
         vm.Refresh(SourceConsole.Nes, "Game");
         vm.ScreenshotPath = @"C:\shot.png";
-        vm.GamePadFrame = vm.GamePadFrames.Single(f => f.Key == "boot-plain");
-        ArtworkBuiltEventArgs? built = null;
-        vm.Applied += (_, e) => built = e;
+        var paths = new List<string>();
+        vm.Built += (_, e) => paths.Add(e.Path);
 
-        await vm.ApplyCommand.ExecuteAsync(null);
+        await vm.BuildCommand.ExecuteAsync(ImageSlot.Icon);
+        await vm.BuildCommand.ExecuteAsync(ImageSlot.Icon);
 
-        Assert.IsNotNull(built);
-        StringAssert.EndsWith(built!.IconPath, "iconTex.png");
-        StringAssert.EndsWith(built.BootTvPath, "bootTvTex.png");
-        StringAssert.EndsWith(built.BootDrcPath, "bootDrcTex.png");
-        StringAssert.EndsWith(built.BootLogoPath, "bootLogoTex.png");
-        Assert.AreEqual(Path.GetDirectoryName(built.IconPath), Path.GetDirectoryName(built.BootLogoPath), "one folder per build");
-        Assert.AreEqual("nes", _composer.Composed.Single(c => c.Slot == ImageSlot.BootTv).Request.Frame!.Key);
-        Assert.AreEqual("boot-plain", _composer.Composed.Single(c => c.Slot == ImageSlot.BootDrc).Request.Frame!.Key, "the GamePad keeps its own frame");
-        Assert.AreEqual(0, _dialogs.Errors.Count);
+        Assert.AreNotEqual(paths[0], paths[1], "a fresh file each time so the slot picks up the change");
     }
 
     [TestMethod]
-    public async Task ApplyCommand_ComposerFails_ShowsTheErrorAndRaisesNothing()
+    public async Task BuildCommand_ComposerFails_ShowsTheErrorAndRaisesNothing()
     {
         var vm = Create();
         vm.Refresh(SourceConsole.Nes, "Game");
         vm.ScreenshotPath = @"C:\shot.png";
         _composer.Failure = new IOException("disk full");
         var raised = false;
-        vm.Applied += (_, _) => raised = true;
+        vm.Built += (_, _) => raised = true;
 
-        await vm.ApplyCommand.ExecuteAsync(null);
+        await vm.BuildCommand.ExecuteAsync(ImageSlot.Icon);
 
         Assert.IsFalse(raised);
         StringAssert.Contains(_dialogs.Errors.Single().Message, "disk full");
-        Assert.IsFalse(vm.IsRendering);
+        Assert.IsFalse(vm.IsBuilding);
     }
 
     [TestMethod]
@@ -207,7 +195,8 @@ public class ArtworkBuilderViewModelTests
         await vm.PickScreenshotCommand.ExecuteAsync(null);
 
         Assert.AreEqual(@"D:\shots\game.png", vm.ScreenshotPath);
+        Assert.IsTrue(vm.HasScreenshot);
     }
 
-    private ArtworkBuilderViewModel Create() => new(_composer, _dialogs, _scheduler, () => _work);
+    private ArtworkBuilderViewModel Create() => new(_composer, _dialogs, () => _work);
 }

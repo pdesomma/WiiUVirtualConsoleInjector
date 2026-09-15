@@ -1,39 +1,29 @@
+using WiiUSharp;
+
 namespace WiiUVirtualConsoleInjector.ViewModels;
 
 /// <summary>
-/// The four images a build produced.
+/// One slot's image, freshly built.
 /// </summary>
 public sealed class ArtworkBuiltEventArgs : EventArgs
 {
     /// <summary>
     /// Creates a new instance of the <see cref="ArtworkBuiltEventArgs"/> class.
     /// </summary>
-    /// <param name="iconPath">Menu icon PNG.</param>
-    /// <param name="bootTvPath">TV boot screen PNG.</param>
-    /// <param name="bootDrcPath">GamePad boot screen PNG.</param>
-    /// <param name="bootLogoPath">Boot logo PNG.</param>
-    public ArtworkBuiltEventArgs(string iconPath, string bootTvPath, string bootDrcPath, string bootLogoPath)
+    /// <param name="slot">Slot that was built.</param>
+    /// <param name="path">PNG it was built into.</param>
+    public ArtworkBuiltEventArgs(ImageSlot slot, string path)
     {
-        IconPath = iconPath ?? throw new ArgumentNullException(nameof(iconPath));
-        BootTvPath = bootTvPath ?? throw new ArgumentNullException(nameof(bootTvPath));
-        BootDrcPath = bootDrcPath ?? throw new ArgumentNullException(nameof(bootDrcPath));
-        BootLogoPath = bootLogoPath ?? throw new ArgumentNullException(nameof(bootLogoPath));
+        Slot = slot ?? throw new ArgumentNullException(nameof(slot));
+        Path = path ?? throw new ArgumentNullException(nameof(path));
     }
 
     /// <summary>
-    /// GamePad boot screen PNG.
+    /// PNG it was built into.
     /// </summary>
-    public string BootDrcPath { get; }
+    public string Path { get; }
     /// <summary>
-    /// Boot logo PNG.
+    /// Slot that was built.
     /// </summary>
-    public string BootLogoPath { get; }
-    /// <summary>
-    /// TV boot screen PNG.
-    /// </summary>
-    public string BootTvPath { get; }
-    /// <summary>
-    /// Menu icon PNG.
-    /// </summary>
-    public string IconPath { get; }
+    public ImageSlot Slot { get; }
 }
