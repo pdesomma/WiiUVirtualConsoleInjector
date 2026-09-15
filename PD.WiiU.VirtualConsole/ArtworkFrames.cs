@@ -60,7 +60,7 @@ public static class ArtworkFrames
         Boot("wii-narrow", "Wii, 4:3", SourceConsole.Wii, "wii3New.png", BootStandard),
         Boot("homebrew", "Homebrew", SourceConsole.Wii, "homebrew.png", BootWii),
         Boot("homebrew-2", "Homebrew, second", SourceConsole.Wii, "homebrew2.png", BootWii),
-        Boot("boot-plain", "No frame", null, null, BootStandard),
+        Boot("boot-plain", "None", null, null, BootStandard),
 
         // Icons
         Icon("icon-vc", "Virtual Console", null, "Icon.png", IconStandard),
@@ -87,11 +87,11 @@ public static class ArtworkFrames
         Icon("icon-wii", "Wii", SourceConsole.Wii, "Wii2.png", IconBadged),
         Icon("icon-wii-2", "Wii, style 2", SourceConsole.Wii, "WiiIcon.png", IconBadged),
         Icon("icon-homebrew", "Homebrew", SourceConsole.Wii, "HBICON.png", IconBadged),
-        Icon("icon-plain", "No frame", null, null, IconStandard),
+        Icon("icon-plain", "None", null, null, IconStandard),
 
         // Boot logos
         new("logo-pill", "Pill", ImageSlot.BootLogo, null, "bootLogoTex.png", null),
-        new("logo-plain", "No frame", ImageSlot.BootLogo, null, null, null),
+        new("logo-plain", "None", ImageSlot.BootLogo, null, null, null),
     };
 
     /// <summary>

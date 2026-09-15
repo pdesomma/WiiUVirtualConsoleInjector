@@ -33,169 +33,174 @@ public class ArtworkBuilderViewModelTests
         Assert.ThrowsExactly<ArgumentNullException>(() => new ArtworkBuilderViewModel(null!, _dialogs, () => _work));
         Assert.ThrowsExactly<ArgumentNullException>(() => new ArtworkBuilderViewModel(_composer, null!, () => _work));
         Assert.ThrowsExactly<ArgumentNullException>(() => new ArtworkBuilderViewModel(_composer, _dialogs, null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new ArtworkSlotViewModel(null!, _composer, _dialogs, () => _work));
     }
 
     [TestMethod]
-    public void Refresh_Console_FillsEachSlotsFramesAndSeedsTheText()
+    public void Constructor_Always_HasOneBuilderPerSlotThatKnowsWhatItIs()
+    {
+        var vm = Create();
+
+        CollectionAssert.AreEqual(new[] { ImageSlot.Icon, ImageSlot.BootTv, ImageSlot.BootDrc, ImageSlot.BootLogo }, vm.Slots.Select(s => s.Slot).ToArray());
+        Assert.IsFalse(vm.Icon.IsBootScreen);
+        Assert.IsTrue(vm.Tv.IsBootScreen);
+        Assert.IsTrue(vm.GamePad.IsBootScreen);
+        Assert.IsTrue(vm.Logo.IsLogo);
+        Assert.IsFalse(vm.Tv.IsLogo);
+    }
+
+    [TestMethod]
+    public void Refresh_Console_GivesEachSlotItsOwnOverlaysEndingInNone()
     {
         var vm = Create();
 
         vm.Refresh(SourceConsole.Snes, "The Legend of Zelda, A Link to the Past", "Zelda");
 
-        CollectionAssert.AreEqual(ArtworkFrames.For(ImageSlot.BootTv, SourceConsole.Snes).ToArray(), vm.TvFrames);
-        CollectionAssert.AreEqual(ArtworkFrames.For(ImageSlot.BootDrc, SourceConsole.Snes).ToArray(), vm.GamePadFrames);
-        CollectionAssert.AreEqual(ArtworkFrames.For(ImageSlot.Icon, SourceConsole.Snes).ToArray(), vm.IconFrames);
-        CollectionAssert.AreEqual(ArtworkFrames.For(ImageSlot.BootLogo, SourceConsole.Snes).ToArray(), vm.LogoFrames);
-        Assert.AreEqual("snes-pal", vm.TvFrame!.Key);
-        Assert.AreEqual("snes-pal", vm.GamePadFrame!.Key);
-        Assert.AreEqual("icon-snes-1", vm.IconFrame!.Key);
-        Assert.AreEqual("logo-pill", vm.LogoFrame!.Key);
-        Assert.AreEqual("The Legend of Zelda", vm.NameLine1);
-        Assert.AreEqual("A Link to the Past", vm.NameLine2);
-        Assert.AreEqual("Zelda", vm.LogoText);
+        CollectionAssert.AreEqual(ArtworkFrames.For(ImageSlot.BootTv, SourceConsole.Snes).ToArray(), vm.Tv.Overlays);
+        CollectionAssert.AreEqual(ArtworkFrames.For(ImageSlot.Icon, SourceConsole.Snes).ToArray(), vm.Icon.Overlays);
+        Assert.AreEqual("None", vm.Tv.Overlays[^1].Name);
+        Assert.AreEqual("None", vm.Icon.Overlays[^1].Name);
+        Assert.AreEqual("None", vm.Logo.Overlays[^1].Name);
+        Assert.AreEqual("snes-pal", vm.Tv.Overlay!.Key);
+        Assert.AreEqual("icon-snes-1", vm.Icon.Overlay!.Key);
+        Assert.AreEqual("logo-pill", vm.Logo.Overlay!.Key);
     }
 
     [TestMethod]
-    public void Refresh_NoShortName_LogoTakesTheFirstNameLine()
+    public void Refresh_Names_SeedBlankCaptionsButNeverOverwriteTyping()
     {
         var vm = Create();
+        vm.Refresh(SourceConsole.Snes, "The Legend of Zelda, A Link to the Past", "Zelda");
+        Assert.AreEqual("The Legend of Zelda", vm.Tv.NameLine1);
+        Assert.AreEqual("A Link to the Past", vm.GamePad.NameLine2);
+        Assert.AreEqual("Zelda", vm.Logo.LogoText);
 
-        vm.Refresh(SourceConsole.Nes, "Metroid");
+        vm.Tv.NameLine1 = "Mine";
+        vm.Refresh(SourceConsole.Snes, "Renamed", "Short");
 
-        Assert.AreEqual("Metroid", vm.LogoText);
+        Assert.AreEqual("Mine", vm.Tv.NameLine1, "typed text stays");
+        Assert.AreEqual("Zelda", vm.Logo.LogoText, "already seeded text stays");
     }
 
     [TestMethod]
-    public void Refresh_SameConsoleAgain_KeepsEachFrameChoice()
+    public void Refresh_SameConsoleAgain_KeepsEachSlotsOverlayChoice()
     {
         var vm = Create();
         vm.Refresh(SourceConsole.Snes, "Game");
-        vm.TvFrame = vm.TvFrames.Single(f => f.Key == "snes-sfc");
-        vm.GamePadFrame = vm.GamePadFrames.Single(f => f.Key == "boot-plain");
-        vm.IconFrame = vm.IconFrames.Single(f => f.Key == "icon-vc");
+        vm.Tv.Overlay = vm.Tv.Overlays.Single(f => f.Key == "snes-sfc");
+        vm.GamePad.Overlay = vm.GamePad.Overlays.Single(f => f.Key == "boot-plain");
 
         vm.Refresh(SourceConsole.Snes, "Renamed");
 
-        Assert.AreEqual("snes-sfc", vm.TvFrame!.Key);
-        Assert.AreEqual("boot-plain", vm.GamePadFrame!.Key);
-        Assert.AreEqual("icon-vc", vm.IconFrame!.Key);
+        Assert.AreEqual("snes-sfc", vm.Tv.Overlay!.Key);
+        Assert.AreEqual("boot-plain", vm.GamePad.Overlay!.Key);
     }
 
     [TestMethod]
-    public void Refresh_OtherConsole_DropsFramesThatNoLongerApply()
-    {
-        var vm = Create();
-        vm.Refresh(SourceConsole.Snes, "Game");
-        vm.TvFrame = vm.TvFrames.Single(f => f.Key == "snes-sfc");
-
-        vm.Refresh(SourceConsole.Nes, "Game");
-
-        Assert.AreEqual("nes", vm.TvFrame!.Key);
-        Assert.IsFalse(vm.TvFrames.Any(f => f.Key == "snes-sfc"));
-    }
-
-    [TestMethod]
-    public void CanBuild_ScreenshotSlotsNeedAScreenshotTheLogoDoesNot()
+    public void CanBuild_ImageSlotsNeedTheirOwnSourceTheLogoDoesNot()
     {
         var vm = Create();
         vm.Refresh(SourceConsole.Nes, "Game");
 
-        Assert.IsFalse(vm.CanBuild(ImageSlot.Icon));
-        Assert.IsFalse(vm.CanBuild(ImageSlot.BootTv));
-        Assert.IsFalse(vm.CanBuild(ImageSlot.BootDrc));
-        Assert.IsTrue(vm.CanBuild(ImageSlot.BootLogo));
-        Assert.IsFalse(vm.CanBuild(null));
+        Assert.IsFalse(vm.Icon.CanBuild);
+        Assert.IsFalse(vm.Tv.CanBuild);
+        Assert.IsTrue(vm.Logo.CanBuild);
 
-        vm.ScreenshotPath = @"C:\shot.png";
+        vm.Tv.SourcePath = @"C:\tv.png";
 
-        Assert.IsTrue(vm.CanBuild(ImageSlot.Icon));
-        Assert.IsTrue(vm.BuildCommand.CanExecute(ImageSlot.BootTv));
+        Assert.IsTrue(vm.Tv.CanBuild);
+        Assert.IsFalse(vm.Icon.CanBuild, "the icon has its own source");
+        Assert.IsFalse(vm.GamePad.CanBuild, "so does the GamePad");
     }
 
     [TestMethod]
-    public async Task BuildCommand_OneSlot_DrawsOnlyThatSlotWithItsOwnFrame()
+    public async Task Build_OneSlot_UsesOnlyThatSlotsInputsAndTouchesNothingElse()
     {
         var vm = Create();
         vm.Refresh(SourceConsole.Nes, "Game", "Short");
-        vm.ScreenshotPath = @"C:\shot.png";
-        vm.ReleaseYear = "1985";
-        vm.Players = "2";
-        vm.GamePadFrame = vm.GamePadFrames.Single(f => f.Key == "boot-plain");
+        vm.Tv.SourcePath = @"C:\tv.png";
+        vm.GamePad.SourcePath = @"C:\pad.png";
+        vm.GamePad.Overlay = vm.GamePad.Overlays.Single(f => f.Key == "boot-plain");
+        vm.GamePad.NameLine1 = "Pad name";
+        vm.GamePad.ReleaseYear = "1985";
+        vm.GamePad.Players = "2";
         var built = new List<ArtworkBuiltEventArgs>();
         vm.Built += (_, e) => built.Add(e);
 
-        await vm.BuildCommand.ExecuteAsync(ImageSlot.BootDrc);
+        await vm.GamePad.BuildCommand.ExecuteAsync(null);
 
         var only = _composer.Composed.Single();
         Assert.AreEqual(ImageSlot.BootDrc, only.Slot);
-        Assert.AreEqual("boot-plain", only.Request.Frame!.Key, "the GamePad's own frame, not the TV's");
-        Assert.AreEqual(@"C:\shot.png", only.Request.ScreenshotPath);
-        Assert.AreEqual("Game", only.Request.NameLine1);
+        Assert.AreEqual(@"C:\pad.png", only.Request.ScreenshotPath, "the GamePad's own image");
+        Assert.AreEqual("boot-plain", only.Request.Frame!.Key, "the GamePad's own overlay");
+        Assert.AreEqual("Pad name", only.Request.NameLine1);
         Assert.AreEqual(1985, only.Request.ReleaseYear);
         Assert.AreEqual(2, only.Request.Players);
         Assert.AreEqual(ImageSlot.BootDrc, built.Single().Slot);
         StringAssert.EndsWith(built.Single().Path, "bootDrcTex.png");
-        StringAssert.StartsWith(built.Single().Path, Path.Combine(_work, "artwork"));
-        Assert.IsFalse(vm.IsBuilding);
+        Assert.IsFalse(vm.GamePad.IsBuilding);
     }
 
     [TestMethod]
-    public async Task BuildCommand_Logo_NeedsNoScreenshotAndUsesTheLogoText()
+    public async Task Build_Logo_UsesItsTextAndNoImage()
     {
         var vm = Create();
         vm.Refresh(SourceConsole.Nes, "Game", "Short");
+        vm.Logo.LogoText = "Logo words";
 
-        await vm.BuildCommand.ExecuteAsync(ImageSlot.BootLogo);
+        await vm.Logo.BuildCommand.ExecuteAsync(null);
 
         var only = _composer.Composed.Single();
         Assert.AreEqual(ImageSlot.BootLogo, only.Slot);
         Assert.AreEqual("logo-pill", only.Request.Frame!.Key);
-        Assert.AreEqual("Short", only.Request.LogoText);
+        Assert.AreEqual("Logo words", only.Request.LogoText);
         Assert.IsNull(only.Request.ScreenshotPath);
     }
 
     [TestMethod]
-    public async Task BuildCommand_TwiceForTheSameSlot_WritesToDifferentFiles()
+    public async Task Build_TwiceForTheSameSlot_WritesToDifferentFiles()
     {
         var vm = Create();
         vm.Refresh(SourceConsole.Nes, "Game");
-        vm.ScreenshotPath = @"C:\shot.png";
+        vm.Icon.SourcePath = @"C:\icon.png";
         var paths = new List<string>();
         vm.Built += (_, e) => paths.Add(e.Path);
 
-        await vm.BuildCommand.ExecuteAsync(ImageSlot.Icon);
-        await vm.BuildCommand.ExecuteAsync(ImageSlot.Icon);
+        await vm.Icon.BuildCommand.ExecuteAsync(null);
+        await vm.Icon.BuildCommand.ExecuteAsync(null);
 
         Assert.AreNotEqual(paths[0], paths[1], "a fresh file each time so the slot picks up the change");
     }
 
     [TestMethod]
-    public async Task BuildCommand_ComposerFails_ShowsTheErrorAndRaisesNothing()
+    public async Task Build_ComposerFails_ShowsTheErrorAndRaisesNothing()
     {
         var vm = Create();
         vm.Refresh(SourceConsole.Nes, "Game");
-        vm.ScreenshotPath = @"C:\shot.png";
+        vm.Icon.SourcePath = @"C:\icon.png";
         _composer.Failure = new IOException("disk full");
         var raised = false;
         vm.Built += (_, _) => raised = true;
 
-        await vm.BuildCommand.ExecuteAsync(ImageSlot.Icon);
+        await vm.Icon.BuildCommand.ExecuteAsync(null);
 
         Assert.IsFalse(raised);
         StringAssert.Contains(_dialogs.Errors.Single().Message, "disk full");
-        Assert.IsFalse(vm.IsBuilding);
+        Assert.IsFalse(vm.Icon.IsBuilding);
     }
 
     [TestMethod]
-    public async Task PickScreenshotCommand_Picked_SetsThePath()
+    public async Task PickSourceCommand_Picked_SetsOnlyThatSlotsSource()
     {
         var vm = Create();
         _dialogs.FileToPick = @"D:\shots\game.png";
 
-        await vm.PickScreenshotCommand.ExecuteAsync(null);
+        await vm.Tv.PickSourceCommand.ExecuteAsync(null);
 
-        Assert.AreEqual(@"D:\shots\game.png", vm.ScreenshotPath);
-        Assert.IsTrue(vm.HasScreenshot);
+        Assert.AreEqual(@"D:\shots\game.png", vm.Tv.SourcePath);
+        Assert.IsTrue(vm.Tv.HasSource);
+        Assert.IsNull(vm.GamePad.SourcePath);
+        Assert.IsNull(vm.Icon.SourcePath);
     }
 
     private ArtworkBuilderViewModel Create() => new(_composer, _dialogs, () => _work);
