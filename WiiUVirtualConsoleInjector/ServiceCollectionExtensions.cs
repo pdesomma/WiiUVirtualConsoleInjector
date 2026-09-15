@@ -48,6 +48,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<INavigationService, NavigationService>();
 
         services.AddSingleton<MainWindowViewModel>();
+        services.AddSingleton(p => new ArtworkBuilderViewModel(p.GetRequiredService<IArtworkComposer>(), p.GetRequiredService<IDialogService>(), p.GetRequiredService<IUiScheduler>(), () => p.GetRequiredService<ISettingsService>().WorkPath));
         services.AddSingleton<InjectViewModel>();
         services.AddSingleton<BasesViewModel>();
         services.AddSingleton<SettingsViewModel>();

@@ -66,6 +66,23 @@ internal sealed class FakeSettingsService : ISettingsService
     }
 }
 
+internal sealed class FakeArtworkComposer : IArtworkComposer
+{
+    public List<(ArtworkRequest Request, ImageSlot Slot, string Path)> Composed { get; } = new();
+    public Exception? Failure { get; set; }
+
+    public Task ComposeAsync(ArtworkRequest request, ImageSlot slot, string destinationPath, CancellationToken cancellationToken = default)
+    {
+        Composed.Add((request, slot, destinationPath));
+        if (Failure is not null)
+            return Task.FromException(Failure);
+
+        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+        File.WriteAllBytes(destinationPath, new byte[] { 0x89, 0x50, 0x4E, 0x47 });
+        return Task.CompletedTask;
+    }
+}
+
 internal sealed class FakeSdCard : ISdCard
 {
     public List<(string Title, string Root)> Copies { get; } = new();

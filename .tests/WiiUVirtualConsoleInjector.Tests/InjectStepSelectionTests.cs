@@ -53,5 +53,5 @@ public class InjectStepSelectionTests
     }
 
     private static InjectViewModel Create() =>
-        new(new InjectFakes.InjectBaseService(), new InjectFakes.InjectDialogService(), new InjectFakes.RecordingInjectionServiceFactory(), new InjectFakes.InjectSettingsService(), new NavigationService(), new FakeSdCard());
+        new(new InjectFakes.InjectBaseService(), new InjectFakes.InjectDialogService(), new InjectFakes.RecordingInjectionServiceFactory(), new InjectFakes.InjectSettingsService(), new NavigationService(), new FakeSdCard(), new ArtworkBuilderViewModel(new FakeArtworkComposer(), new InjectFakes.InjectDialogService(), new FakeUiScheduler(), () => Path.GetTempPath()));
 }
