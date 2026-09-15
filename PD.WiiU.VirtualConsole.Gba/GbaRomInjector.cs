@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole.Options;
+﻿using PD.WiiU.VirtualConsole.Options;
 using PD.WiiU.VirtualConsole.Ports;
 
 namespace PD.WiiU.VirtualConsole.Gba;
@@ -35,7 +35,7 @@ public sealed class GbaRomInjector : IRomInjector
     }
 
     /// <inheritdoc/>
-    /// <exception cref="InvalidDataException">The archive holds no .gba file, or more than one.</exception>
+    /// <exception cref="InvalidDataException">No single ROM under system/roms, and no single .gba anywhere.</exception>
     public Task InjectAsync(Injection injection, TitleDirectory title, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
         if (injection is null)
@@ -60,7 +60,7 @@ public sealed class GbaRomInjector : IRomInjector
         AllDataArchive.Rewrite(title.Content, Path.Combine(title.Root, ".alldata"), extracted =>
         {
             var target = LocateRom(extracted);
-            File.WriteAllBytes(target, rom);
+            AllDataArchive.WriteEntry(target, rom);
             if (!options.RemoveDarkFilter)
                 return;
 
@@ -74,9 +74,13 @@ public sealed class GbaRomInjector : IRomInjector
 
     private static string LocateRom(string extracted)
     {
-        var roms = Directory.GetFiles(extracted, "*.gba", SearchOption.AllDirectories);
+        // retail bases keep one MDF-compressed ROM under system/roms; a plain .gba anywhere is accepted too
+        var folder = Path.Combine(extracted, AllDataArchive.RomFolder.Replace('/', Path.DirectorySeparatorChar));
+        var roms = Directory.Exists(folder) ? Directory.GetFiles(folder) : Array.Empty<string>();
+        if (roms.Length == 0)
+            roms = Directory.GetFiles(extracted, "*.gba", SearchOption.AllDirectories);
         if (roms.Length != 1)
-            throw new InvalidDataException(roms.Length == 0 ? "The archive holds no .gba file." : $"The archive holds {roms.Length} .gba files.");
+            throw new InvalidDataException(roms.Length == 0 ? "The archive holds no ROM (nothing under system/roms and no .gba)." : $"The archive holds {roms.Length} ROM files.");
         return roms[0];
     }
 }

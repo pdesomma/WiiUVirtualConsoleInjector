@@ -1,4 +1,4 @@
-using GMWare.M2.MArchive;
+﻿using GMWare.M2.MArchive;
 using GMWare.M2.Psb;
 using Newtonsoft.Json.Linq;
 
@@ -25,6 +25,14 @@ public static class AllDataArchive
     /// Encryption seed the Wii U titles use.
     /// </summary>
     public const string Seed = "MX8wgGEJ2+M47";
+    /// <summary>
+    /// Suffix of an entry that is MDF-compressed with the title key.
+    /// </summary>
+    public const string CompressedSuffix = ".m";
+    /// <summary>
+    /// Folder inside the archive that holds the ROM, e.g. system/roms/AA88E0.D88.m.
+    /// </summary>
+    public const string RomFolder = "system/roms";
     /// <summary>
     /// Settings file inside the archive, relative to its root.
     /// </summary>
@@ -101,6 +109,31 @@ public static class AllDataArchive
         var plainPath = titleProfilePath.Substring(0, titleProfilePath.Length - 2);
         File.WriteAllBytes(plainPath, rewritten.ToArray());
         packer.CompressFile(plainPath, keepOrig: false, null);
+    }
+
+    /// <summary>
+    /// Writes an entry, MDF-compressing it when its name ends in <see cref="CompressedSuffix"/>.
+    /// </summary>
+    /// <param name="entryPath">Where the entry sits in the unpacked archive.</param>
+    /// <param name="data">Plain bytes.</param>
+    public static void WriteEntry(string entryPath, byte[] data)
+    {
+        if (entryPath is null)
+            throw new ArgumentNullException(nameof(entryPath));
+        if (data is null)
+            throw new ArgumentNullException(nameof(data));
+
+        if (!entryPath.EndsWith(CompressedSuffix, StringComparison.OrdinalIgnoreCase))
+        {
+            File.WriteAllBytes(entryPath, data);
+            return;
+        }
+
+        var plain = entryPath.Substring(0, entryPath.Length - CompressedSuffix.Length);
+        File.WriteAllBytes(plain, data);
+        if (File.Exists(entryPath))
+            File.Delete(entryPath);
+        Packer().CompressFile(plain, keepOrig: false, null);
     }
 
     private static MArchivePacker Packer() => new(new ZlibCodec(), Seed, KeyLength);
