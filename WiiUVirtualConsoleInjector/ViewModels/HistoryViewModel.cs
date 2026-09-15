@@ -125,7 +125,7 @@ public sealed partial class HistoryViewModel : PageViewModel, IArrowNavigation
     /// </summary>
     public void Reload()
     {
-        _entries = _history.All().Select(r => new HistoryEntryViewModel(r)).ToArray();
+        _entries = _history.All().Select(r => new HistoryEntryViewModel(r, LoadAsync, ForgetAsync)).ToArray();
         Pages.Clear();
         for (var n = 1; n <= PageCount; n++)
             Pages.Add(new HistoryPage(n, $"Page {n}"));

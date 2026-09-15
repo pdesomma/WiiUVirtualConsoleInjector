@@ -182,12 +182,12 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Classes="label" Text="Long name" />
                                 <TextBox Text="{Binding Name}" PlaceholderText="Required" IsEnabled="{Binding !IsRunning}" />
-                                <TextBlock Classes="hint" Text="Shown on the title's own page; a comma splits it into lines." Margin="0,1,0,0" />
+                                <TextBlock Classes="hint" Text="The label under the tile on the Wii U Menu; a comma splits it into two lines." Margin="0,1,0,0" />
                             </StackPanel>
                             <StackPanel Spacing="4">
                                 <TextBlock Classes="label" Text="Short name" />
                                 <TextBox Text="{Binding ShortName}" PlaceholderText="Optional" IsEnabled="{Binding !IsRunning}" />
-                                <TextBlock Classes="hint" Text="Shown under the icon on the Wii U menu; defaults to the long name's first line." Margin="0,1,0,0" />
+                                <TextBlock Classes="hint" Text="Used by the HOME Menu and the friend list, not the tile; the tile shows the long name. Defaults to the long name's first line." Margin="0,1,0,0" />
                             </StackPanel>
                             <StackPanel Spacing="4">
                                 <TextBlock Classes="label" Text="Product ID" />

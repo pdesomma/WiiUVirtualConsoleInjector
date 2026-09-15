@@ -1,3 +1,4 @@
+﻿using CommunityToolkit.Mvvm.Input;
 using PD.WiiU.VirtualConsole;
 
 namespace WiiUVirtualConsoleInjector.ViewModels;
@@ -11,9 +12,13 @@ public sealed class HistoryEntryViewModel : ViewModelBase
     /// Creates a new instance of the <see cref="HistoryEntryViewModel"/> class.
     /// </summary>
     /// <param name="record">The inject it shows.</param>
-    public HistoryEntryViewModel(InjectionRecord record)
+    /// <param name="load">What loading the tile does.</param>
+    /// <param name="forget">What forgetting the tile does.</param>
+    public HistoryEntryViewModel(InjectionRecord record, Func<HistoryEntryViewModel, Task>? load = null, Func<HistoryEntryViewModel, Task>? forget = null)
     {
         Record = record ?? throw new ArgumentNullException(nameof(record));
+        LoadCommand = new AsyncRelayCommand(() => load?.Invoke(this) ?? Task.CompletedTask);
+        ForgetCommand = new AsyncRelayCommand(() => forget?.Invoke(this) ?? Task.CompletedTask);
     }
 
     /// <summary>
@@ -24,6 +29,10 @@ public sealed class HistoryEntryViewModel : ViewModelBase
     /// Console it was built for.
     /// </summary>
     public SourceConsole Console => Record.Console;
+    /// <summary>
+    /// Forgets this tile; the page decides how.
+    /// </summary>
+    public IAsyncRelayCommand ForgetCommand { get; }
     /// <summary>
     /// True when the icon PNG is on disk.
     /// </summary>
@@ -36,6 +45,10 @@ public sealed class HistoryEntryViewModel : ViewModelBase
     /// True when the ROM is no longer where it was.
     /// </summary>
     public bool IsRomMissing => !File.Exists(Record.RomPath);
+    /// <summary>
+    /// Loads this tile into the wizard; the page decides how.
+    /// </summary>
+    public IAsyncRelayCommand LoadCommand { get; }
     /// <summary>
     /// What the tile says.
     /// </summary>
