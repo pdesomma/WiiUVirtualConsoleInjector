@@ -99,7 +99,8 @@ public sealed partial class InjectViewModel : PageViewModel
     /// <param name="settings">Work and output folders, suppressed warnings.</param>
     /// <param name="navigation">Lets the page jump to Bases and Keys.</param>
     /// <param name="sdCard">Copies the finished title to the card.</param>
-    public InjectViewModel(IBaseService bases, IDialogService dialogs, IInjectionServiceFactory injections, ISettingsService settings, INavigationService navigation, ISdCard sdCard)
+    /// <param name="artwork">Builds icons and boot screens from a screenshot.</param>
+    public InjectViewModel(IBaseService bases, IDialogService dialogs, IInjectionServiceFactory injections, ISettingsService settings, INavigationService navigation, ISdCard sdCard, ArtworkBuilderViewModel artwork)
         : base("Inject", "inject-icon.png", "M12 3v11 M7.5 10.5L12 15l4.5-4.5 M4 17.5V19a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5")
     {
         _bases = bases ?? throw new ArgumentNullException(nameof(bases));
@@ -108,12 +109,19 @@ public sealed partial class InjectViewModel : PageViewModel
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
         _sdCard = sdCard ?? throw new ArgumentNullException(nameof(sdCard));
+        ArtworkBuilder = artwork ?? throw new ArgumentNullException(nameof(artwork));
 
         Icon = new PathFieldViewModel(dialogs, "Icon", "128 × 128", ImageFilters) { Glyph = "camera.png" };
         BootTv = new PathFieldViewModel(dialogs, "TV boot screen", "1280 × 720", ImageFilters) { Glyph = "camera.png" };
         BootDrc = new PathFieldViewModel(dialogs, "GamePad boot screen", "854 × 480", ImageFilters) { Glyph = "camera.png" };
         BootLogo = new PathFieldViewModel(dialogs, "Boot logo", "170 × 42", ImageFilters) { Glyph = "camera.png" };
         BootSound = new PathFieldViewModel(dialogs, "Boot sound", "wav, mp3, aiff", SoundFilters) { Glyph = "speaker.png" };
+        ArtworkBuilder.Applied += (_, built) =>
+        {
+            Icon.Path = built.IconPath;
+            BootTv.Path = built.BootTvPath;
+            BootDrc.Path = built.BootDrcPath;
+        };
 
         _selectedConsole = SourceConsole.Nes;
         _currentOptions = CreateOptions(_selectedConsole);
@@ -151,6 +159,10 @@ public sealed partial class InjectViewModel : PageViewModel
     /// </summary>
     public ObservableCollection<BaseChoice> Bases { get; } = new();
 
+    /// <summary>
+    /// Builds icons and boot screens from a screenshot.
+    /// </summary>
+    public ArtworkBuilderViewModel ArtworkBuilder { get; }
     /// <summary>
     /// GamePad boot screen.
     /// </summary>
@@ -516,10 +528,13 @@ public sealed partial class InjectViewModel : PageViewModel
             Step = 3;
     }
 
+    partial void OnNameChanged(string? value) => ArtworkBuilder.Refresh(SelectedConsole, value);
+
     partial void OnSelectedConsoleChanged(SourceConsole value)
     {
         RomPath = null;
         CurrentOptions = CreateOptions(value);
+        ArtworkBuilder.Refresh(value, Name);
         Refresh();
         if (Step == 1)
             Step = 2;
