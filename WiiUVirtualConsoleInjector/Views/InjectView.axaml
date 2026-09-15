@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels"
              xmlns:vc="using:PD.WiiU.VirtualConsole"
+             xmlns:wiiu="using:WiiUSharp"
              xmlns:conv="using:WiiUVirtualConsoleInjector.Converters"
              xmlns:behaviors="using:WiiUVirtualConsoleInjector.Behaviors"
              x:Class="WiiUVirtualConsoleInjector.Views.InjectView"
@@ -196,15 +197,13 @@
                     <StackPanel IsVisible="{Binding IsArtworkStep}">
                         <TextBlock Classes="section" Text="Artwork" />
 
-                        <!-- Build from a screenshot -->
+                        <!-- Shared inputs for building any slot from a screenshot -->
                         <Border Classes="card" Margin="0,0,0,18" DataContext="{Binding ArtworkBuilder}">
-                            <StackPanel Spacing="14">
+                            <StackPanel Spacing="12">
                                 <StackPanel Spacing="2">
                                     <TextBlock FontSize="13" FontWeight="Bold" Text="Build from a screenshot" />
-                                    <TextBlock Classes="hint" FontSize="12" Text="Dresses a screenshot in a frame per image and writes all four slots below." />
+                                    <TextBlock Classes="hint" FontSize="12" Text="Set these once, then build any slot below on its own with its Build button." />
                                 </StackPanel>
-
-                                <!-- Inputs -->
                                 <Grid ColumnDefinitions="*,*" ColumnSpacing="14" RowDefinitions="Auto,Auto,Auto" RowSpacing="12">
                                     <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Spacing="4">
                                         <TextBlock Classes="label" Text="Screenshot" />
@@ -236,43 +235,6 @@
                                         <TextBox Text="{Binding LogoText}" PlaceholderText="Optional" />
                                     </StackPanel>
                                 </Grid>
-
-                                <!-- One frame and preview per slot -->
-                                <WrapPanel ItemSpacing="18" LineSpacing="16">
-                                    <StackPanel Spacing="6" Width="336">
-                                        <TextBlock Classes="label" Text="TV boot screen" />
-                                        <ComboBox ItemsSource="{Binding TvFrames}" SelectedItem="{Binding TvFrame}" HorizontalAlignment="Stretch" />
-                                        <Border ClipToBounds="True" CornerRadius="8" Width="336" Height="189" Background="{DynamicResource SubtleBrush}">
-                                            <Image Source="{Binding TvPreviewPath, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="Uniform" />
-                                        </Border>
-                                    </StackPanel>
-                                    <StackPanel Spacing="6" Width="336">
-                                        <TextBlock Classes="label" Text="GamePad boot screen" />
-                                        <ComboBox ItemsSource="{Binding GamePadFrames}" SelectedItem="{Binding GamePadFrame}" HorizontalAlignment="Stretch" />
-                                        <Border ClipToBounds="True" CornerRadius="8" Width="336" Height="189" Background="{DynamicResource SubtleBrush}">
-                                            <Image Source="{Binding GamePadPreviewPath, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="Uniform" />
-                                        </Border>
-                                    </StackPanel>
-                                    <StackPanel Spacing="6" Width="200">
-                                        <TextBlock Classes="label" Text="Icon" />
-                                        <ComboBox ItemsSource="{Binding IconFrames}" SelectedItem="{Binding IconFrame}" HorizontalAlignment="Stretch" />
-                                        <Border ClipToBounds="True" CornerRadius="16" Width="128" Height="128" HorizontalAlignment="Left" Background="{DynamicResource SubtleBrush}">
-                                            <Image Source="{Binding IconPreviewPath, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="Uniform" />
-                                        </Border>
-                                    </StackPanel>
-                                    <StackPanel Spacing="6" Width="200">
-                                        <TextBlock Classes="label" Text="Boot logo" />
-                                        <ComboBox ItemsSource="{Binding LogoFrames}" SelectedItem="{Binding LogoFrame}" HorizontalAlignment="Stretch" />
-                                        <Border ClipToBounds="True" CornerRadius="6" Width="170" Height="42" HorizontalAlignment="Left" Background="{DynamicResource SubtleBrush}">
-                                            <Image Source="{Binding LogoPreviewPath, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="None" />
-                                        </Border>
-                                    </StackPanel>
-                                </WrapPanel>
-
-                                <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Right">
-                                    <TextBlock Classes="hint" FontSize="12" Text="Rendering…" VerticalAlignment="Center" IsVisible="{Binding IsRendering}" />
-                                    <Button Classes="primary sm" Content="Use these images" Command="{Binding ApplyCommand}" />
-                                </StackPanel>
                             </StackPanel>
                         </Border>
 
@@ -296,6 +258,10 @@
                                     <TextBlock Classes="fine" Text="{Binding Icon.Hint}" VerticalAlignment="Center" />
                                     <Button Classes="ghost sm tiny" Content="Clear" Command="{Binding Icon.ClearCommand}" IsVisible="{Binding Icon.HasPath}" IsEnabled="{Binding !IsRunning}" />
                                 </StackPanel>
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <ComboBox Grid.Column="0" ItemsSource="{Binding ArtworkBuilder.IconFrames}" SelectedItem="{Binding ArtworkBuilder.IconFrame}" HorizontalAlignment="Stretch" FontSize="12" IsEnabled="{Binding !IsRunning}" />
+                                    <Button Grid.Column="1" Classes="sm" Content="Build" Command="{Binding ArtworkBuilder.BuildCommand}" CommandParameter="{x:Static wiiu:ImageSlot.Icon}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Draw this one from the screenshot and the frame chosen here" />
+                                </Grid>
                             </StackPanel>
                             <!-- TV boot screen -->
                             <StackPanel Spacing="7">
@@ -316,6 +282,10 @@
                                     <TextBlock Classes="fine" Text="{Binding BootTv.Hint}" VerticalAlignment="Center" />
                                     <Button Classes="ghost sm tiny" Content="Clear" Command="{Binding BootTv.ClearCommand}" IsVisible="{Binding BootTv.HasPath}" IsEnabled="{Binding !IsRunning}" />
                                 </StackPanel>
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <ComboBox Grid.Column="0" ItemsSource="{Binding ArtworkBuilder.TvFrames}" SelectedItem="{Binding ArtworkBuilder.TvFrame}" HorizontalAlignment="Stretch" FontSize="12" IsEnabled="{Binding !IsRunning}" />
+                                    <Button Grid.Column="1" Classes="sm" Content="Build" Command="{Binding ArtworkBuilder.BuildCommand}" CommandParameter="{x:Static wiiu:ImageSlot.BootTv}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Draw this one from the screenshot and the frame chosen here" />
+                                </Grid>
                             </StackPanel>
                             <!-- GamePad boot screen -->
                             <StackPanel Spacing="7">
@@ -336,6 +306,10 @@
                                     <TextBlock Classes="fine" Text="{Binding BootDrc.Hint}" VerticalAlignment="Center" />
                                     <Button Classes="ghost sm tiny" Content="Clear" Command="{Binding BootDrc.ClearCommand}" IsVisible="{Binding BootDrc.HasPath}" IsEnabled="{Binding !IsRunning}" />
                                 </StackPanel>
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <ComboBox Grid.Column="0" ItemsSource="{Binding ArtworkBuilder.GamePadFrames}" SelectedItem="{Binding ArtworkBuilder.GamePadFrame}" HorizontalAlignment="Stretch" FontSize="12" IsEnabled="{Binding !IsRunning}" />
+                                    <Button Grid.Column="1" Classes="sm" Content="Build" Command="{Binding ArtworkBuilder.BuildCommand}" CommandParameter="{x:Static wiiu:ImageSlot.BootDrc}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Draw this one from the screenshot and the frame chosen here" />
+                                </Grid>
                             </StackPanel>
                             <!-- Boot logo -->
                             <StackPanel Spacing="7">
@@ -356,6 +330,10 @@
                                     <TextBlock Classes="fine" Text="{Binding BootLogo.Hint}" VerticalAlignment="Center" />
                                     <Button Classes="ghost sm tiny" Content="Clear" Command="{Binding BootLogo.ClearCommand}" IsVisible="{Binding BootLogo.HasPath}" IsEnabled="{Binding !IsRunning}" />
                                 </StackPanel>
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <ComboBox Grid.Column="0" ItemsSource="{Binding ArtworkBuilder.LogoFrames}" SelectedItem="{Binding ArtworkBuilder.LogoFrame}" HorizontalAlignment="Stretch" FontSize="12" IsEnabled="{Binding !IsRunning}" />
+                                    <Button Grid.Column="1" Classes="sm" Content="Build" Command="{Binding ArtworkBuilder.BuildCommand}" CommandParameter="{x:Static wiiu:ImageSlot.BootLogo}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Draw this one from the screenshot and the frame chosen here" />
+                                </Grid>
                             </StackPanel>
                         </WrapPanel>
 
