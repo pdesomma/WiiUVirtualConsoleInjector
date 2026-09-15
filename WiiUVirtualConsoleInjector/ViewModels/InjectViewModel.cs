@@ -1,15 +1,380 @@
+using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using PD.WiiU.VirtualConsole;
+using WiiUVirtualConsoleInjector.Services;
+using WiiUVirtualConsoleInjector.ViewModels.Options;
+
 namespace WiiUVirtualConsoleInjector.ViewModels;
 
 /// <summary>
-/// Placeholder; replaced by the real page.
+/// The inject page: pick a console, base, ROM, artwork and options, then run the injection.
 /// </summary>
 public sealed partial class InjectViewModel : PageViewModel
 {
     /// <summary>
+    /// Title of the confirmation shown before a risky inject.
+    /// </summary>
+    public const string WarningTitle = "Warning";
+
+    private const string DialogTitle = "Inject";
+    private const string GczWarning = "GCZ images take longer to inject and produce a larger title than an ISO or GCM.\n\nContinue anyway?";
+    private const string NdsWarning = "You can only inject NDS ROMs that are not DSi Enhanced (example for not working: Pokémon Black & White).\n\nIf attempting to inject a DSi Enhanced ROM, we will not give you any support with fixing said injection.\n\nContinue?";
+    private const string SnesWarning = "You can only inject SNES ROMs that are not using any Co-Processors (example for not working: Star Fox).\n\nIf attempting to inject a ROM in need of a Co-Processor, we will not give you any support with fixing said injection.\n\nContinue?";
+
+    private static readonly FileFilter[] ImageFilters = { new("Images", "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.webp", "*.tga") };
+    private static readonly FileFilter[] SoundFilters = { new("Audio", "*.wav", "*.mp3", "*.aiff", "*.aif") };
+
+    private readonly IBaseService _bases;
+    private readonly IDialogService _dialogs;
+    private readonly IInjectionServiceFactory _injections;
+    private readonly ISettingsService _settings;
+    private CancellationTokenSource? _cancellation;
+
+    [ObservableProperty]
+    private ConsoleOptionsViewModel _currentOptions;
+    [ObservableProperty]
+    private string? _currentStep;
+    [ObservableProperty]
+    private bool _gamePad;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanInject))]
+    [NotifyCanExecuteChangedFor(nameof(InjectCommand), nameof(CancelCommand))]
+    private bool _isRunning;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanInject), nameof(HasMissingKeys), nameof(MissingKeysHint))]
+    [NotifyCanExecuteChangedFor(nameof(InjectCommand))]
+    private IReadOnlyList<string> _missingKeys = Array.Empty<string>();
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanInject))]
+    [NotifyCanExecuteChangedFor(nameof(InjectCommand))]
+    private string? _name;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanInject))]
+    [NotifyCanExecuteChangedFor(nameof(InjectCommand))]
+    private string? _productId;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanInject))]
+    [NotifyCanExecuteChangedFor(nameof(InjectCommand))]
+    private string? _romPath;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanInject), nameof(BaseHint))]
+    [NotifyCanExecuteChangedFor(nameof(InjectCommand))]
+    private BaseChoice? _selectedBase;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsGamePadVisible), nameof(IsTurboCd))]
+    private SourceConsole _selectedConsole;
+    [ObservableProperty]
+    private string? _status;
+
+    /// <summary>
     /// Creates a new instance of the <see cref="InjectViewModel"/> class.
     /// </summary>
-    public InjectViewModel()
+    /// <param name="bases">Bases known per console and their status.</param>
+    /// <param name="dialogs">Pickers and message boxes.</param>
+    /// <param name="injections">Builds the injection service and reports missing keys.</param>
+    /// <param name="settings">Work and output folders, suppressed warnings.</param>
+    public InjectViewModel(IBaseService bases, IDialogService dialogs, IInjectionServiceFactory injections, ISettingsService settings)
         : base("Inject")
     {
+        _bases = bases ?? throw new ArgumentNullException(nameof(bases));
+        _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
+        _injections = injections ?? throw new ArgumentNullException(nameof(injections));
+        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+
+        Icon = new PathFieldViewModel(dialogs, "Icon", "128 × 128", ImageFilters);
+        BootTv = new PathFieldViewModel(dialogs, "TV boot screen", "1280 × 720", ImageFilters);
+        BootDrc = new PathFieldViewModel(dialogs, "GamePad boot screen", "854 × 480", ImageFilters);
+        BootLogo = new PathFieldViewModel(dialogs, "Boot logo", "170 × 42", ImageFilters);
+        BootSound = new PathFieldViewModel(dialogs, "Boot sound", "wav, mp3, aiff", SoundFilters);
+
+        _selectedConsole = SourceConsole.Nes;
+        _currentOptions = CreateOptions(_selectedConsole);
+        Refresh();
+    }
+
+    /// <summary>
+    /// Why the selected base cannot be used, or null when it can.
+    /// </summary>
+    public string? BaseHint => SelectedBase switch
+    {
+        null => "No base is known for this console.",
+        { IsPresent: false } => "This base is not downloaded; get it on Bases & Keys.",
+        _ => null,
+    };
+
+    /// <summary>
+    /// Bases for the selected console.
+    /// </summary>
+    public ObservableCollection<BaseChoice> Bases { get; } = new();
+
+    /// <summary>
+    /// GamePad boot screen.
+    /// </summary>
+    public PathFieldViewModel BootDrc { get; }
+
+    /// <summary>
+    /// Boot logo.
+    /// </summary>
+    public PathFieldViewModel BootLogo { get; }
+
+    /// <summary>
+    /// Sound played at boot.
+    /// </summary>
+    public PathFieldViewModel BootSound { get; }
+
+    /// <summary>
+    /// TV boot screen.
+    /// </summary>
+    public PathFieldViewModel BootTv { get; }
+
+    /// <summary>
+    /// True when everything an inject needs is in place and none is running.
+    /// </summary>
+    public bool CanInject =>
+        !IsRunning
+        && SelectedBase is { IsPresent: true }
+        && !string.IsNullOrWhiteSpace(RomPath)
+        && !string.IsNullOrWhiteSpace(Name)
+        && IsProductIdValid
+        && MissingKeys.Count == 0;
+
+    /// <summary>
+    /// Every console an injection can target.
+    /// </summary>
+    public IReadOnlyList<SourceConsole> Consoles { get; } = Enum.GetValues<SourceConsole>();
+
+    /// <summary>
+    /// True when a key the inject needs is missing.
+    /// </summary>
+    public bool HasMissingKeys => MissingKeys.Count > 0;
+
+    /// <summary>
+    /// Menu icon.
+    /// </summary>
+    public PathFieldViewModel Icon { get; }
+
+    /// <summary>
+    /// True for consoles whose titles can advertise GamePad-as-controller use.
+    /// </summary>
+    public bool IsGamePadVisible => SelectedConsole is SourceConsole.Wii or SourceConsole.GameCube;
+
+    /// <summary>
+    /// True when the console also accepts a TurboCD folder as the ROM.
+    /// </summary>
+    public bool IsTurboCd => SelectedConsole == SourceConsole.Tg16;
+
+    /// <summary>
+    /// Progress lines from the running or last inject.
+    /// </summary>
+    public ObservableCollection<string> Log { get; } = new();
+
+    /// <summary>
+    /// Names of the keys still needed, or null when none are.
+    /// </summary>
+    public string? MissingKeysHint => HasMissingKeys ? $"Missing {string.Join(" and ", MissingKeys)}; add it on Bases & Keys." : null;
+
+    /// <summary>
+    /// True when the product ID is blank or exactly four characters.
+    /// </summary>
+    private bool IsProductIdValid => ClearedProductId(ProductId) is null or { Length: 4 };
+
+    /// <inheritdoc/>
+    public override Task ActivateAsync()
+    {
+        Refresh();
+        return Task.CompletedTask;
+    }
+
+    private static string? ClearedProductId(string? productId) =>
+        string.IsNullOrWhiteSpace(productId) ? null : productId.Trim();
+
+    private static void DeleteWork(string work)
+    {
+        try
+        {
+            if (Directory.Exists(work))
+                Directory.Delete(work, recursive: true);
+        }
+        catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+    }
+
+    private static FileFilter[] RomFilters(SourceConsole console) => console switch
+    {
+        SourceConsole.Nes => new FileFilter[] { new("NES ROMs", "*.nes") },
+        SourceConsole.Snes => new FileFilter[] { new("SNES ROMs", "*.sfc", "*.smc") },
+        SourceConsole.N64 => new FileFilter[] { new("Nintendo 64 ROMs", "*.z64", "*.n64", "*.v64") },
+        SourceConsole.Gba => new FileFilter[] { new("Game Boy ROMs", "*.gba", "*.gb", "*.gbc", "*.sgb") },
+        SourceConsole.Nds => new FileFilter[] { new("Nintendo DS ROMs", "*.nds") },
+        SourceConsole.Tg16 => new FileFilter[] { new("TurboGrafx-16 ROMs", "*.pce") },
+        SourceConsole.Msx => new FileFilter[] { new("MSX ROMs", "*.rom", "*.mx1", "*.mx2") },
+        SourceConsole.Wii => new FileFilter[]
+        {
+            new("Wii images, homebrew and channels", "*.iso", "*.wbfs", "*.dol", "*.wad"),
+            new("Disc images", "*.iso", "*.wbfs"),
+            new("Homebrew", "*.dol"),
+            new("Channels", "*.wad"),
+        },
+        SourceConsole.GameCube => new FileFilter[] { new("GameCube images", "*.iso", "*.gcm", "*.gcz") },
+        _ => throw new ArgumentOutOfRangeException(nameof(console), console, "Unknown console."),
+    };
+
+    private static (InjectionWarning Warning, string Message)? WarningFor(SourceConsole console, string romPath) => console switch
+    {
+        SourceConsole.Nds => (InjectionWarning.NdsDsiEnhanced, NdsWarning),
+        SourceConsole.Snes => (InjectionWarning.SnesCoProcessor, SnesWarning),
+        SourceConsole.GameCube when string.Equals(Path.GetExtension(romPath), ".gcz", StringComparison.OrdinalIgnoreCase) => (InjectionWarning.GameCubeGcz, GczWarning),
+        _ => null,
+    };
+
+    private Injection BuildInjection() =>
+        new(SelectedBase!.Base, new Rom(RomPath!, SelectedConsole), GameFactory.Create(Name!, ClearedProductId(ProductId), IsGamePadVisible && GamePad))
+        {
+            Artwork = new Artwork { Icon = Icon.Path, BootTv = BootTv.Path, BootDrc = BootDrc.Path, BootLogo = BootLogo.Path },
+            BootSoundPath = BootSound.Path,
+            Options = CurrentOptions.Build(),
+        };
+
+    /// <summary>
+    /// Stops the running inject.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(IsRunning))]
+    private void Cancel() => _cancellation?.Cancel();
+
+    /// <summary>
+    /// Asks the user first when the inject may not work; false means stop.
+    /// </summary>
+    private async Task<bool> ConfirmWarningAsync()
+    {
+        if (WarningFor(SelectedConsole, RomPath!) is not { } warning || _settings.Current.IsSuppressed(warning.Warning))
+            return true;
+
+        return await _dialogs.ConfirmAsync(WarningTitle, warning.Message).ConfigureAwait(true);
+    }
+
+    private ConsoleOptionsViewModel CreateOptions(SourceConsole console) => console switch
+    {
+        SourceConsole.Nes => new NesOptionsViewModel(),
+        SourceConsole.Snes => new SnesOptionsViewModel(),
+        SourceConsole.N64 => new N64OptionsViewModel(_dialogs),
+        SourceConsole.Gba => new GbaOptionsViewModel(),
+        SourceConsole.Nds => new NdsOptionsViewModel(_dialogs),
+        SourceConsole.Wii => new WiiOptionsViewModel(_dialogs),
+        SourceConsole.GameCube => new GameCubeOptionsViewModel(_dialogs),
+        _ => new NoOptionsViewModel(console),
+    };
+
+    /// <summary>
+    /// Confirms any warning, builds the injection and runs it, reporting the outcome.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanInject))]
+    private async Task InjectAsync()
+    {
+        if (!await ConfirmWarningAsync().ConfigureAwait(true))
+            return;
+
+        Injection injection;
+        try
+        {
+            injection = BuildInjection();
+        }
+        catch (ArgumentException e)
+        {
+            await _dialogs.ShowErrorAsync(DialogTitle, e.Message).ConfigureAwait(true);
+            return;
+        }
+
+        var work = Path.Combine(_settings.WorkPath, Guid.NewGuid().ToString("N"));
+        using var cancellation = new CancellationTokenSource();
+        _cancellation = cancellation;
+        IsRunning = true;
+        Log.Clear();
+        CurrentStep = null;
+        Status = "Running";
+        try
+        {
+            var service = _injections.Create();
+            var progress = new Progress<InjectionProgress>(Report);
+            var token = cancellation.Token;
+            var result = await Task.Run(() => service.InjectAsync(injection, work, _settings.OutputPath, progress, token), token).ConfigureAwait(true);
+            Status = "Done";
+            await _dialogs.ShowInfoAsync(DialogTitle, $"Title written to {result.OutputDirectory}").ConfigureAwait(true);
+        }
+        catch (OperationCanceledException)
+        {
+            Status = "Cancelled";
+        }
+        catch (InjectionException e)
+        {
+            Status = "Failed";
+            await _dialogs.ShowErrorAsync(DialogTitle, $"Failed at {e.Step}: {e.Message}").ConfigureAwait(true);
+        }
+        catch (Exception e)
+        {
+            Status = "Failed";
+            await _dialogs.ShowErrorAsync(DialogTitle, e.Message).ConfigureAwait(true);
+        }
+        finally
+        {
+            _cancellation = null;
+            IsRunning = false;
+            DeleteWork(work);
+        }
+    }
+
+    partial void OnSelectedConsoleChanged(SourceConsole value)
+    {
+        RomPath = null;
+        CurrentOptions = CreateOptions(value);
+        Refresh();
+    }
+
+    /// <summary>
+    /// Opens the ROM picker for the selected console.
+    /// </summary>
+    [RelayCommand]
+    private async Task PickRomAsync()
+    {
+        var picked = await _dialogs.PickOpenFileAsync("ROM", RomFilters(SelectedConsole)).ConfigureAwait(true);
+        if (picked is not null)
+            RomPath = picked;
+    }
+
+    /// <summary>
+    /// Opens a folder picker for a TurboCD game.
+    /// </summary>
+    [RelayCommand]
+    private async Task PickTurboCdFolderAsync()
+    {
+        var picked = await _dialogs.PickFolderAsync("TurboCD folder").ConfigureAwait(true);
+        if (picked is not null)
+            RomPath = picked;
+    }
+
+    /// <summary>
+    /// Rebuilds the base list and missing keys for the selected console, keeping the selection where it survives.
+    /// </summary>
+    private void Refresh()
+    {
+        var previous = SelectedBase?.Base.TitleId;
+        Bases.Clear();
+        foreach (var @base in _bases.Available(SelectedConsole))
+            Bases.Add(new BaseChoice(@base, _bases.Status(@base)));
+
+        SelectedBase = Bases.FirstOrDefault(b => previous is { } id && b.Base.TitleId.Equals(id))
+                       ?? Bases.FirstOrDefault(b => b.IsPresent)
+                       ?? Bases.FirstOrDefault();
+        MissingKeys = _injections.MissingKeys(SelectedConsole);
+    }
+
+    private void Report(InjectionProgress progress)
+    {
+        CurrentStep = progress.Step.ToString();
+        Log.Add($"{progress.Step}: {progress.Message}");
     }
 }

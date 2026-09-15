@@ -1,0 +1,11 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels.Options"
+             x:Class="WiiUVirtualConsoleInjector.Views.Options.GameCubeOptionsView"
+             x:DataType="vm:GameCubeOptionsViewModel">
+    <StackPanel Spacing="8">
+        <CheckBox Content="Force 4:3" IsChecked="{Binding ForceFourByThree}" />
+        <ContentControl Content="{Binding Forwarder}" />
+        <ContentControl Content="{Binding SecondDisc}" />
+    </StackPanel>
+</UserControl>

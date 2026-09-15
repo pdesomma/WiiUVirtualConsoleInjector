@@ -1,0 +1,143 @@
+using PD.WiiU.VirtualConsole;
+using WiiUSharp;
+using WiiUVirtualConsoleInjector.Services;
+
+namespace WiiUVirtualConsoleInjector.Tests;
+
+/// <summary>
+/// Test doubles for the inject page.
+/// </summary>
+internal static class InjectFakes
+{
+    public static BaseTitle Base(SourceConsole console, uint id = 0x10101D00, string name = "Base") =>
+        new(new TitleId(TitleType.Game, id), name, Region.UnitedStates, console);
+
+    /// <summary>
+    /// Runs posted callbacks inline so Progress callbacks land before the awaited call returns.
+    /// </summary>
+    internal sealed class InlineSynchronizationContext : SynchronizationContext
+    {
+        public override void Post(SendOrPostCallback d, object? state) => d(state);
+
+        public override void Send(SendOrPostCallback d, object? state) => d(state);
+    }
+
+    internal sealed class InjectDialogService : IDialogService
+    {
+        public bool ConfirmResult { get; set; } = true;
+        public List<(string Title, string Message)> Confirms { get; } = new();
+        public List<(string Title, string Message)> Errors { get; } = new();
+        public List<(string Title, string Message)> Infos { get; } = new();
+        public List<string> FolderPicks { get; } = new();
+        public Queue<string?> NextPaths { get; } = new();
+        public List<(string Title, FileFilter[] Filters)> FilePicks { get; } = new();
+
+        public Task<bool> ConfirmAsync(string title, string message)
+        {
+            Confirms.Add((title, message));
+            return Task.FromResult(ConfirmResult);
+        }
+
+        public Task<string?> PickFolderAsync(string title, string? startFolder = null)
+        {
+            FolderPicks.Add(title);
+            return Task.FromResult(NextPaths.Count == 0 ? null : NextPaths.Dequeue());
+        }
+
+        public Task<string?> PickOpenFileAsync(string title, params FileFilter[] filters)
+        {
+            FilePicks.Add((title, filters));
+            return Task.FromResult(NextPaths.Count == 0 ? null : NextPaths.Dequeue());
+        }
+
+        public Task ShowErrorAsync(string title, string message)
+        {
+            Errors.Add((title, message));
+            return Task.CompletedTask;
+        }
+
+        public Task ShowInfoAsync(string title, string message)
+        {
+            Infos.Add((title, message));
+            return Task.CompletedTask;
+        }
+    }
+
+    internal sealed class InjectSettingsService : ISettingsService
+    {
+        public event EventHandler? Changed;
+
+        public string BasePath { get; set; } = Path.Combine(Path.GetTempPath(), "InjectTests", "bases");
+        public AppSettings Current { get; set; } = new();
+        public string OutputPath { get; set; } = Path.Combine(Path.GetTempPath(), "InjectTests", "out");
+        public string WorkPath { get; set; } = Path.Combine(Path.GetTempPath(), "InjectTests", "work");
+
+        public void Update(Func<AppSettings, AppSettings> change)
+        {
+            Current = change(Current);
+            Changed?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    internal sealed class InjectBaseService : IBaseService
+    {
+        public List<BaseTitle> Bases { get; } = new();
+        public Dictionary<TitleId, BaseStatus> Statuses { get; } = new();
+
+        public InjectBaseService Add(BaseTitle @base, BaseStatus status = BaseStatus.Present)
+        {
+            Bases.Add(@base);
+            Statuses[@base.TitleId] = status;
+            return this;
+        }
+
+        public IReadOnlyList<BaseTitle> Available(SourceConsole console) => Bases.Where(b => b.Console == console).ToList();
+
+        public Task<TitleDirectory> DownloadAsync(BaseTitle @base, IProgress<BaseDownloadProgress>? progress = null, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public BaseStatus Status(BaseTitle @base) => Statuses.TryGetValue(@base.TitleId, out var status) ? status : BaseStatus.Downloadable;
+    }
+
+    internal sealed class RecordingInjectionService : IInjectionService
+    {
+        public Action? OnStart { get; set; }
+        public Exception? Throws { get; set; }
+        public Injection? Received { get; private set; }
+        public string? OutputDirectory { get; private set; }
+        public string? WorkDirectory { get; private set; }
+        public List<InjectionProgress> Reports { get; } = new();
+
+        public IReadOnlyList<BaseIssue> InspectBase(BaseTitle @base) => Array.Empty<BaseIssue>();
+
+        public async Task<InjectedTitle> InjectAsync(Injection injection, string workDirectory, string outputDirectory, IProgress<InjectionProgress>? progress = null, CancellationToken cancellationToken = default)
+        {
+            Received = injection;
+            WorkDirectory = workDirectory;
+            OutputDirectory = outputDirectory;
+            OnStart?.Invoke();
+            foreach (var report in Reports)
+                progress?.Report(report);
+            await Task.Yield();
+            cancellationToken.ThrowIfCancellationRequested();
+            if (Throws is not null)
+                throw Throws;
+            return new InjectedTitle(injection.Game, outputDirectory);
+        }
+    }
+
+    internal sealed class RecordingInjectionServiceFactory : IInjectionServiceFactory
+    {
+        public int Created { get; private set; }
+        public Func<SourceConsole, IReadOnlyList<string>> Missing { get; set; } = _ => Array.Empty<string>();
+        public RecordingInjectionService Service { get; } = new();
+
+        public IInjectionService Create()
+        {
+            Created++;
+            return Service;
+        }
+
+        public IReadOnlyList<string> MissingKeys(SourceConsole console) => Missing(console);
+    }
+}

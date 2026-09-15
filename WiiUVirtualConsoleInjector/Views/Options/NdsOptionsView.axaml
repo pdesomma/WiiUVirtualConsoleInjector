@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels.Options"
+             x:Class="WiiUVirtualConsoleInjector.Views.Options.NdsOptionsView"
+             x:DataType="vm:NdsOptionsViewModel">
+    <StackPanel Spacing="8">
+        <Grid ColumnDefinitions="160,*,Auto" ColumnSpacing="8">
+            <TextBlock Grid.Column="0" Text="Brightness" VerticalAlignment="Center" />
+            <Slider Grid.Column="1" Minimum="0" Maximum="100" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Brightness}" />
+            <TextBlock Grid.Column="2" Text="{Binding Brightness, StringFormat='{}{0} %'}" MinWidth="48" VerticalAlignment="Center" />
+        </Grid>
+        <Grid ColumnDefinitions="160,Auto" ColumnSpacing="8">
+            <TextBlock Grid.Column="0" Text="Pixel art upscaler" VerticalAlignment="Center" />
+            <NumericUpDown Grid.Column="1" Minimum="0" Maximum="64" Increment="1" FormatString="0" Value="{Binding PixelArtUpscaler}" Width="140" />
+        </Grid>
+        <ContentControl Content="{Binding LayoutScreens}" />
+    </StackPanel>
+</UserControl>
