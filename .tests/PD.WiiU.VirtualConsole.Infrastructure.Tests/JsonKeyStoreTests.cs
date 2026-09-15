@@ -180,4 +180,18 @@ public class JsonKeyStoreTests
 
         Assert.ThrowsExactly<InvalidDataException>(() => new JsonKeyStore(_path).AncastKey);
     }
+
+    [TestMethod]
+    public void WiiCommonKey_SetThenReloaded_RoundTrips()
+    {
+        var key = new WiiSharp.CommonKey(Enumerable.Range(1, 16).Select(i => (byte)(i * 5)).ToArray());
+        new JsonKeyStore(_path).WiiCommonKey = key;
+
+        var reloaded = new JsonKeyStore(_path);
+
+        Assert.AreEqual(key, reloaded.WiiCommonKey);
+        StringAssert.Contains(File.ReadAllText(_path), "\"wiiCommonKey\": \"" + KeyHex.Format(key.ToArray()) + "\"");
+        reloaded.WiiCommonKey = null;
+        Assert.IsNull(new JsonKeyStore(_path).WiiCommonKey);
+    }
 }
