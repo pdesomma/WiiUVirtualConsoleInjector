@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole.Ports;
+﻿using PD.WiiU.VirtualConsole.Ports;
 using WiiUSharp;
 
 namespace PD.WiiU.VirtualConsole.Tests;
@@ -164,11 +164,49 @@ public class InjectionServiceTests
         Assert.AreSame(injector.Titles.Single(), injector.Inspected.Single(), "the staged copy is what gets inspected");
         Assert.AreEqual(bases.Destinations.Single(), injector.Titles.Single().Root);
         Assert.AreSame(injector.Titles.Single(), packer.Calls.Single().Title);
-        Assert.AreEqual(Output(), packer.Calls.Single().Output);
-        Assert.AreEqual(Output(), result.OutputDirectory);
+        var folder = Path.Combine(Output(), "[WUP]Test");
+        Assert.AreEqual(folder, packer.Calls.Single().Output);
+        Assert.AreEqual(folder, result.OutputDirectory);
         Assert.AreSame(injection.Game, result.Game);
-        Assert.IsTrue(File.Exists(Path.Combine(Output(), "title.tmd")));
+        Assert.IsTrue(File.Exists(Path.Combine(folder, "title.tmd")), "packed into the title's own folder, not the output root");
         Assert.AreEqual(0, Directory.GetDirectories(Work()).Length);
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_NameNeedsCleaning_StripsWhatAFolderNameCannotHold()
+    {
+        var service = Service(new FakeRomInjector(SourceConsole.N64));
+        var game = new Game(TestTitle.Game().TitleId, GroupId.Parse("00001ABC"), ProductCode.Parse("WUP-N-TEST"))
+        {
+            Names = new Dictionary<Language, LocalizedName> { [Language.English] = new("Kirby: Nightmare / Dream*Land.", "Long") },
+        };
+
+        var result = await service.InjectAsync(new Injection(TestTitle.Base(), Rom(), game), Work(), Output());
+
+        Assert.AreEqual(Path.Combine(Output(), "[WUP]Kirby Nightmare Dream Land"), result.OutputDirectory);
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_NoUsableName_FallsBackToTheTitleId()
+    {
+        var service = Service(new FakeRomInjector(SourceConsole.N64));
+        var game = new Game(TestTitle.Game().TitleId, GroupId.Parse("00001ABC"), ProductCode.Parse("WUP-N-TEST"));
+
+        var result = await service.InjectAsync(new Injection(TestTitle.Base(), Rom(), game), Work(), Output());
+
+        Assert.AreEqual(Path.Combine(Output(), InjectionService.TitlePrefix + game.TitleId), result.OutputDirectory);
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_SameNameTwice_NumbersTheSecondFolder()
+    {
+        var service = Service(new FakeRomInjector(SourceConsole.N64));
+
+        var first = await service.InjectAsync(new Injection(TestTitle.Base(), Rom(), TestTitle.Game()), Work(), Output());
+        var second = await service.InjectAsync(new Injection(TestTitle.Base(), Rom(), TestTitle.Game()), Work(), Output());
+
+        Assert.AreEqual(Path.Combine(Output(), "[WUP]Test"), first.OutputDirectory);
+        Assert.AreEqual(Path.Combine(Output(), "[WUP]Test (2)"), second.OutputDirectory);
     }
 
     [TestMethod]
