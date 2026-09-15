@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WiiUVirtualConsoleInjector.Services;
 
@@ -32,7 +32,7 @@ public sealed partial class KeyEntryViewModel : ViewModelBase
     private string _status = NotSetText;
     private bool _syncing;
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsValid))]
+    [NotifyPropertyChangedFor(nameof(IsValid), nameof(IsSaved))]
     private string _text = string.Empty;
 
     /// <summary>
@@ -55,6 +55,10 @@ public sealed partial class KeyEntryViewModel : ViewModelBase
         Refresh();
     }
 
+    /// <summary>
+    /// True when the text shown is exactly the stored key; what the check mark reports.
+    /// </summary>
+    public bool IsSaved => IsSet && string.Equals(_stored(), Text.Trim(), StringComparison.OrdinalIgnoreCase);
     /// <summary>
     /// True when a key is stored.
     /// </summary>
@@ -97,7 +101,11 @@ public sealed partial class KeyEntryViewModel : ViewModelBase
         _changed();
     }
 
-    partial void OnStatusChanged(string value) => OnPropertyChanged(nameof(IsSet));
+    partial void OnStatusChanged(string value)
+    {
+        OnPropertyChanged(nameof(IsSet));
+        OnPropertyChanged(nameof(IsSaved));
+    }
 
     /// <summary>
     /// Stores as soon as the hex is complete; emptying forgets the key.
