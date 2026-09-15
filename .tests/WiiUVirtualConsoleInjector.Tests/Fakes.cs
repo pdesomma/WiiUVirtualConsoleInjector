@@ -66,12 +66,14 @@ internal sealed class FakeKeyStore : IKeyStore
 
     public AncastKey? AncastKey { get; set; }
     public CommonKey? CommonKey { get; set; }
+    public int TitleKeyWrites { get; private set; }
     public WiiSharp.CommonKey? WiiCommonKey { get; set; }
 
     public EncryptedTitleKey? GetTitleKey(TitleId titleId) => _titleKeys.TryGetValue(titleId, out var key) ? key : null;
 
     public void SetTitleKey(TitleId titleId, EncryptedTitleKey? titleKey)
     {
+        TitleKeyWrites++;
         if (titleKey is null)
             _titleKeys.Remove(titleId);
         else

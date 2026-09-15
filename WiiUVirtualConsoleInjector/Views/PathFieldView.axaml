@@ -4,16 +4,16 @@
              xmlns:conv="using:WiiUVirtualConsoleInjector.Converters"
              x:Class="WiiUVirtualConsoleInjector.Views.PathFieldView"
              x:DataType="vm:PathFieldViewModel">
-    <Grid ColumnDefinitions="180,*,Auto,Auto" ColumnSpacing="8">
-        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+    <StackPanel Spacing="4">
+        <StackPanel Orientation="Horizontal" Spacing="8">
             <Image Classes="glyph" Source="{Binding Glyph, Converter={x:Static conv:AssetConverter.Bitmap}}" IsVisible="{Binding Glyph, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-            <StackPanel VerticalAlignment="Center">
-                <TextBlock Classes="label" Text="{Binding Label}" />
-                <TextBlock Classes="hint" Text="{Binding Hint}" IsVisible="{Binding Hint, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" FontSize="11" />
-            </StackPanel>
+            <TextBlock Classes="label" Text="{Binding Label}" />
         </StackPanel>
-        <TextBox Grid.Column="1" Text="{Binding Path}" IsReadOnly="True" PlaceholderText="Optional" VerticalAlignment="Center" />
-        <Button Grid.Column="2" Content="Pick" Command="{Binding PickCommand}" MinWidth="70" />
-        <Button Grid.Column="3" Content="Clear" Command="{Binding ClearCommand}" MinWidth="70" />
-    </Grid>
+        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+            <TextBox Grid.Column="0" Text="{Binding Path}" IsReadOnly="True" PlaceholderText="Optional" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Classes="sm" Content="Pick" Command="{Binding PickCommand}" />
+            <Button Grid.Column="2" Classes="ghost sm" Content="Clear" Command="{Binding ClearCommand}" />
+        </Grid>
+        <TextBlock Classes="fine" Text="{Binding Hint}" IsVisible="{Binding Hint, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    </StackPanel>
 </UserControl>

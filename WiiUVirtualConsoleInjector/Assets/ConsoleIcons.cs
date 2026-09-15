@@ -5,13 +5,27 @@ using PD.WiiU.VirtualConsole;
 namespace WiiUVirtualConsoleInjector.Assets;
 
 /// <summary>
-/// The white console logos shipped as resources, one per <see cref="SourceConsole"/>.
+/// The console logos shipped as resources, white and near-black, one per <see cref="SourceConsole"/>.
 /// </summary>
 public static class ConsoleIcons
 {
+    private const string DarkRoot = "avares://WiiUVirtualConsoleInjector/Assets/Consoles/Dark/";
     private const string Root = "avares://WiiUVirtualConsoleInjector/Assets/Consoles/";
 
     private static readonly Dictionary<SourceConsole, Bitmap> Cache = new();
+    private static readonly Dictionary<SourceConsole, Bitmap> DarkCache = new();
+
+    /// <summary>
+    /// Loads (once) the near-black logo bitmap for a console, for light tiles.
+    /// </summary>
+    /// <param name="console">Console to show.</param>
+    public static Bitmap DarkFor(SourceConsole console) => Load(DarkCache, console, DarkUriFor(console));
+
+    /// <summary>
+    /// Resource URI of a console's near-black logo.
+    /// </summary>
+    /// <param name="console">Console to show.</param>
+    public static Uri DarkUriFor(SourceConsole console) => new(DarkRoot + console + ".png");
 
     /// <summary>
     /// Human label for a console.
@@ -32,26 +46,34 @@ public static class ConsoleIcons
     };
 
     /// <summary>
-    /// Loads (once) the logo bitmap for a console.
+    /// Loads (once) the white logo bitmap for a console.
     /// </summary>
     /// <param name="console">Console to show.</param>
-    public static Bitmap For(SourceConsole console)
+    public static Bitmap For(SourceConsole console) => Load(Cache, console, UriFor(console));
+
+    /// <summary>
+    /// Resource URI of a console's white logo.
+    /// </summary>
+    /// <param name="console">Console to show.</param>
+    public static Uri UriFor(SourceConsole console) => new(Root + console + ".png");
+
+    /// <summary>
+    /// Reads a logo into the cache on first use.
+    /// </summary>
+    /// <param name="cache">Cache for the variant.</param>
+    /// <param name="console">Console to show.</param>
+    /// <param name="uri">Resource to read.</param>
+    private static Bitmap Load(Dictionary<SourceConsole, Bitmap> cache, SourceConsole console, Uri uri)
     {
-        lock (Cache)
+        lock (cache)
         {
-            if (!Cache.TryGetValue(console, out var bitmap))
+            if (!cache.TryGetValue(console, out var bitmap))
             {
-                using var stream = AssetLoader.Open(UriFor(console));
+                using var stream = AssetLoader.Open(uri);
                 bitmap = new Bitmap(stream);
-                Cache[console] = bitmap;
+                cache[console] = bitmap;
             }
             return bitmap;
         }
     }
-
-    /// <summary>
-    /// Resource URI of a console's logo.
-    /// </summary>
-    /// <param name="console">Console to show.</param>
-    public static Uri UriFor(SourceConsole console) => new(Root + console + ".png");
 }

@@ -5,58 +5,67 @@
              x:DataType="vm:SettingsViewModel">
 
     <UserControl.DataTemplates>
+        <!-- One folder: label above, read-only path with Browse and Reset -->
         <DataTemplate x:DataType="vm:FolderSettingViewModel">
-            <Grid ColumnDefinitions="180,*,Auto,Auto" ColumnSpacing="8">
-                <TextBlock Grid.Column="0" Classes="label" Text="{Binding Label}" />
-                <TextBox Grid.Column="1" Text="{Binding Folder, Mode=OneWay}" IsReadOnly="True" VerticalAlignment="Center" />
-                <Button Grid.Column="2" Content="Browse…" Command="{Binding BrowseCommand}" />
-                <Button Grid.Column="3" Content="Reset to default" Command="{Binding ResetCommand}" />
-            </Grid>
+            <StackPanel Spacing="4">
+                <TextBlock Classes="label" Text="{Binding Label}" />
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                    <TextBox Grid.Column="0" Text="{Binding Folder, Mode=OneWay}" IsReadOnly="True" FontSize="12" VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Classes="sm" Content="Browse…" Command="{Binding BrowseCommand}" />
+                    <Button Grid.Column="2" Classes="sm ghost" Content="Reset to default" Command="{Binding ResetCommand}" />
+                </Grid>
+            </StackPanel>
         </DataTemplate>
         <DataTemplate x:DataType="vm:WarningSettingViewModel">
-            <CheckBox IsChecked="{Binding ShowAgain}" Content="{Binding Description}" />
+            <CheckBox IsChecked="{Binding ShowAgain}" VerticalContentAlignment="Top">
+                <TextBlock Text="{Binding Description}" FontSize="12.5" TextWrapping="Wrap" LineHeight="19" />
+            </CheckBox>
         </DataTemplate>
     </UserControl.DataTemplates>
 
-    <StackPanel Spacing="12" MaxWidth="960" HorizontalAlignment="Left">
-        <StackPanel Orientation="Horizontal">
-            <Image Source="/Assets/settings.png" Classes="glyph" Width="26" Height="26" Margin="0,0,10,8" />
-            <TextBlock Classes="title" Text="{Binding Title}" />
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MaxWidth="820" />
+        </Grid.ColumnDefinitions>
+        <StackPanel Spacing="20">
+
+            <!-- Paths -->
+            <Border Classes="card">
+                <StackPanel>
+                    <TextBlock Classes="section" Text="Paths" />
+                    <ItemsControl ItemsSource="{Binding Folders}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="14" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- Warnings -->
+            <Border Classes="card">
+                <StackPanel>
+                    <TextBlock Classes="section" Text="Warnings" Margin="0,0,0,4" />
+                    <TextBlock Classes="hint" FontSize="12" Text="Show these warnings again before injecting:" Margin="0,0,0,12" />
+                    <ItemsControl ItemsSource="{Binding Warnings}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="10" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- Data folder -->
+            <Border Classes="card">
+                <StackPanel>
+                    <TextBlock FontSize="15" FontWeight="Bold" Text="Data folder" Margin="0,0,0,4" />
+                    <TextBlock Classes="hint" FontSize="12" Text="Settings, keys and caches live here." Margin="0,0,0,8" />
+                    <SelectableTextBlock Classes="mono" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Text="{Binding DataFolder}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
         </StackPanel>
-
-        <!-- Folders -->
-        <Border Classes="card">
-            <StackPanel Spacing="8">
-                <TextBlock Classes="section" Text="Folders" />
-                <ItemsControl ItemsSource="{Binding Folders}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Spacing="8" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                </ItemsControl>
-            </StackPanel>
-        </Border>
-
-        <!-- Warnings -->
-        <Border Classes="card">
-            <StackPanel Spacing="8">
-                <TextBlock Classes="section" Text="Warnings" />
-                <TextBlock Classes="hint" Text="Show these warnings again before injecting:" />
-                <ItemsControl ItemsSource="{Binding Warnings}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Spacing="4" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                </ItemsControl>
-            </StackPanel>
-        </Border>
-
-        <!-- Data folder -->
-        <StackPanel Spacing="4" Margin="4,0">
-            <TextBlock Classes="hint" Text="Settings, keys and caches live here:" />
-            <SelectableTextBlock Text="{Binding DataFolder}" FontSize="12" Opacity="0.65" FontFamily="Consolas,monospace" />
-        </StackPanel>
-    </StackPanel>
+    </Grid>
 </UserControl>

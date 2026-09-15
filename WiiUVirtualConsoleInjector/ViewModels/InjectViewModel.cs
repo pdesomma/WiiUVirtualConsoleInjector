@@ -82,7 +82,7 @@ public sealed partial class InjectViewModel : PageViewModel
     [ObservableProperty]
     private string? _status;
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CurrentWizardStep), nameof(CanGoNext), nameof(CanGoPrevious), nameof(IsConsoleStep), nameof(IsBaseStep), nameof(IsGameStep), nameof(IsArtworkStep), nameof(IsOptionsStep), nameof(IsReviewStep))]
+    [NotifyPropertyChangedFor(nameof(CurrentWizardStep), nameof(SelectedStep), nameof(CanGoNext), nameof(CanGoPrevious), nameof(IsConsoleStep), nameof(IsBaseStep), nameof(IsGameStep), nameof(IsArtworkStep), nameof(IsOptionsStep), nameof(IsReviewStep))]
     [NotifyCanExecuteChangedFor(nameof(NextStepCommand), nameof(PreviousStepCommand))]
     private int _step = 1;
 
@@ -281,6 +281,19 @@ public sealed partial class InjectViewModel : PageViewModel
     /// Label of the selected console.
     /// </summary>
     public string SelectedConsoleName => Assets.ConsoleIcons.DisplayName(SelectedConsole);
+
+    /// <summary>
+    /// The step on screen as a settable item, for the step dots; setting jumps there.
+    /// </summary>
+    public WizardStep? SelectedStep
+    {
+        get => CurrentWizardStep;
+        set
+        {
+            if (value is not null)
+                Step = value.Number;
+        }
+    }
 
     /// <summary>
     /// True when the product ID is blank or exactly four characters.

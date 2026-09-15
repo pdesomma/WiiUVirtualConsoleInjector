@@ -3,5 +3,5 @@
              xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels.Options"
              x:Class="WiiUVirtualConsoleInjector.Views.Options.NoOptionsView"
              x:DataType="vm:NoOptionsViewModel">
-    <TextBlock Classes="hint" Text="No options for this console." />
+    <TextBlock Text="This console has no adjustable options." FontSize="13" Foreground="{DynamicResource TextTertiaryBrush}" TextAlignment="Center" HorizontalAlignment="Center" Margin="0,36" />
 </UserControl>

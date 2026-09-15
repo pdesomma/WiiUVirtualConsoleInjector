@@ -3,15 +3,15 @@
              xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels.Options"
              x:Class="WiiUVirtualConsoleInjector.Views.Options.NdsOptionsView"
              x:DataType="vm:NdsOptionsViewModel">
-    <StackPanel Spacing="8">
-        <Grid ColumnDefinitions="180,*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
-            <TextBlock Grid.Row="0" Grid.Column="0" Classes="label" Text="Brightness" />
-            <Slider Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="100" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Brightness}" />
-            <TextBlock Grid.Row="0" Grid.Column="2" Classes="label" Text="{Binding Brightness, StringFormat='{}{0} %'}" MinWidth="48" />
-
-            <TextBlock Grid.Row="1" Grid.Column="0" Classes="label" Text="Pixel art upscaler" />
-            <NumericUpDown Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="64" Increment="1" FormatString="0" Value="{Binding PixelArtUpscaler}" Width="140" HorizontalAlignment="Left" />
-        </Grid>
+    <StackPanel Spacing="16" Width="560" HorizontalAlignment="Left">
+        <StackPanel Spacing="4">
+            <TextBlock Classes="label" Text="{Binding Brightness, StringFormat='Brightness · {0}%'}" />
+            <Slider Minimum="0" Maximum="100" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Brightness}" />
+        </StackPanel>
+        <StackPanel Spacing="4">
+            <TextBlock Classes="label" Text="Pixel art upscaler" />
+            <NumericUpDown Minimum="0" Maximum="64" Increment="1" FormatString="0" Value="{Binding PixelArtUpscaler}" Width="110" HorizontalAlignment="Left" />
+        </StackPanel>
         <ContentControl Content="{Binding LayoutScreens}" />
     </StackPanel>
 </UserControl>

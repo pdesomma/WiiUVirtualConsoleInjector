@@ -87,6 +87,66 @@ public class BasesViewModelTests
     }
 
     [TestMethod]
+    public void WiiUCommonKey_TypeValidHex_StoresWithoutSave()
+    {
+        var vm = Create();
+
+        vm.WiiUCommonKeyEntry.Text = KeyHexText.ToUpperInvariant();
+
+        Assert.AreEqual(KeyHexText, _keys.CommonKey!.ToString());
+        Assert.IsTrue(vm.WiiUCommonKeyEntry.IsValid);
+        Assert.IsTrue(vm.WiiUCommonKeyEntry.IsSet);
+        Assert.AreEqual(KeyHexText, vm.WiiUCommonKeyEntry.Text);
+        Assert.AreEqual(BaseStatus.NeedsTitleKey, vm.Bases[0].Status);
+        Assert.AreEqual(0, _dialogs.Errors.Count);
+    }
+
+    [TestMethod]
+    public void WiiUCommonKey_TypeInvalidHex_LeavesStoreAndIsNotValid()
+    {
+        _keys.CommonKey = CommonKey.Parse(KeyHexText);
+        var vm = Create();
+        var changed = new List<string>();
+        vm.WiiUCommonKeyEntry.PropertyChanged += (_, e) => changed.Add(e.PropertyName!);
+
+        vm.WiiUCommonKeyEntry.Text = KeyHexText + "0";
+
+        Assert.AreEqual(KeyHexText, _keys.CommonKey!.ToString());
+        Assert.IsFalse(vm.WiiUCommonKeyEntry.IsValid);
+        Assert.IsTrue(vm.WiiUCommonKeyEntry.IsSet);
+        CollectionAssert.Contains(changed, nameof(KeyEntryViewModel.IsValid));
+        Assert.AreEqual(0, _dialogs.Errors.Count);
+    }
+
+    [TestMethod]
+    public void WiiUCommonKey_TypeEmpty_ClearsStoredKey()
+    {
+        _keys.CommonKey = CommonKey.Parse(KeyHexText);
+        var vm = Create();
+        Assert.IsTrue(vm.WiiUCommonKeyEntry.IsValid);
+
+        vm.WiiUCommonKeyEntry.Text = " ";
+
+        Assert.IsNull(_keys.CommonKey);
+        Assert.IsFalse(vm.WiiUCommonKeyEntry.IsSet);
+        Assert.IsFalse(vm.WiiUCommonKeyEntry.IsValid);
+        Assert.AreEqual(string.Empty, vm.WiiUCommonKeyEntry.Text);
+        Assert.AreEqual(BaseStatus.NeedsCommonKey, vm.Bases[0].Status);
+    }
+
+    [TestMethod]
+    public void WiiUCommonKey_Refresh_DoesNotStoreAgain()
+    {
+        var saves = 0;
+        var entry = new KeyEntryViewModel("Key", () => KeyHexText, _ => saves++, () => { }, _dialogs, () => { });
+
+        entry.Refresh();
+
+        Assert.AreEqual(0, saves);
+        Assert.IsTrue(entry.IsValid);
+    }
+
+    [TestMethod]
     public void WiiUCommonKey_Clear_RemovesKeyAndRefreshesRows()
     {
         _keys.CommonKey = CommonKey.Parse(KeyHexText);
@@ -233,6 +293,80 @@ public class BasesViewModelTests
 
         Assert.IsNull(_keys.GetTitleKey(NesId));
         Assert.AreEqual(BaseStatus.NeedsTitleKey, row.Status);
+    }
+
+    [TestMethod]
+    public void TitleKey_TypeValidHex_StoresWithoutSave()
+    {
+        _keys.CommonKey = CommonKey.Parse(KeyHexText);
+        var vm = Create();
+        var row = vm.Bases[0];
+        Assert.IsTrue(row.NeedsKey);
+        Assert.IsFalse(row.IsTitleKeyValid);
+
+        row.TitleKey = TitleKeyHexText.ToUpperInvariant();
+
+        Assert.AreEqual(EncryptedTitleKey.Parse(TitleKeyHexText), _keys.GetTitleKey(NesId));
+        Assert.AreEqual(TitleKeyHexText, row.TitleKey);
+        Assert.IsTrue(row.IsTitleKeyValid);
+        Assert.IsFalse(row.NeedsKey);
+        Assert.IsFalse(row.IsPresent);
+        Assert.AreEqual(BaseStatus.Downloadable, row.Status);
+        Assert.AreEqual(0, _dialogs.Errors.Count);
+    }
+
+    [TestMethod]
+    public void TitleKey_TypeInvalidHex_LeavesStoreAndIsNotValid()
+    {
+        _keys.SetTitleKey(NesId, EncryptedTitleKey.Parse(TitleKeyHexText));
+        var vm = Create();
+        var row = vm.Bases[0];
+        var changed = new List<string>();
+        row.PropertyChanged += (_, e) => changed.Add(e.PropertyName!);
+
+        row.TitleKey = "zz";
+
+        Assert.AreEqual(EncryptedTitleKey.Parse(TitleKeyHexText), _keys.GetTitleKey(NesId));
+        Assert.IsFalse(row.IsTitleKeyValid);
+        Assert.AreEqual("zz", row.TitleKey);
+        CollectionAssert.Contains(changed, nameof(BaseRowViewModel.IsTitleKeyValid));
+        Assert.AreEqual(0, _dialogs.Errors.Count);
+    }
+
+    [TestMethod]
+    public void TitleKey_TypeEmpty_ClearsStoredKey()
+    {
+        _keys.CommonKey = CommonKey.Parse(KeyHexText);
+        _keys.SetTitleKey(NesId, EncryptedTitleKey.Parse(TitleKeyHexText));
+        var vm = Create();
+        var row = vm.Bases[0];
+        Assert.IsTrue(row.IsTitleKeyValid);
+
+        row.TitleKey = "";
+
+        Assert.IsNull(_keys.GetTitleKey(NesId));
+        Assert.AreEqual(BaseStatus.NeedsTitleKey, row.Status);
+        Assert.IsTrue(row.NeedsKey);
+    }
+
+    [TestMethod]
+    public void TitleKey_TypeEmptyWithNothingStored_DoesNotWrite()
+    {
+        var vm = Create();
+        var row = vm.Bases[0];
+
+        row.TitleKey = " ";
+
+        Assert.AreEqual(0, _keys.TitleKeyWrites);
+    }
+
+    [TestMethod]
+    public void Status_Present_SetsPillFlags()
+    {
+        var row = PresentRow();
+
+        Assert.IsTrue(row.IsPresent);
+        Assert.IsFalse(row.NeedsKey);
     }
 
     [TestMethod]

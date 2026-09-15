@@ -3,12 +3,9 @@
              xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels.Options"
              x:Class="WiiUVirtualConsoleInjector.Views.Options.N64OptionsView"
              x:DataType="vm:N64OptionsViewModel">
-    <StackPanel Spacing="8">
+    <StackPanel Spacing="16" Width="560" HorizontalAlignment="Left">
         <ContentControl Content="{Binding Ini}" />
-        <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
-            <TextBlock Grid.Row="0" Grid.Column="0" Classes="label" Text="Display" />
-            <CheckBox Grid.Row="0" Grid.Column="1" Content="Remove dark filter" IsChecked="{Binding RemoveDarkFilter}" />
-            <CheckBox Grid.Row="1" Grid.Column="1" Content="Widescreen" IsChecked="{Binding WideScreen}" />
-        </Grid>
+        <CheckBox Content="Remove dark filter" IsChecked="{Binding RemoveDarkFilter}" />
+        <CheckBox Content="Widescreen" IsChecked="{Binding WideScreen}" />
     </StackPanel>
 </UserControl>
