@@ -24,6 +24,10 @@ public sealed record AppSettings
         init => _suppressedWarnings = (value ?? throw new ArgumentNullException(nameof(value))).Distinct().ToArray();
     }
     /// <summary>
+    /// Colour scheme; light unless the user chose otherwise.
+    /// </summary>
+    public AppTheme Theme { get; init; } = AppTheme.Light;
+    /// <summary>
     /// Scratch folder for staging; null to use the system temp folder.
     /// </summary>
     public string? WorkPath { get; init; }

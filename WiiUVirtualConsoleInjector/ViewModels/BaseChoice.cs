@@ -12,10 +12,11 @@ public sealed class BaseChoice
     /// </summary>
     /// <param name="base">The base.</param>
     /// <param name="status">Its status in the store.</param>
-    public BaseChoice(BaseTitle @base, BaseStatus status)
+    public BaseChoice(BaseTitle @base, BaseStatus status, bool keysOk = true)
     {
         Base = @base ?? throw new ArgumentNullException(nameof(@base));
         Status = status;
+        KeysOk = keysOk;
     }
 
     /// <summary>
@@ -34,9 +35,29 @@ public sealed class BaseChoice
     public bool IsPresent => Status == BaseStatus.Present;
 
     /// <summary>
+    /// True when the base can be picked for an inject: downloaded and unlocked.
+    /// </summary>
+    public bool IsUsable => IsPresent && KeysOk;
+
+    /// <summary>
+    /// True when the user has every key an inject into this base needs.
+    /// </summary>
+    public bool KeysOk { get; }
+
+    /// <summary>
+    /// Region name for the flag swatch.
+    /// </summary>
+    public string Region => Base.Region.ToString();
+
+    /// <summary>
     /// Status in the store when the list was built.
     /// </summary>
     public BaseStatus Status { get; }
+
+    /// <summary>
+    /// Title ID as sixteen hex digits.
+    /// </summary>
+    public string TitleId => Base.TitleId.ToString();
 
     /// <inheritdoc/>
     public override string ToString() => Display;

@@ -4,29 +4,33 @@
              x:Class="WiiUVirtualConsoleInjector.Views.Options.WiiOptionsView"
              x:DataType="vm:WiiOptionsViewModel">
     <StackPanel Spacing="8">
-        <Grid ColumnDefinitions="160,*" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
-            <TextBlock Grid.Row="0" Grid.Column="0" Text="Use GamePad as" VerticalAlignment="Center" />
-            <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding ControllerModes}" SelectedItem="{Binding ControllerMode}" MinWidth="240" />
-            <TextBlock Grid.Row="1" Grid.Column="0" Text="Video mode" VerticalAlignment="Center" />
-            <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding VideoModes}" SelectedItem="{Binding VideoMode}" MinWidth="240" />
-            <TextBlock Grid.Row="2" Grid.Column="0" Text="Target region" VerticalAlignment="Center" />
-            <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding TargetRegions}" SelectedItem="{Binding TargetRegion}" MinWidth="240">
+        <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+            <TextBlock Grid.Row="0" Grid.Column="0" Classes="label" Text="Use GamePad as" />
+            <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding ControllerModes}" SelectedItem="{Binding ControllerMode}" MinWidth="240" HorizontalAlignment="Left" />
+
+            <TextBlock Grid.Row="1" Grid.Column="0" Classes="label" Text="Video mode" />
+            <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding VideoModes}" SelectedItem="{Binding VideoMode}" MinWidth="240" HorizontalAlignment="Left" />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Classes="label" Text="Target region" />
+            <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding TargetRegions}" SelectedItem="{Binding TargetRegion}" MinWidth="240" HorizontalAlignment="Left">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:RegionChoice">
                         <TextBlock Text="{Binding Label}" />
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
+
+            <TextBlock Grid.Row="3" Grid.Column="0" Classes="label" Text="Patches" VerticalAlignment="Top" Margin="0,6,0,0" />
+            <WrapPanel Grid.Row="3" Grid.Column="1" ItemSpacing="16" LineSpacing="8">
+                <CheckBox Content="Wii Remote passthrough" IsChecked="{Binding Passthrough}" />
+                <CheckBox Content="Trim disc" IsChecked="{Binding TrimDisc}" />
+                <CheckBox Content="Swap L/R and ZL/ZR" IsChecked="{Binding LrPatch}" />
+                <CheckBox Content="Remove deflicker" IsChecked="{Binding RemoveDeflicker}" />
+                <CheckBox Content="Half vertical filter" IsChecked="{Binding HalfVerticalFilter}" />
+                <CheckBox Content="Remove dithering" IsChecked="{Binding RemoveDithering}" />
+                <CheckBox Content="Force 4:3 (channel WAD)" IsChecked="{Binding ForceFourByThree}" />
+            </WrapPanel>
         </Grid>
-        <WrapPanel ItemSpacing="16" LineSpacing="8">
-            <CheckBox Content="Wii Remote passthrough" IsChecked="{Binding Passthrough}" />
-            <CheckBox Content="Trim disc" IsChecked="{Binding TrimDisc}" />
-            <CheckBox Content="Swap L/R and ZL/ZR" IsChecked="{Binding LrPatch}" />
-            <CheckBox Content="Remove deflicker" IsChecked="{Binding RemoveDeflicker}" />
-            <CheckBox Content="Half vertical filter" IsChecked="{Binding HalfVerticalFilter}" />
-            <CheckBox Content="Remove dithering" IsChecked="{Binding RemoveDithering}" />
-            <CheckBox Content="Force 4:3 (channel WAD)" IsChecked="{Binding ForceFourByThree}" />
-        </WrapPanel>
         <ContentControl Content="{Binding CheatCodes}" />
         <ContentControl Content="{Binding Forwarder}" />
     </StackPanel>

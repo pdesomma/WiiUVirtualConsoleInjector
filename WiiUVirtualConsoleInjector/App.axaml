@@ -2,13 +2,150 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:WiiUVirtualConsoleInjector"
              x:Class="WiiUVirtualConsoleInjector.App"
-             RequestedThemeVariant="Default">
+             RequestedThemeVariant="Light">
 
     <Application.DataTemplates>
         <local:ViewLocator />
     </Application.DataTemplates>
 
+    <Application.Resources>
+        <ResourceDictionary>
+            <!-- Wii U design system tokens; the app-level surfaces switch with the theme variant -->
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="PageBrush" Color="#EFEFEE" />
+                    <RadialGradientBrush x:Key="PageGradientBrush" Center="50%,45%" GradientOrigin="50%,45%" RadiusX="80%" RadiusY="80%">
+                        <GradientStop Offset="0" Color="#FAFAF9" />
+                        <GradientStop Offset="1" Color="#EBEBEA" />
+                    </RadialGradientBrush>
+                    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1A1A18" />
+                    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#888886" />
+                    <SolidColorBrush x:Key="TextTertiaryBrush" Color="#AAAAAA" />
+                    <SolidColorBrush x:Key="CardBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="CardBorderBrush" Color="#80BEBEBC" />
+                    <SolidColorBrush x:Key="InputBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="InputBorderBrush" Color="#80B4B4B2" />
+                    <SolidColorBrush x:Key="DividerBrush" Color="#59BEBEBC" />
+                    <SolidColorBrush x:Key="SubtleBrush" Color="#05000000" />
+                    <SolidColorBrush x:Key="TileFrameBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="RailBrush" Color="#FDFDFC" />
+                    <SolidColorBrush x:Key="RailBorderBrush" Color="#0F000000" />
+                    <SolidColorBrush x:Key="RailInactiveBrush" Color="#AAAAAA" />
+                    <SolidColorBrush x:Key="DialogBrush" Color="#FAFAF8" />
+                    <SolidColorBrush x:Key="ButtonTopBrush" Color="#FDFDFC" />
+                    <SolidColorBrush x:Key="ButtonBottomBrush" Color="#E6E6E3" />
+                    <SolidColorBrush x:Key="ButtonTextBrush" Color="#3A3A38" />
+                    <SolidColorBrush x:Key="ButtonBorderBrush" Color="#24000000" />
+                    <SolidColorBrush x:Key="LogBrush" Color="#1C1C1A" />
+                    <SolidColorBrush x:Key="LogTextBrush" Color="#D6D6D4" />
+                    <Color x:Key="ButtonTopColor">#FDFDFC</Color>
+                    <Color x:Key="ButtonBottomColor">#E6E6E3</Color>
+                    <SolidColorBrush x:Key="TextControlBackground" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="TextControlBorderBrush" Color="#80B4B4B2" />
+                    <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#B3B4B4B2" />
+                    <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#5BC8DC" />
+                    <SolidColorBrush x:Key="TextControlForeground" Color="#1A1A18" />
+                    <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#1A1A18" />
+                    <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#AAAAAA" />
+                    <SolidColorBrush x:Key="ComboBoxBackground" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#80B4B4B2" />
+                    <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#B3B4B4B2" />
+                    <SolidColorBrush x:Key="ComboBoxForeground" Color="#1A1A18" />
+                    <Color x:Key="ArrowTop1">#FFFFFF</Color>
+                    <Color x:Key="ArrowTop2">#F0F0F0</Color>
+                    <Color x:Key="ArrowBottom1">#E6E6E6</Color>
+                    <Color x:Key="ArrowBottom2">#D9D9D9</Color>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="PageBrush" Color="#1C1C1A" />
+                    <RadialGradientBrush x:Key="PageGradientBrush" Center="50%,45%" GradientOrigin="50%,45%" RadiusX="80%" RadiusY="80%">
+                        <GradientStop Offset="0" Color="#25252220" />
+                        <GradientStop Offset="1" Color="#1C1C1A" />
+                    </RadialGradientBrush>
+                    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F5F5F3" />
+                    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#9EF5F5F3" />
+                    <SolidColorBrush x:Key="TextTertiaryBrush" Color="#6BF5F5F3" />
+                    <SolidColorBrush x:Key="CardBrush" Color="#2B2A27" />
+                    <SolidColorBrush x:Key="CardBorderBrush" Color="#1FFFFFFF" />
+                    <SolidColorBrush x:Key="InputBrush" Color="#232220" />
+                    <SolidColorBrush x:Key="InputBorderBrush" Color="#38FFFFFF" />
+                    <SolidColorBrush x:Key="DividerBrush" Color="#24FFFFFF" />
+                    <SolidColorBrush x:Key="SubtleBrush" Color="#0FFFFFFF" />
+                    <SolidColorBrush x:Key="TileFrameBrush" Color="#35332F" />
+                    <SolidColorBrush x:Key="RailBrush" Color="#252422" />
+                    <SolidColorBrush x:Key="RailBorderBrush" Color="#0DFFFFFF" />
+                    <SolidColorBrush x:Key="RailInactiveBrush" Color="#8CF5F5F3" />
+                    <SolidColorBrush x:Key="DialogBrush" Color="#2F2E2B" />
+                    <SolidColorBrush x:Key="ButtonTopBrush" Color="#4A4946" />
+                    <SolidColorBrush x:Key="ButtonBottomBrush" Color="#383734" />
+                    <SolidColorBrush x:Key="ButtonTextBrush" Color="#F5F5F3" />
+                    <SolidColorBrush x:Key="ButtonBorderBrush" Color="#2EFFFFFF" />
+                    <SolidColorBrush x:Key="LogBrush" Color="#141412" />
+                    <SolidColorBrush x:Key="LogTextBrush" Color="#D6D6D4" />
+                    <Color x:Key="ButtonTopColor">#4A4946</Color>
+                    <Color x:Key="ButtonBottomColor">#383734</Color>
+                    <SolidColorBrush x:Key="TextControlBackground" Color="#232220" />
+                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#232220" />
+                    <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#232220" />
+                    <SolidColorBrush x:Key="TextControlBorderBrush" Color="#38FFFFFF" />
+                    <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#55FFFFFF" />
+                    <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#5BC8DC" />
+                    <SolidColorBrush x:Key="TextControlForeground" Color="#F5F5F3" />
+                    <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#F5F5F3" />
+                    <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#6BF5F5F3" />
+                    <SolidColorBrush x:Key="ComboBoxBackground" Color="#232220" />
+                    <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#232220" />
+                    <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#38FFFFFF" />
+                    <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#55FFFFFF" />
+                    <SolidColorBrush x:Key="ComboBoxForeground" Color="#F5F5F3" />
+                    <Color x:Key="ArrowTop1">#7D7D7A</Color>
+                    <Color x:Key="ArrowTop2">#63635F</Color>
+                    <Color x:Key="ArrowBottom1">#525250</Color>
+                    <Color x:Key="ArrowBottom2">#414140</Color>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+
+            <!-- Constants shared by both variants -->
+            <Color x:Key="SystemAccentColor">#00AACC</Color>
+            <SolidColorBrush x:Key="CyanBrush" Color="#00AACC" />
+            <SolidColorBrush x:Key="CyanLightBrush" Color="#33C2DE" />
+            <SolidColorBrush x:Key="CyanDarkBrush" Color="#007FA0" />
+            <SolidColorBrush x:Key="CyanTintBrush" Color="#2900AACC" />
+            <SolidColorBrush x:Key="CyanRingBrush" Color="#7300AACC" />
+            <SolidColorBrush x:Key="CyanFocusBrush" Color="#5BC8DC" />
+            <SolidColorBrush x:Key="TealBrush" Color="#1AAABB" />
+            <SolidColorBrush x:Key="SuccessBrush" Color="#4CAF50" />
+            <SolidColorBrush x:Key="SuccessTintBrush" Color="#244CAF50" />
+            <SolidColorBrush x:Key="WarningBrush" Color="#F5A623" />
+            <SolidColorBrush x:Key="WarningTintBrush" Color="#24F5A623" />
+            <SolidColorBrush x:Key="WarningBorderBrush" Color="#66F5A623" />
+            <SolidColorBrush x:Key="WarningTextBrush" Color="#8A5A10" />
+            <SolidColorBrush x:Key="ErrorBrush" Color="#E53935" />
+            <SolidColorBrush x:Key="DotInactiveBrush" Color="#AAAAAA" />
+            <SolidColorBrush x:Key="HeaderTextBrush" Color="#FFFFFF" />
+            <LinearGradientBrush x:Key="HeaderBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Offset="0" Color="#545450" />
+                <GradientStop Offset="1" Color="#3A3A38" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="TileGradientBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Offset="0" Color="#FFFFFF" />
+                <GradientStop Offset="0.4" Color="#EAEAEA" />
+                <GradientStop Offset="1" Color="#D8D8D6" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="TileGlossBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Offset="0" Color="#61FFFFFF" />
+                <GradientStop Offset="0.55" Color="#00FFFFFF" />
+            </LinearGradientBrush>
+            <FontFamily x:Key="UiFont">Segoe UI, Nunito, sans-serif</FontFamily>
+            <FontFamily x:Key="MonoFont">Cascadia Mono, Consolas, monospace</FontFamily>
+        </ResourceDictionary>
+    </Application.Resources>
+
     <Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="avares://WiiUVirtualConsoleInjector/Styles/AppStyles.axaml" />
     </Application.Styles>
 </Application>

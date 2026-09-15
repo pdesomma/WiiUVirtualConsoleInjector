@@ -1,13 +1,16 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="WiiUVirtualConsoleInjector.Views.MessageWindow"
-        Width="480" SizeToContent="Height" CanResize="False"
-        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
-    <StackPanel Margin="20" Spacing="16">
-        <TextBlock x:Name="MessageText" TextWrapping="Wrap" />
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-            <Button x:Name="NoButton" Content="No" MinWidth="80" IsCancel="True" Click="OnNo" />
-            <Button x:Name="YesButton" Content="Yes" MinWidth="80" IsDefault="True" Click="OnYes" />
+        Width="420" SizeToContent="Height" CanResize="False"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        WindowDecorations="None" TransparencyLevelHint="Transparent" Background="Transparent"
+        FontFamily="{DynamicResource UiFont}">
+    <Border Margin="20" CornerRadius="20" Background="{DynamicResource DialogBrush}" BoxShadow="0 16 48 0 #73000000, 0 4 12 0 #33000000" Padding="24,22">
+        <StackPanel Spacing="16">
+            <TextBlock x:Name="TitleText" FontSize="14" FontWeight="Bold" TextAlignment="Center" />
+            <TextBlock x:Name="MessageText" FontSize="13" LineHeight="21" TextWrapping="Wrap" TextAlignment="Center" />
+            <Button x:Name="YesButton" Classes="primary" Content="OK" HorizontalAlignment="Stretch" IsDefault="True" Click="OnYes" />
+            <Button x:Name="NoButton" Classes="ghost sm" Content="Cancel" HorizontalAlignment="Center" IsCancel="True" Click="OnNo" />
         </StackPanel>
-    </StackPanel>
+    </Border>
 </Window>

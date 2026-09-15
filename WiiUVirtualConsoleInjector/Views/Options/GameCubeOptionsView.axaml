@@ -4,7 +4,10 @@
              x:Class="WiiUVirtualConsoleInjector.Views.Options.GameCubeOptionsView"
              x:DataType="vm:GameCubeOptionsViewModel">
     <StackPanel Spacing="8">
-        <CheckBox Content="Force 4:3" IsChecked="{Binding ForceFourByThree}" />
+        <Grid ColumnDefinitions="180,*" ColumnSpacing="8" RowSpacing="8">
+            <TextBlock Grid.Column="0" Classes="label" Text="Display" />
+            <CheckBox Grid.Column="1" Content="Force 4:3" IsChecked="{Binding ForceFourByThree}" />
+        </Grid>
         <ContentControl Content="{Binding Forwarder}" />
         <ContentControl Content="{Binding SecondDisc}" />
     </StackPanel>

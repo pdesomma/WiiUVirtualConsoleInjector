@@ -5,7 +5,10 @@
              x:DataType="vm:N64OptionsViewModel">
     <StackPanel Spacing="8">
         <ContentControl Content="{Binding Ini}" />
-        <CheckBox Content="Remove dark filter" IsChecked="{Binding RemoveDarkFilter}" />
-        <CheckBox Content="Widescreen" IsChecked="{Binding WideScreen}" />
+        <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+            <TextBlock Grid.Row="0" Grid.Column="0" Classes="label" Text="Display" />
+            <CheckBox Grid.Row="0" Grid.Column="1" Content="Remove dark filter" IsChecked="{Binding RemoveDarkFilter}" />
+            <CheckBox Grid.Row="1" Grid.Column="1" Content="Widescreen" IsChecked="{Binding WideScreen}" />
+        </Grid>
     </StackPanel>
 </UserControl>

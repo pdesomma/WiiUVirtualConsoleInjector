@@ -33,7 +33,12 @@ public sealed partial class PathFieldViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// True once a path is set.
+    /// Asset path of a small glyph shown before the label, or null.
+    /// </summary>
+    public string? Glyph { get; init; }
+
+    /// <summary>
+    /// True when a path is set.
     /// </summary>
     public bool HasPath => !string.IsNullOrWhiteSpace(Path);
 

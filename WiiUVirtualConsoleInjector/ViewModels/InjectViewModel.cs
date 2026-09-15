@@ -25,9 +25,23 @@ public sealed partial class InjectViewModel : PageViewModel
     private static readonly FileFilter[] ImageFilters = { new("Images", "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.webp", "*.tga") };
     private static readonly FileFilter[] SoundFilters = { new("Audio", "*.wav", "*.mp3", "*.aiff", "*.aif") };
 
+    /// <summary>
+    /// Pages of the wizard in order.
+    /// </summary>
+    public static readonly IReadOnlyList<WizardStep> Steps = new[]
+    {
+        new WizardStep(1, "Console"),
+        new WizardStep(2, "Base"),
+        new WizardStep(3, "Game"),
+        new WizardStep(4, "Artwork"),
+        new WizardStep(5, "Options"),
+        new WizardStep(6, "Review & Inject"),
+    };
+
     private readonly IBaseService _bases;
     private readonly IDialogService _dialogs;
     private readonly IInjectionServiceFactory _injections;
+    private readonly INavigationService _navigation;
     private readonly ISettingsService _settings;
     private CancellationTokenSource? _cancellation;
 
@@ -36,6 +50,7 @@ public sealed partial class InjectViewModel : PageViewModel
     [ObservableProperty]
     private string? _currentStep;
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ReviewGame))]
     private bool _gamePad;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanInject))]
@@ -46,26 +61,30 @@ public sealed partial class InjectViewModel : PageViewModel
     [NotifyCanExecuteChangedFor(nameof(InjectCommand))]
     private IReadOnlyList<string> _missingKeys = Array.Empty<string>();
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanInject))]
+    [NotifyPropertyChangedFor(nameof(CanInject), nameof(ReviewGame))]
     [NotifyCanExecuteChangedFor(nameof(InjectCommand))]
     private string? _name;
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanInject))]
+    [NotifyPropertyChangedFor(nameof(CanInject), nameof(ReviewGame))]
     [NotifyCanExecuteChangedFor(nameof(InjectCommand))]
     private string? _productId;
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanInject))]
-    [NotifyCanExecuteChangedFor(nameof(InjectCommand))]
+    [NotifyPropertyChangedFor(nameof(CanInject), nameof(ReviewRom), nameof(HasRom))]
+    [NotifyCanExecuteChangedFor(nameof(InjectCommand), nameof(ClearRomCommand))]
     private string? _romPath;
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanInject), nameof(BaseHint))]
+    [NotifyPropertyChangedFor(nameof(CanInject), nameof(BaseHint), nameof(ReviewBase))]
     [NotifyCanExecuteChangedFor(nameof(InjectCommand))]
     private BaseChoice? _selectedBase;
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsGamePadVisible), nameof(IsTurboCd))]
+    [NotifyPropertyChangedFor(nameof(IsGamePadVisible), nameof(IsTurboCd), nameof(SelectedConsoleName), nameof(RomExtensions), nameof(ReviewGame))]
     private SourceConsole _selectedConsole;
     [ObservableProperty]
     private string? _status;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CurrentWizardStep), nameof(CanGoNext), nameof(CanGoPrevious), nameof(IsConsoleStep), nameof(IsBaseStep), nameof(IsGameStep), nameof(IsArtworkStep), nameof(IsOptionsStep), nameof(IsReviewStep))]
+    [NotifyCanExecuteChangedFor(nameof(NextStepCommand), nameof(PreviousStepCommand))]
+    private int _step = 1;
 
     /// <summary>
     /// Creates a new instance of the <see cref="InjectViewModel"/> class.
@@ -74,19 +93,21 @@ public sealed partial class InjectViewModel : PageViewModel
     /// <param name="dialogs">Pickers and message boxes.</param>
     /// <param name="injections">Builds the injection service and reports missing keys.</param>
     /// <param name="settings">Work and output folders, suppressed warnings.</param>
-    public InjectViewModel(IBaseService bases, IDialogService dialogs, IInjectionServiceFactory injections, ISettingsService settings)
-        : base("Inject")
+    /// <param name="navigation">Lets the page jump to Bases and Keys.</param>
+    public InjectViewModel(IBaseService bases, IDialogService dialogs, IInjectionServiceFactory injections, ISettingsService settings, INavigationService navigation)
+        : base("Inject", "inject-icon.png")
     {
         _bases = bases ?? throw new ArgumentNullException(nameof(bases));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _injections = injections ?? throw new ArgumentNullException(nameof(injections));
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
 
-        Icon = new PathFieldViewModel(dialogs, "Icon", "128 × 128", ImageFilters);
-        BootTv = new PathFieldViewModel(dialogs, "TV boot screen", "1280 × 720", ImageFilters);
-        BootDrc = new PathFieldViewModel(dialogs, "GamePad boot screen", "854 × 480", ImageFilters);
-        BootLogo = new PathFieldViewModel(dialogs, "Boot logo", "170 × 42", ImageFilters);
-        BootSound = new PathFieldViewModel(dialogs, "Boot sound", "wav, mp3, aiff", SoundFilters);
+        Icon = new PathFieldViewModel(dialogs, "Icon", "128 × 128", ImageFilters) { Glyph = "camera.png" };
+        BootTv = new PathFieldViewModel(dialogs, "TV boot screen", "1280 × 720", ImageFilters) { Glyph = "camera.png" };
+        BootDrc = new PathFieldViewModel(dialogs, "GamePad boot screen", "854 × 480", ImageFilters) { Glyph = "camera.png" };
+        BootLogo = new PathFieldViewModel(dialogs, "Boot logo", "170 × 42", ImageFilters) { Glyph = "camera.png" };
+        BootSound = new PathFieldViewModel(dialogs, "Boot sound", "wav, mp3, aiff", SoundFilters) { Glyph = "speaker.png" };
 
         _selectedConsole = SourceConsole.Nes;
         _currentOptions = CreateOptions(_selectedConsole);
@@ -98,10 +119,26 @@ public sealed partial class InjectViewModel : PageViewModel
     /// </summary>
     public string? BaseHint => SelectedBase switch
     {
-        null => "No base is known for this console.",
+        null => "No base is selected for this console.",
         { IsPresent: false } => "This base is not downloaded; get it on Bases & Keys.",
+        { KeysOk: false } => "A key this base needs is missing; add it on Bases & Keys.",
         _ => null,
     };
+
+    /// <summary>
+    /// True while a later step exists.
+    /// </summary>
+    public bool CanGoNext => Step < Steps.Count;
+
+    /// <summary>
+    /// True while an earlier step exists.
+    /// </summary>
+    public bool CanGoPrevious => Step > 1;
+
+    /// <summary>
+    /// The step on screen.
+    /// </summary>
+    public WizardStep CurrentWizardStep => Steps[Step - 1];
 
     /// <summary>
     /// Bases for the selected console.
@@ -150,14 +187,49 @@ public sealed partial class InjectViewModel : PageViewModel
     public bool HasMissingKeys => MissingKeys.Count > 0;
 
     /// <summary>
+    /// True once a ROM is picked.
+    /// </summary>
+    public bool HasRom => !string.IsNullOrWhiteSpace(RomPath);
+
+    /// <summary>
     /// Menu icon.
     /// </summary>
     public PathFieldViewModel Icon { get; }
 
     /// <summary>
+    /// True on the artwork step.
+    /// </summary>
+    public bool IsArtworkStep => Step == 4;
+
+    /// <summary>
+    /// True on the base step.
+    /// </summary>
+    public bool IsBaseStep => Step == 2;
+
+    /// <summary>
+    /// True on the console step.
+    /// </summary>
+    public bool IsConsoleStep => Step == 1;
+
+    /// <summary>
     /// True for consoles whose titles can advertise GamePad-as-controller use.
     /// </summary>
     public bool IsGamePadVisible => SelectedConsole is SourceConsole.Wii or SourceConsole.GameCube;
+
+    /// <summary>
+    /// True on the game step.
+    /// </summary>
+    public bool IsGameStep => Step == 3;
+
+    /// <summary>
+    /// True on the options step.
+    /// </summary>
+    public bool IsOptionsStep => Step == 5;
+
+    /// <summary>
+    /// True on the review step.
+    /// </summary>
+    public bool IsReviewStep => Step == 6;
 
     /// <summary>
     /// True when the console also accepts a TurboCD folder as the ROM.
@@ -173,6 +245,42 @@ public sealed partial class InjectViewModel : PageViewModel
     /// Names of the keys still needed, or null when none are.
     /// </summary>
     public string? MissingKeysHint => HasMissingKeys ? $"Missing {string.Join(" and ", MissingKeys)}; add it on Bases & Keys." : null;
+
+    /// <summary>
+    /// Base line of the review summary.
+    /// </summary>
+    public string ReviewBase => SelectedBase is { } b ? $"{b.Base.Name} ({b.Base.Region})" : "Not selected";
+
+    /// <summary>
+    /// Game line of the review summary.
+    /// </summary>
+    public string ReviewGame
+    {
+        get
+        {
+            var parts = new List<string> { string.IsNullOrWhiteSpace(Name) ? "Not named" : Name!.Trim() };
+            if (ClearedProductId(ProductId) is { } id)
+                parts.Add("#" + id);
+            if (IsGamePadVisible && GamePad)
+                parts.Add("GamePad controller");
+            return string.Join(" \u00b7 ", parts);
+        }
+    }
+
+    /// <summary>
+    /// ROM line of the review summary.
+    /// </summary>
+    public string ReviewRom => string.IsNullOrWhiteSpace(RomPath) ? "Not selected" : RomPath!;
+
+    /// <summary>
+    /// File types the selected console accepts, for the ROM hint.
+    /// </summary>
+    public string RomExtensions => string.Join(", ", RomFilters(SelectedConsole)[0].Patterns.Select(p => p.TrimStart('*')));
+
+    /// <summary>
+    /// Label of the selected console.
+    /// </summary>
+    public string SelectedConsoleName => Assets.ConsoleIcons.DisplayName(SelectedConsole);
 
     /// <summary>
     /// True when the product ID is blank or exactly four characters.
@@ -247,6 +355,12 @@ public sealed partial class InjectViewModel : PageViewModel
     private void Cancel() => _cancellation?.Cancel();
 
     /// <summary>
+    /// Forgets the picked ROM.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(HasRom))]
+    private void ClearRom() => RomPath = null;
+
+    /// <summary>
     /// Asks the user first when the inject may not work; false means stop.
     /// </summary>
     private async Task<bool> ConfirmWarningAsync()
@@ -255,6 +369,17 @@ public sealed partial class InjectViewModel : PageViewModel
             return true;
 
         return await _dialogs.ConfirmAsync(WarningTitle, warning.Message).ConfigureAwait(true);
+    }
+
+    /// <summary>
+    /// Jumps to a wizard step.
+    /// </summary>
+    /// <param name="step">Step to show.</param>
+    [RelayCommand]
+    private void GoToStep(WizardStep? step)
+    {
+        if (step is not null)
+            Step = step.Number;
     }
 
     private ConsoleOptionsViewModel CreateOptions(SourceConsole console) => console switch
@@ -327,11 +452,31 @@ public sealed partial class InjectViewModel : PageViewModel
         }
     }
 
+    /// <summary>
+    /// Shows the Bases and Keys page.
+    /// </summary>
+    [RelayCommand]
+    private void ManageBases() => _navigation.Show<BasesViewModel>();
+
+    /// <summary>
+    /// Advances one step.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanGoNext))]
+    private void NextStep() => Step++;
+
+    partial void OnSelectedBaseChanged(BaseChoice? value)
+    {
+        if (value is { IsUsable: true } && Step == 2)
+            Step = 3;
+    }
+
     partial void OnSelectedConsoleChanged(SourceConsole value)
     {
         RomPath = null;
         CurrentOptions = CreateOptions(value);
         Refresh();
+        if (Step == 1)
+            Step = 2;
     }
 
     /// <summary>
@@ -344,6 +489,12 @@ public sealed partial class InjectViewModel : PageViewModel
         if (picked is not null)
             RomPath = picked;
     }
+
+    /// <summary>
+    /// Goes back one step.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanGoPrevious))]
+    private void PreviousStep() => Step--;
 
     /// <summary>
     /// Opens a folder picker for a TurboCD game.
@@ -362,14 +513,16 @@ public sealed partial class InjectViewModel : PageViewModel
     private void Refresh()
     {
         var previous = SelectedBase?.Base.TitleId;
+        MissingKeys = _injections.MissingKeys(SelectedConsole);
+        var step = Step;
         Bases.Clear();
         foreach (var @base in _bases.Available(SelectedConsole))
-            Bases.Add(new BaseChoice(@base, _bases.Status(@base)));
+            Bases.Add(new BaseChoice(@base, _bases.Status(@base), MissingKeys.Count == 0));
 
         SelectedBase = Bases.FirstOrDefault(b => previous is { } id && b.Base.TitleId.Equals(id))
                        ?? Bases.FirstOrDefault(b => b.IsPresent)
                        ?? Bases.FirstOrDefault();
-        MissingKeys = _injections.MissingKeys(SelectedConsole);
+        Step = step;
     }
 
     private void Report(InjectionProgress progress)

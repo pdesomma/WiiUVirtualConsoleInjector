@@ -36,12 +36,10 @@ public partial class MessageWindow : Window
     public static async Task<bool> ShowAsync(Window owner, string title, string message, Kind kind)
     {
         var window = new MessageWindow { Title = title };
+        window.TitleText.Text = title;
         window.MessageText.Text = message;
-        if (kind != Kind.Question)
-        {
-            window.NoButton.IsVisible = false;
-            window.YesButton.Content = "OK";
-        }
+        window.NoButton.IsVisible = kind == Kind.Question;
+        window.YesButton.Content = kind == Kind.Question ? "Continue" : "OK";
         return await window.ShowDialog<bool?>(owner).ConfigureAwait(true) ?? false;
     }
 

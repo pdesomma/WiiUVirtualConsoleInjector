@@ -3,7 +3,8 @@
              xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels.Options"
              x:Class="WiiUVirtualConsoleInjector.Views.Options.SnesOptionsView"
              x:DataType="vm:SnesOptionsViewModel">
-    <StackPanel Spacing="8">
-        <CheckBox Content="Pixel perfect (integer scaling)" IsChecked="{Binding PixelPerfect}" />
-    </StackPanel>
+    <Grid ColumnDefinitions="180,*" ColumnSpacing="8" RowSpacing="8">
+        <TextBlock Grid.Column="0" Classes="label" Text="Scaling" />
+        <CheckBox Grid.Column="1" Content="Pixel perfect (integer scaling)" IsChecked="{Binding PixelPerfect}" />
+    </Grid>
 </UserControl>

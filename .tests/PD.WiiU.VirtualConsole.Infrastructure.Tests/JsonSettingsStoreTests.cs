@@ -86,6 +86,7 @@ public class JsonSettingsStoreTests
         Assert.AreEqual("C:/out", partial.OutputPath);
         Assert.IsNull(partial.BasePath);
         Assert.AreEqual(0, partial.SuppressedWarnings.Count);
+        Assert.AreEqual(AppTheme.Light, partial.Theme);
     }
 
     [TestMethod]

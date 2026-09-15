@@ -5,6 +5,8 @@ using WiiUVirtualConsoleInjector.ViewModels;
 using WiiUVirtualConsoleInjector.ViewModels.Options;
 using static WiiUVirtualConsoleInjector.Tests.InjectFakes;
 
+using WiiUVirtualConsoleInjector.Services;
+
 namespace WiiUVirtualConsoleInjector.Tests;
 
 [TestClass]
@@ -14,6 +16,7 @@ public class InjectViewModelTests
     private InjectDialogService _dialogs = null!;
     private RecordingInjectionServiceFactory _factory = null!;
     private InjectSettingsService _settings = null!;
+    private readonly NavigationService _navigation = new();
 
     [TestInitialize]
     public void Setup()
@@ -30,10 +33,11 @@ public class InjectViewModelTests
     [TestMethod]
     public void Constructor_NullArguments_ThrowsArgumentNullException()
     {
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(null!, _dialogs, _factory, _settings));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, null!, _factory, _settings));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, null!, _settings));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(null!, _dialogs, _factory, _settings, _navigation));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, null!, _factory, _settings, _navigation));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, null!, _settings, _navigation));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, null!, _navigation));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, null!));
     }
 
     [TestMethod]
@@ -463,7 +467,7 @@ public class InjectViewModelTests
         Assert.AreEqual(0, _dialogs.FilePicks.Count);
     }
 
-    private InjectViewModel Create() => new(_bases, _dialogs, _factory, _settings);
+    private InjectViewModel Create() => new(_bases, _dialogs, _factory, _settings, _navigation);
 
     private InjectViewModel Ready(SourceConsole console = SourceConsole.Nes, string rom = @"C:\game.nes")
     {
