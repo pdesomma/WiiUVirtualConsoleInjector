@@ -24,10 +24,12 @@ public sealed partial class BaseRowViewModel : ViewModelBase
     [ObservableProperty]
     private string _progressText = string.Empty;
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanDownload), nameof(CanInspect), nameof(StatusText))]
+    [NotifyPropertyChangedFor(nameof(CanDownload), nameof(CanInspect), nameof(IsPresent), nameof(NeedsKey), nameof(StatusText))]
     [NotifyCanExecuteChangedFor(nameof(DownloadCommand), nameof(InspectCommand))]
     private BaseStatus _status;
+    private bool _syncing;
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsTitleKeyValid))]
     private string _titleKey = string.Empty;
 
     /// <summary>
@@ -67,9 +69,21 @@ public sealed partial class BaseRowViewModel : ViewModelBase
     /// </summary>
     public bool IsCustom { get; }
     /// <summary>
+    /// True when the base is in the store.
+    /// </summary>
+    public bool IsPresent => Status == BaseStatus.Present;
+    /// <summary>
+    /// True when the title key text is 32 hex characters.
+    /// </summary>
+    public bool IsTitleKeyValid => HexKeyText.IsValid(TitleKey, TitleKeySize);
+    /// <summary>
     /// Display name.
     /// </summary>
     public string Name => Base.Name;
+    /// <summary>
+    /// True when a common or title key is missing.
+    /// </summary>
+    public bool NeedsKey => Status is BaseStatus.NeedsCommonKey or BaseStatus.NeedsTitleKey;
     /// <summary>
     /// Release region.
     /// </summary>
@@ -95,8 +109,16 @@ public sealed partial class BaseRowViewModel : ViewModelBase
     /// </summary>
     public void Refresh()
     {
-        Status = _bases.Status(Base);
-        TitleKey = _keys.GetTitleKey(Base.TitleId)?.ToString() ?? string.Empty;
+        _syncing = true;
+        try
+        {
+            Status = _bases.Status(Base);
+            TitleKey = _keys.GetTitleKey(Base.TitleId)?.ToString() ?? string.Empty;
+        }
+        finally
+        {
+            _syncing = false;
+        }
     }
 
     /// <summary>
@@ -180,10 +202,32 @@ public sealed partial class BaseRowViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Stores as soon as the hex is complete; emptying forgets the key.
+    /// </summary>
+    /// <param name="value">What the user typed.</param>
+    partial void OnTitleKeyChanged(string value)
+    {
+        if (_syncing)
+            return;
+
+        if (string.IsNullOrWhiteSpace(value) ? _keys.GetTitleKey(Base.TitleId) is not null : IsTitleKeyValid)
+            StoreTitleKey();
+    }
+
+    /// <summary>
     /// Stores the title key text; empty clears it, invalid hex is reported.
     /// </summary>
     [RelayCommand]
     private async Task SaveTitleKeyAsync()
+    {
+        if (StoreTitleKey() is { } error)
+            await _dialogs.ShowErrorAsync(Base.ToString(), error.Message);
+    }
+
+    /// <summary>
+    /// Stores the title key text, empty clearing it; returns the format error, or null once stored.
+    /// </summary>
+    private FormatException? StoreTitleKey()
     {
         EncryptedTitleKey? key = null;
         if (!string.IsNullOrWhiteSpace(TitleKey))
@@ -194,12 +238,12 @@ public sealed partial class BaseRowViewModel : ViewModelBase
             }
             catch (FormatException e)
             {
-                await _dialogs.ShowErrorAsync(Base.ToString(), e.Message);
-                return;
+                return e;
             }
         }
 
         _keys.SetTitleKey(Base.TitleId, key);
         Refresh();
+        return null;
     }
 }

@@ -10,6 +10,10 @@ namespace WiiUVirtualConsoleInjector.Converters;
 public static class ConsoleConverters
 {
     /// <summary>
+    /// Console to its near-black logo bitmap, for light tiles.
+    /// </summary>
+    public static readonly IValueConverter DarkIcon = new FuncValueConverter<SourceConsole, object?>(c => ConsoleIcons.DarkFor(c));
+    /// <summary>
     /// Console to its white logo bitmap.
     /// </summary>
     public static readonly IValueConverter Icon = new FuncValueConverter<SourceConsole, object?>(c => ConsoleIcons.For(c));

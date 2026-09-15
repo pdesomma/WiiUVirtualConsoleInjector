@@ -5,7 +5,7 @@ using WiiUVirtualConsoleInjector.Services;
 namespace WiiUVirtualConsoleInjector.ViewModels;
 
 /// <summary>
-/// One key the user pastes in: masked text, save, clear and whether one is stored.
+/// One key the user pastes in: masked text that stores itself once valid, save, clear and whether one is stored.
 /// </summary>
 public sealed partial class KeyEntryViewModel : ViewModelBase
 {
@@ -18,6 +18,8 @@ public sealed partial class KeyEntryViewModel : ViewModelBase
     /// </summary>
     public const string SetText = "Set";
 
+    private const int KeySize = 16;
+
     private readonly Action _changed;
     private readonly Action _clear;
     private readonly IDialogService _dialogs;
@@ -28,7 +30,9 @@ public sealed partial class KeyEntryViewModel : ViewModelBase
     private bool _isRevealed;
     [ObservableProperty]
     private string _status = NotSetText;
+    private bool _syncing;
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsValid))]
     private string _text = string.Empty;
 
     /// <summary>
@@ -56,6 +60,10 @@ public sealed partial class KeyEntryViewModel : ViewModelBase
     /// </summary>
     public bool IsSet => Status == SetText;
     /// <summary>
+    /// True when the text is 32 hex characters.
+    /// </summary>
+    public bool IsValid => HexKeyText.IsValid(Text, KeySize);
+    /// <summary>
     /// Name shown to the user.
     /// </summary>
     public string Label { get; }
@@ -65,9 +73,17 @@ public sealed partial class KeyEntryViewModel : ViewModelBase
     /// </summary>
     public void Refresh()
     {
-        var stored = _stored();
-        Text = stored ?? string.Empty;
-        Status = stored is null ? NotSetText : SetText;
+        _syncing = true;
+        try
+        {
+            var stored = _stored();
+            Text = stored ?? string.Empty;
+            Status = stored is null ? NotSetText : SetText;
+        }
+        finally
+        {
+            _syncing = false;
+        }
     }
 
     /// <summary>
@@ -81,11 +97,42 @@ public sealed partial class KeyEntryViewModel : ViewModelBase
         _changed();
     }
 
+    partial void OnStatusChanged(string value) => OnPropertyChanged(nameof(IsSet));
+
+    /// <summary>
+    /// Stores as soon as the hex is complete; emptying forgets the key.
+    /// </summary>
+    /// <param name="value">What the user typed.</param>
+    partial void OnTextChanged(string value)
+    {
+        if (_syncing)
+            return;
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            if (IsSet)
+                Clear();
+        }
+        else if (IsValid)
+        {
+            Store();
+        }
+    }
+
     /// <summary>
     /// Parses and stores the text; invalid hex is reported and nothing changes.
     /// </summary>
     [RelayCommand]
     private async Task SaveAsync()
+    {
+        if (Store() is { } error)
+            await _dialogs.ShowErrorAsync(Label, error.Message);
+    }
+
+    /// <summary>
+    /// Parses and stores the text; returns the format error, or null once stored.
+    /// </summary>
+    private FormatException? Store()
     {
         try
         {
@@ -93,13 +140,11 @@ public sealed partial class KeyEntryViewModel : ViewModelBase
         }
         catch (FormatException e)
         {
-            await _dialogs.ShowErrorAsync(Label, e.Message);
-            return;
+            return e;
         }
 
         Refresh();
         _changed();
+        return null;
     }
-
-    partial void OnStatusChanged(string value) => OnPropertyChanged(nameof(IsSet));
 }
