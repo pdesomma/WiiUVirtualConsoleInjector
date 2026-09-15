@@ -1,0 +1,70 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels"
+             x:Class="WiiUVirtualConsoleInjector.Views.AcknowledgementsView"
+             x:DataType="vm:AcknowledgementsViewModel">
+
+    <UserControl.DataTemplates>
+        <!-- One entry: name, authors and licence on the first line, role beneath, link at the right -->
+        <DataTemplate x:DataType="vm:Acknowledgement">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <StackPanel Grid.Column="0" Spacing="2">
+                    <WrapPanel>
+                        <TextBlock FontSize="13.5" FontWeight="Bold" Text="{Binding Name}" />
+                        <TextBlock FontSize="12.5" Foreground="{DynamicResource TextSecondaryBrush}" Text="{Binding Authors}" Margin="8,0,0,0" VerticalAlignment="Bottom" />
+                        <TextBlock Classes="fine" Text="{Binding License}" IsVisible="{Binding HasLicense}" Margin="8,0,0,0" VerticalAlignment="Bottom" />
+                    </WrapPanel>
+                    <TextBlock Classes="hint" FontSize="12" Text="{Binding Role}" TextWrapping="Wrap" />
+                </StackPanel>
+                <Button Grid.Column="1" Classes="sm ghost" Content="Visit" VerticalAlignment="Center" IsVisible="{Binding HasUrl}"
+                        Command="{Binding $parent[UserControl].((vm:AcknowledgementsViewModel)DataContext).OpenCommand}" CommandParameter="{Binding}" />
+            </Grid>
+        </DataTemplate>
+    </UserControl.DataTemplates>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MaxWidth="820" />
+        </Grid.ColumnDefinitions>
+        <StackPanel Spacing="20">
+
+            <Border Classes="card">
+                <StackPanel>
+                    <TextBlock Classes="section" Text="Acknowledgements" Margin="0,0,0,4" />
+                    <TextBlock Classes="hint" FontSize="12" TextWrapping="Wrap" LineHeight="19"
+                               Text="Nothing here was invented from scratch. The injection recipes, formats and tricks were worked out by the people below, mostly in their spare time; this app brings their work together in one place." />
+                </StackPanel>
+            </Border>
+
+            <!-- Shipped -->
+            <Border Classes="card">
+                <StackPanel>
+                    <TextBlock Classes="section" Text="Shipped inside the app" Margin="0,0,0,4" />
+                    <TextBlock Classes="hint" FontSize="12" Text="Included unmodified under their own licences." Margin="0,0,0,12" />
+                    <ItemsControl ItemsSource="{Binding Shipped}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="14" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- Borrowed -->
+            <Border Classes="card">
+                <StackPanel>
+                    <TextBlock Classes="section" Text="Reimplemented from" Margin="0,0,0,4" />
+                    <TextBlock Classes="hint" FontSize="12" Text="Tools the previous app ran as separate programs; their logic now lives in this code." Margin="0,0,0,12" />
+                    <ItemsControl ItemsSource="{Binding Borrowed}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="14" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Grid>
+</UserControl>

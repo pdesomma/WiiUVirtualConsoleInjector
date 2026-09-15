@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PD.WiiU.VirtualConsole;
 using WiiUVirtualConsoleInjector.Services;
@@ -25,9 +25,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <param name="inject">The inject page.</param>
     /// <param name="bases">The bases and keys page.</param>
     /// <param name="settingsPage">The settings page.</param>
+    /// <param name="credits">The acknowledgements page.</param>
     /// <param name="settings">Where the colour scheme is remembered.</param>
     /// <param name="navigation">Requests from pages to show another page.</param>
-    public MainWindowViewModel(InjectViewModel inject, BasesViewModel bases, SettingsViewModel settingsPage, ISettingsService settings, INavigationService navigation)
+    public MainWindowViewModel(InjectViewModel inject, BasesViewModel bases, SettingsViewModel settingsPage, AcknowledgementsViewModel credits, ISettingsService settings, INavigationService navigation)
     {
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         if (navigation is null)
@@ -38,6 +39,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             inject ?? throw new ArgumentNullException(nameof(inject)),
             bases ?? throw new ArgumentNullException(nameof(bases)),
             settingsPage ?? throw new ArgumentNullException(nameof(settingsPage)),
+            credits ?? throw new ArgumentNullException(nameof(credits)),
         };
         _currentPage = Pages[0];
         _isDark = settings.Current.Theme == AppTheme.Dark;

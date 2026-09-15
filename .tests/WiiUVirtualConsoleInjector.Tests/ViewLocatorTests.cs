@@ -14,7 +14,7 @@ public class ViewLocatorTests
             .Where(t => !t.IsAbstract && (typeof(PageViewModel).IsAssignableFrom(t) || typeof(ConsoleOptionsViewModel).IsAssignableFrom(t)))
             .ToArray();
 
-        Assert.IsTrue(viewModels.Length >= 11, string.Join(", ", viewModels.Select(t => t.Name)));
+        Assert.IsTrue(viewModels.Length >= 12, string.Join(", ", viewModels.Select(t => t.Name)));
         foreach (var viewModel in viewModels)
         {
             var viewName = viewModel.FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
