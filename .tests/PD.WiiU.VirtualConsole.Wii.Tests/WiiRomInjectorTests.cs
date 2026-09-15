@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole.Options;
+﻿using PD.WiiU.VirtualConsole.Options;
 using WiiSharp;
 using WiiUSharp;
 using WiiUSharp.Nfs;
@@ -102,9 +102,43 @@ public class WiiRomInjectorTests
     }
 
     [TestMethod]
-    public void OpenImage_NkitName_ThrowsNotSupportedException()
+    public async Task InjectAsync_Nkit_RebuildsFromTheBarePartitionWithoutDecrypting()
     {
-        Assert.ThrowsExactly<NotSupportedException>(() => WiiRomInjector.OpenImage(Path.Combine(_root, "game.nkit.iso"), out _));
+        var title = StageBase();
+        var nkit = Write("retail.nkit.iso", FakeRetailDisc.Nkit(FakeRetailDisc.Dol(), DiscRegion.Japan));
+        var messages = new List<string>();
+
+        await new WiiRomInjector(FakeDisc.CommonKey).InjectAsync(new Injection(Base(), new Rom(nkit, SourceConsole.Wii), Game()) { Options = new WiiOptions { TargetRegion = Region.Europe } }, title, new SyncProgress(messages.Add));
+
+        using var payload = NfsReader.Open(title.Content, NfsKey).OpenPayload();
+        var disc = WiiDisc.Read(payload);
+        Assert.AreEqual(FakeRetailDisc.GameId, disc.Header.GameId);
+        var partition = disc.DataPartitions[0];
+        Assert.AreEqual(DiscFormat.RetailDataPartitionOffset, partition.Offset);
+        Assert.AreEqual(DiscRegion.Europe, RegionArea.Read(payload).Region, "region option applies to the rebuilt disc");
+        CollectionAssert.AreEqual(partition.Ticket.ToBytes(), File.ReadAllBytes(Path.Combine(title.Code, WiiRomInjector.TicketFileName)));
+        var boot = PartitionSystemFiles.Read(payload, partition).Boot;
+        Assert.IsFalse(NkitHeader.IsPresent(boot), "the rebuilt partition is a plain disc again");
+        var data = new PartitionDataStream(payload, partition);
+        CollectionAssert.AreEqual(FakeRetailDisc.Dol(), ReadAt(data, Offset(boot, 0x420), 0x800));
+        var files = Fst.Parse(ReadAt(data, Offset(boot, 0x424), (int)Offset(boot, 0x428)));
+        CollectionAssert.AreEqual(FakeRetailDisc.Files.Select(f => f.Path).ToArray(), files.Select(f => f.Path).ToArray());
+        for (var i = 0; i < files.Count; i++)
+            CollectionAssert.AreEqual(FakeRetailDisc.Files[i].Content, ReadAt(data, files[i].Offset, (int)files[i].Length), files[i].Path);
+        CollectionAssert.AreEqual(new[] { "Expanding NKit image", "Region set to Europe", "Writing NFS container", "Patching fw.img" }, messages);
+        CollectionAssert.AreEqual(new[] { "hif_000000.nfs" }, Directory.GetFiles(title.Content).Select(f => Path.GetFileName(f)).ToArray());
+    }
+
+    [TestMethod]
+    public void OpenImage_NkitName_OpensLikeAnyIso()
+    {
+        var nkit = Write("game.nkit.iso", FakeRetailDisc.Nkit(FakeRetailDisc.Dol()));
+
+        using var container = WiiRomInjector.OpenImage(nkit, out var image);
+        using (image)
+        {
+            Assert.IsTrue(WiiDiscRebuilder.IsNkit(image));
+        }
     }
 
     [TestMethod]

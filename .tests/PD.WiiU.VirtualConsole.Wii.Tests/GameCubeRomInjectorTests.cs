@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole.Options;
+﻿using PD.WiiU.VirtualConsole.Options;
 using WiiSharp;
 using WiiUSharp;
 using WiiUSharp.Nfs;
@@ -34,6 +34,7 @@ public class GameCubeRomInjectorTests
     {
         var title = StageBase(DiscRegion.Europe);
         var image = FakeGameCube.Image();
+        var compact = FakeGameCube.Compact(image);
         var iso = Write("game.iso", image);
         var messages = new List<string>();
 
@@ -62,8 +63,8 @@ public class GameCubeRomInjectorTests
         var files = Fst.Parse(ReadAt(data, ReadOffset(system.Boot, 0x424), (int)ReadOffset(system.Boot, 0x428)));
         Assert.AreEqual(1, files.Count);
         Assert.AreEqual(GameCubeRomInjector.GameFileName, files[0].Path);
-        Assert.AreEqual(image.Length, files[0].Length);
-        CollectionAssert.AreEqual(image, ReadAt(data, files[0].Offset, image.Length));
+        Assert.AreEqual(compact.Length, files[0].Length, "the carrier holds the NKit form");
+        CollectionAssert.AreEqual(compact, ReadAt(data, files[0].Offset, compact.Length));
 
         CollectionAssert.AreEqual(partition.Ticket.ToBytes(), File.ReadAllBytes(Path.Combine(title.Code, WiiRomInjector.TicketFileName)));
         var tmd = File.ReadAllBytes(Path.Combine(title.Code, WiiRomInjector.TmdFileName));
@@ -78,7 +79,43 @@ public class GameCubeRomInjectorTests
         var meta = WiiUSharp.MetaXml.Load(title.MetaXmlPath);
         Assert.AreEqual("47414c45", meta.Get("reserved_flag2"));
         Assert.AreEqual("65537", meta.Get("drc_use"));
-        CollectionAssert.AreEqual(new[] { "Reading base disc", "Building carrier disc", "Writing NFS container", "Patching fw.img" }, messages);
+        CollectionAssert.AreEqual(new[] { "Compacting game.iso to NKit", "Reading base disc", "Building carrier disc", "Writing NFS container", "Patching fw.img" }, messages);
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_KeepFullImage_StoresTheImageAsIs()
+    {
+        var title = StageBase(DiscRegion.UnitedStates);
+        var image = FakeGameCube.Image();
+        var injection = new Injection(Base(), new Rom(Write("game.iso", image), SourceConsole.GameCube), Game())
+        {
+            Options = new GameCubeOptions { KeepFullImage = true },
+        };
+        var messages = new List<string>();
+
+        await new GameCubeRomInjector().InjectAsync(injection, title, new SyncProgress(messages.Add));
+
+        using var data = Files(title, out var files);
+        Assert.AreEqual(image.Length, files[0].Length);
+        CollectionAssert.AreEqual(image, ReadAt(data, files[0].Offset, image.Length));
+        Assert.IsFalse(messages.Any(m => m.StartsWith("Compacting", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_NkitImage_PassesItThroughUntouched()
+    {
+        var title = StageBase(DiscRegion.UnitedStates);
+        var compact = FakeGameCube.Compact(FakeGameCube.Image(0x3456, seed: 3));
+        var nkit = Write("game.nkit.iso", compact);
+        var messages = new List<string>();
+
+        await new GameCubeRomInjector().InjectAsync(Injection(nkit), title, new SyncProgress(messages.Add));
+
+        using var data = Files(title, out var files);
+        Assert.AreEqual(compact.Length, files[0].Length);
+        CollectionAssert.AreEqual(compact, ReadAt(data, files[0].Offset, compact.Length));
+        Assert.IsFalse(messages.Any(m => m.StartsWith("Compacting", StringComparison.Ordinal)));
+        CollectionAssert.AreEqual(new[] { "hif_000000.nfs" }, Directory.GetFiles(title.Content).Select(f => Path.GetFileName(f)).ToArray(), "no compact temp file left behind");
     }
 
     [TestMethod]
@@ -104,8 +141,8 @@ public class GameCubeRomInjectorTests
         CollectionAssert.AreEqual(forwarder, ReadAt(data, ReadOffset(boot, 0x420), forwarder.Length));
         var files = Fst.Parse(ReadAt(data, ReadOffset(boot, 0x424), (int)ReadOffset(boot, 0x428)));
         CollectionAssert.AreEqual(new[] { GameCubeRomInjector.GameFileName, GameCubeRomInjector.SecondDiscFileName }, files.Select(f => f.Path).ToArray());
-        CollectionAssert.AreEqual(first, ReadAt(data, files[0].Offset, first.Length));
-        CollectionAssert.AreEqual(second, ReadAt(data, files[1].Offset, second.Length));
+        CollectionAssert.AreEqual(FakeGameCube.Compact(first), ReadAt(data, files[0].Offset, (int)files[0].Length), "both discs are compacted");
+        CollectionAssert.AreEqual(FakeGameCube.Compact(second), ReadAt(data, files[1].Offset, (int)files[1].Length));
         Assert.AreEqual(DiscRegion.UnitedStates, RegionArea.Read(payload).Region);
     }
 
@@ -142,8 +179,8 @@ public class GameCubeRomInjectorTests
     {
         var title = StageBase(DiscRegion.UnitedStates);
 
-        await Assert.ThrowsExactlyAsync<NotSupportedException>(() => new GameCubeRomInjector().InjectAsync(Injection(Path.Combine(_root, "game.nkit.iso")), title));
         await Assert.ThrowsExactlyAsync<NotSupportedException>(() => new GameCubeRomInjector().InjectAsync(Injection(Path.Combine(_root, "game.wbfs")), title));
+        await Assert.ThrowsExactlyAsync<NotSupportedException>(() => new GameCubeRomInjector().InjectAsync(Injection(Path.Combine(_root, "game.nkit.gcz.bin")), title));
     }
 
     [TestMethod]
@@ -170,6 +207,10 @@ public class GameCubeRomInjectorTests
         container.Dispose();
 
         File.Delete(gcz);
+        Assert.IsFalse(GameCubeImage.IsNkit(new MemoryStream(plain)));
+        Assert.IsTrue(GameCubeImage.IsNkit(new MemoryStream(FakeGameCube.Compact(plain))));
+        Assert.IsFalse(GameCubeImage.IsNkit(new MemoryStream(new byte[8])), "too short to hold the block");
+        Assert.ThrowsExactly<ArgumentNullException>(() => GameCubeImage.IsNkit(null!));
         Assert.ThrowsExactly<ArgumentNullException>(() => GameCubeImage.Open(null!, out _));
         Assert.ThrowsExactly<ArgumentNullException>(() => GameCubeImage.ReadHeader(null!));
         Assert.ThrowsExactly<InvalidDataException>(() => GameCubeImage.ReadHeader(new MemoryStream(new byte[8])));
@@ -204,6 +245,55 @@ public class GameCubeRomInjectorTests
 
     private static Injection Injection(string rom) =>
         new(Base(), new Rom(rom, SourceConsole.GameCube), Game());
+
+    /// <summary>
+    /// The carrier's file table; the returned payload stream owns the NFS container.
+    /// </summary>
+    private static Stream Files(TitleDirectory title, out IReadOnlyList<FstFile> files)
+    {
+        var payload = NfsReader.Open(title.Content, NfsKey).OpenPayload();
+        var partition = WiiDisc.Read(payload).DataPartitions[0];
+        var boot = PartitionSystemFiles.Read(payload, partition).Boot;
+        var data = new PartitionDataStream(payload, partition);
+        files = Fst.Parse(ReadAt(data, ReadOffset(boot, 0x424), (int)ReadOffset(boot, 0x428)));
+        return new OwningStream(data, payload);
+    }
+
+    /// <summary>
+    /// Disposes the container with the view.
+    /// </summary>
+    private sealed class OwningStream : Stream
+    {
+        private readonly Stream _inner;
+        private readonly IDisposable _owner;
+
+        public OwningStream(Stream inner, IDisposable owner)
+        {
+            _inner = inner;
+            _owner = owner;
+        }
+
+        public override bool CanRead => _inner.CanRead;
+        public override bool CanSeek => _inner.CanSeek;
+        public override bool CanWrite => false;
+        public override long Length => _inner.Length;
+        public override long Position { get => _inner.Position; set => _inner.Position = value; }
+        public override void Flush() => _inner.Flush();
+        public override int Read(byte[] buffer, int offset, int count) => _inner.Read(buffer, offset, count);
+        public override long Seek(long offset, SeekOrigin origin) => _inner.Seek(offset, origin);
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _inner.Dispose();
+                _owner.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
 
     private static byte[] ReadAt(Stream stream, long position, int count)
     {

@@ -12,6 +12,8 @@ public sealed partial class GameCubeOptionsViewModel : ConsoleOptionsViewModel
 {
     [ObservableProperty]
     private bool _forceFourByThree;
+    [ObservableProperty]
+    private bool _keepFullImage;
 
     /// <summary>
     /// Creates a new instance of the <see cref="GameCubeOptionsViewModel"/> class.
@@ -38,6 +40,7 @@ public sealed partial class GameCubeOptionsViewModel : ConsoleOptionsViewModel
     public override IConsoleOptions? Build() => new GameCubeOptions
     {
         ForceFourByThree = ForceFourByThree,
+        KeepFullImage = KeepFullImage,
         ForwarderPath = Forwarder.Path,
         SecondDiscPath = SecondDisc.Path,
     };
@@ -47,6 +50,7 @@ public sealed partial class GameCubeOptionsViewModel : ConsoleOptionsViewModel
     {
         var cube = options as GameCubeOptions;
         ForceFourByThree = cube?.ForceFourByThree ?? false;
+        KeepFullImage = cube?.KeepFullImage ?? false;
         Forwarder.Path = cube?.ForwarderPath;
         SecondDisc.Path = cube?.SecondDiscPath;
     }

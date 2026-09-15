@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole;
+﻿using PD.WiiU.VirtualConsole;
 using WiiUVirtualConsoleInjector.Services;
 
 namespace WiiUVirtualConsoleInjector.ViewModels;
@@ -59,7 +59,7 @@ public sealed class WarningSettingViewModel : ViewModelBase
     {
         InjectionWarning.NdsDsiEnhanced => "DSi-enhanced NDS ROMs do not run",
         InjectionWarning.SnesCoProcessor => "SNES ROMs that need a co-processor do not run",
-        InjectionWarning.GameCubeGcz => "GCZ images take longer and use more space than ISO",
+        InjectionWarning.GameCubeGcz => "GCZ images take longer to inject than ISO",
         _ => warning.ToString(),
     };
 }

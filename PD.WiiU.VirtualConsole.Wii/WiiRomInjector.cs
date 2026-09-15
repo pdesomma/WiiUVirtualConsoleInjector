@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using PD.WiiU.VirtualConsole.Options;
 using PD.WiiU.VirtualConsole.Ports;
 using WiiSharp;
@@ -108,17 +108,15 @@ public sealed class WiiRomInjector : IRomInjector
     }
 
     /// <summary>
-    /// Opens a .iso directly or the first disc of a .wbfs; the returned disposable owns the container.
+    /// Opens a .iso, NKit or not, directly or the first disc of a .wbfs; the returned disposable owns the container.
     /// </summary>
     /// <param name="path">Image path.</param>
     /// <param name="image">Seekable disc image.</param>
-    /// <exception cref="NotSupportedException">Any other extension, or an NKit image.</exception>
+    /// <exception cref="NotSupportedException">Any other extension.</exception>
     public static IDisposable OpenImage(string path, out Stream image)
     {
         if (path is null)
             throw new ArgumentNullException(nameof(path));
-        if (path.IndexOf(".nkit.", StringComparison.OrdinalIgnoreCase) >= 0)
-            throw new NotSupportedException("NKit images are not supported; convert to a plain ISO or WBFS first.");
 
         var extension = Path.GetExtension(path);
         if (string.Equals(extension, ".iso", StringComparison.OrdinalIgnoreCase))
@@ -172,7 +170,9 @@ public sealed class WiiRomInjector : IRomInjector
         if (disc.DataPartitions.Count == 0)
             throw new InvalidDataException("Disc has no data partition.");
 
-        var (ticket, tmd) = WriteNfs(iso, disc.DataPartitions[0], options, title, progress, cancellationToken);
+        var (ticket, tmd) = WiiDiscRebuilder.IsNkit(iso)
+            ? WriteNfsFromNkit(iso, options, title, progress, cancellationToken)
+            : WriteNfs(iso, disc.DataPartitions[0], options, title, progress, cancellationToken);
         WriteTicketAndTmd(title, ticket, tmd);
 
         progress?.Report("Patching " + FirmwareFileName);
@@ -259,6 +259,32 @@ public sealed class WiiRomInjector : IRomInjector
 
         File.WriteAllBytes(Path.Combine(title.Code, TicketFileName), ticket);
         File.WriteAllBytes(Path.Combine(title.Code, TmdFileName), tmd);
+    }
+
+    /// <summary>
+    /// An NKit image is already plaintext, so it goes straight through the rebuilder, which lays its files out fresh with hashes.
+    /// </summary>
+    private static (byte[] Ticket, byte[] Tmd) WriteNfsFromNkit(Stream nkit, WiiOptions options, TitleDirectory title, IProgress<string>? progress, CancellationToken cancellationToken)
+    {
+        var key = NfsKey.FromFile(Path.Combine(title.Code, NfsKeyFileName));
+        var rebuiltPath = Path.Combine(title.Content, RebuiltFileName);
+        try
+        {
+            progress?.Report("Expanding NKit image");
+            using var rebuilt = new FileStream(rebuiltPath, FileMode.Create, FileAccess.ReadWrite);
+            var result = WiiDiscRebuilder.Rebuild(nkit, rebuilt, PatchesMainDol(options) ? dol => PatchMainDol(dol, options, progress) : null, cancellationToken);
+            if (RegionPatcher.Apply(rebuilt, options))
+                progress?.Report($"Region set to {options.TargetRegion}");
+
+            progress?.Report("Writing NFS container");
+            rebuilt.Position = 0;
+            new NfsWriter(key).Write(rebuilt, new DiscDataSpan(result.Partition.Start, result.Partition.Length), title.Content, cancellationToken: cancellationToken);
+            return (result.Ticket.ToBytes(), result.Tmd.ToBytes());
+        }
+        finally
+        {
+            File.Delete(rebuiltPath);
+        }
     }
 
     private (byte[] Ticket, byte[] Tmd) WriteNfs(Stream iso, Partition partition, WiiOptions options, TitleDirectory title, IProgress<string>? progress, CancellationToken cancellationToken)

@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole.Options;
+﻿using PD.WiiU.VirtualConsole.Options;
 using PD.WiiU.VirtualConsole.Ports;
 using WiiSharp;
 
@@ -17,6 +17,9 @@ public sealed class GameCubeRomInjector : IRomInjector
     /// Name of the second disc on the carrier.
     /// </summary>
     public const string SecondDiscFileName = "disc2.iso";
+
+    private const string CompactFileName = "game.nkit.iso";
+    private const string SecondCompactFileName = "disc2.nkit.iso";
 
     private static readonly FirmwarePatch[] Patches = { FirmwarePatch.FakeSign, FirmwarePatch.Homebrew, FirmwarePatch.Passthrough };
 
@@ -47,29 +50,67 @@ public sealed class GameCubeRomInjector : IRomInjector
         var options = injection.Options as GameCubeOptions ?? new GameCubeOptions();
         var forwarder = options.ForwarderPath is null ? NintendontForwarder.Embedded(options.ForceFourByThree) : File.ReadAllBytes(options.ForwarderPath);
 
-        using var game = GameCubeImage.Open(injection.Rom.Path, out var gameImage);
-        using (gameImage)
+        var compactPath = Path.Combine(title.Content, CompactFileName);
+        var secondCompactPath = Path.Combine(title.Content, SecondCompactFileName);
+        try
         {
-            Stream? secondImage = null;
-            using var second = options.SecondDiscPath is null ? null : GameCubeImage.Open(options.SecondDiscPath, out secondImage);
-            using (secondImage)
+            using var game = GameCubeImage.Open(injection.Rom.Path, out var gameImage);
+            using (gameImage)
             {
-                var header = GameCubeImage.ReadHeader(gameImage);
-                var files = new List<DiscFile> { new(GameFileName, gameImage) };
-                if (secondImage is not null)
+                Stream? secondImage = null;
+                using var second = options.SecondDiscPath is null ? null : GameCubeImage.Open(options.SecondDiscPath, out secondImage);
+                using (secondImage)
                 {
-                    GameCubeImage.ReadHeader(secondImage);
-                    files.Add(new DiscFile(SecondDiscFileName, secondImage));
+                    var header = GameCubeImage.ReadHeader(gameImage);
+                    using var payload = Payload(gameImage, options, compactPath, GameFileName, progress, cancellationToken);
+                    var files = new List<DiscFile> { new(GameFileName, payload) };
+                    Stream? secondPayload = null;
+                    if (secondImage is not null)
+                    {
+                        GameCubeImage.ReadHeader(secondImage);
+                        secondPayload = Payload(secondImage, options, secondCompactPath, SecondDiscFileName, progress, cancellationToken);
+                        files.Add(new DiscFile(SecondDiscFileName, secondPayload));
+                    }
+                    using (secondPayload)
+                    {
+                        CarrierDisc.Write(title, header.GameId, header.Title, forwarder, files, progress, cancellationToken);
+                    }
+
+                    progress?.Report("Patching " + WiiRomInjector.FirmwareFileName);
+                    FirmwarePatcher.PatchFile(Path.Combine(title.Code, WiiRomInjector.FirmwareFileName), Patches);
+
+                    VWiiMeta.Apply(title, header.GameId, gamePadAsController: true);
                 }
-
-                CarrierDisc.Write(title, header.GameId, header.Title, forwarder, files, progress, cancellationToken);
-
-                progress?.Report("Patching " + WiiRomInjector.FirmwareFileName);
-                FirmwarePatcher.PatchFile(Path.Combine(title.Code, WiiRomInjector.FirmwareFileName), Patches);
-
-                VWiiMeta.Apply(title, header.GameId, gamePadAsController: true);
             }
         }
+        finally
+        {
+            File.Delete(compactPath);
+            File.Delete(secondCompactPath);
+        }
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// The stream that goes on the carrier: the image itself, or its NKit form written to <paramref name="compactPath"/>.
+    /// </summary>
+    private static Stream Payload(Stream image, GameCubeOptions options, string compactPath, string name, IProgress<string>? progress, CancellationToken cancellationToken)
+    {
+        if (options.KeepFullImage || GameCubeImage.IsNkit(image))
+            return image;
+
+        progress?.Report("Compacting " + name + " to NKit");
+        var compact = new FileStream(compactPath, FileMode.Create, FileAccess.ReadWrite);
+        try
+        {
+            NkitGameCube.Compact(image, compact, cancellationToken);
+            compact.Position = 0;
+            return compact;
+        }
+        catch
+        {
+            compact.Dispose();
+            throw;
+        }
     }
 }

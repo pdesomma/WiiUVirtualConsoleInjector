@@ -5,6 +5,10 @@
              x:DataType="vm:GameCubeOptionsViewModel">
     <StackPanel Spacing="16" Width="560" HorizontalAlignment="Left">
         <CheckBox Content="Force 4:3" IsChecked="{Binding ForceFourByThree}" />
+        <StackPanel Spacing="4">
+            <CheckBox Content="Keep the full image" IsChecked="{Binding KeepFullImage}" />
+            <TextBlock Classes="hint" Text="Off, a full ISO, GCM or GCZ is compacted to NKit inside the title, which Nintendont reads directly; the title shrinks to the game's real size. An NKit image is stored as it is either way." TextWrapping="Wrap" />
+        </StackPanel>
         <ContentControl Content="{Binding Forwarder}" />
         <ContentControl Content="{Binding SecondDisc}" />
     </StackPanel>
