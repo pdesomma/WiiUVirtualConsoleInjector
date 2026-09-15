@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Ports;
@@ -24,7 +24,7 @@ public sealed partial class BaseRowViewModel : ViewModelBase
     [ObservableProperty]
     private string _progressText = string.Empty;
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanDownload), nameof(CanInspect), nameof(IsPresent), nameof(NeedsKey), nameof(StatusText))]
+    [NotifyPropertyChangedFor(nameof(CanDownload), nameof(CanInspect), nameof(DownloadHint), nameof(InspectHint), nameof(IsPresent), nameof(NeedsKey), nameof(StatusText))]
     [NotifyCanExecuteChangedFor(nameof(DownloadCommand), nameof(InspectCommand))]
     private BaseStatus _status;
     private bool _syncing;
@@ -65,9 +65,23 @@ public sealed partial class BaseRowViewModel : ViewModelBase
     /// </summary>
     public bool CanInspect => Status == BaseStatus.Present;
     /// <summary>
+    /// Why the download is off, or what it will do.
+    /// </summary>
+    public string DownloadHint => Status switch
+    {
+        BaseStatus.Present => "This base is already in the base store.",
+        BaseStatus.NeedsCommonKey => "Add the Wii U common key above first.",
+        BaseStatus.NeedsTitleKey => "Add this base's title key first.",
+        _ => "Downloads and decrypts this base.",
+    };
+    /// <summary>
     /// True when the user added it this session.
     /// </summary>
     public bool IsCustom { get; }
+    /// <summary>
+    /// Why the inspection is off, or what it will do.
+    /// </summary>
+    public string InspectHint => IsPresent ? "Checks the stored base for missing files." : "Download this base first.";
     /// <summary>
     /// True when the base is in the store.
     /// </summary>
