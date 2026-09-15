@@ -96,6 +96,7 @@ public class BasesViewModelTests
         Assert.AreEqual(KeyHexText, _keys.CommonKey!.ToString());
         Assert.IsTrue(vm.WiiUCommonKeyEntry.IsValid);
         Assert.IsTrue(vm.WiiUCommonKeyEntry.IsSet);
+        Assert.IsTrue(vm.WiiUCommonKeyEntry.IsSaved);
         Assert.AreEqual(KeyHexText, vm.WiiUCommonKeyEntry.Text);
         Assert.AreEqual(BaseStatus.NeedsTitleKey, vm.Bases[0].Status);
         Assert.AreEqual(0, _dialogs.Errors.Count);
@@ -114,8 +115,37 @@ public class BasesViewModelTests
         Assert.AreEqual(KeyHexText, _keys.CommonKey!.ToString());
         Assert.IsFalse(vm.WiiUCommonKeyEntry.IsValid);
         Assert.IsTrue(vm.WiiUCommonKeyEntry.IsSet);
+        Assert.IsFalse(vm.WiiUCommonKeyEntry.IsSaved, "check mark only for the stored key");
         CollectionAssert.Contains(changed, nameof(KeyEntryViewModel.IsValid));
+        CollectionAssert.Contains(changed, nameof(KeyEntryViewModel.IsSaved));
         Assert.AreEqual(0, _dialogs.Errors.Count);
+    }
+
+    [TestMethod]
+    public void WiiUCommonKey_TypingTowardsAKey_ChecksOnlyOnceStored()
+    {
+        var vm = Create();
+        var entry = vm.WiiUCommonKeyEntry;
+        var saved = new List<bool>();
+        entry.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(KeyEntryViewModel.IsSaved))
+                saved.Add(entry.IsSaved);
+        };
+
+        entry.Text = KeyHexText[..31];
+        Assert.IsFalse(entry.IsSaved);
+        Assert.IsNull(_keys.CommonKey);
+
+        entry.Text = KeyHexText;
+        Assert.IsTrue(entry.IsSaved);
+        Assert.IsNotNull(_keys.CommonKey);
+
+        entry.Text = KeyHexText + "ff";
+        Assert.IsFalse(entry.IsSaved);
+        Assert.AreEqual(KeyHexText, _keys.CommonKey!.ToString());
+        Assert.IsTrue(saved.Contains(true));
+        Assert.IsFalse(saved[^1]);
     }
 
     [TestMethod]
@@ -129,6 +159,7 @@ public class BasesViewModelTests
 
         Assert.IsNull(_keys.CommonKey);
         Assert.IsFalse(vm.WiiUCommonKeyEntry.IsSet);
+        Assert.IsFalse(vm.WiiUCommonKeyEntry.IsSaved);
         Assert.IsFalse(vm.WiiUCommonKeyEntry.IsValid);
         Assert.AreEqual(string.Empty, vm.WiiUCommonKeyEntry.Text);
         Assert.AreEqual(BaseStatus.NeedsCommonKey, vm.Bases[0].Status);
