@@ -1,4 +1,4 @@
-<Application xmlns="https://github.com/avaloniaui"
+﻿<Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:WiiUVirtualConsoleInjector"
              x:Class="WiiUVirtualConsoleInjector.App"
@@ -32,6 +32,8 @@
                     <SolidColorBrush x:Key="RailBorderBrush" Color="#0F000000" />
                     <SolidColorBrush x:Key="RailInactiveBrush" Color="#AAAAAA" />
                     <SolidColorBrush x:Key="DialogBrush" Color="#FAFAF8" />
+                    <SolidColorBrush x:Key="ToastBrush" Color="#FAFAF8" />
+                    <SolidColorBrush x:Key="ToastHoverBrush" Color="#17000000" />
                     <SolidColorBrush x:Key="ButtonTopBrush" Color="#FDFDFC" />
                     <SolidColorBrush x:Key="ButtonBottomBrush" Color="#E6E6E3" />
                     <SolidColorBrush x:Key="ButtonTextBrush" Color="#3A3A38" />
@@ -81,6 +83,8 @@
                     <SolidColorBrush x:Key="RailBorderBrush" Color="#0DFFFFFF" />
                     <SolidColorBrush x:Key="RailInactiveBrush" Color="#8CF5F5F3" />
                     <SolidColorBrush x:Key="DialogBrush" Color="#2F2E2B" />
+                    <SolidColorBrush x:Key="ToastBrush" Color="#31302C" />
+                    <SolidColorBrush x:Key="ToastHoverBrush" Color="#1FFFFFFF" />
                     <SolidColorBrush x:Key="ButtonTopBrush" Color="#4A4946" />
                     <SolidColorBrush x:Key="ButtonBottomBrush" Color="#383734" />
                     <SolidColorBrush x:Key="ButtonTextBrush" Color="#F5F5F3" />
