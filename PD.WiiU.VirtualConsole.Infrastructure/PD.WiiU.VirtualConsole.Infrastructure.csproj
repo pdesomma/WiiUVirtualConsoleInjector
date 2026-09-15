@@ -5,7 +5,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Assets/Frames/*.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="WiiUSharp.Audio" Version="0.7.0" />
+    <PackageReference Include="SkiaSharp" Version="3.119.0" />
     <PackageReference Include="WiiUSharp.Imaging" Version="0.7.0" />
     <PackageReference Include="WiiUSharp.Nus" Version="0.7.0" />
   </ItemGroup>
