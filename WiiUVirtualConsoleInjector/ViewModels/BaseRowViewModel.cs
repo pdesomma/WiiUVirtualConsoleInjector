@@ -24,7 +24,7 @@ public sealed partial class BaseRowViewModel : ViewModelBase
     [ObservableProperty]
     private string _progressText = string.Empty;
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanDownload), nameof(CanInspect), nameof(DownloadHint), nameof(InspectHint), nameof(IsPresent), nameof(NeedsKey), nameof(StatusText))]
+    [NotifyPropertyChangedFor(nameof(CanDownload), nameof(CanInspect), nameof(DownloadHint), nameof(InspectHint), nameof(IsPresent), nameof(IsTitleKeyVerified), nameof(NeedsKey), nameof(StatusText), nameof(TitleKeyHint))]
     [NotifyCanExecuteChangedFor(nameof(DownloadCommand), nameof(InspectCommand))]
     private BaseStatus _status;
     private bool _syncing;
@@ -87,9 +87,13 @@ public sealed partial class BaseRowViewModel : ViewModelBase
     /// </summary>
     public bool IsPresent => Status == BaseStatus.Present;
     /// <summary>
-    /// True when the title key text is 32 hex characters.
+    /// True when the title key text is 32 hex characters; well-formed, not proven.
     /// </summary>
     public bool IsTitleKeyValid => HexKeyText.IsValid(TitleKey, TitleKeySize);
+    /// <summary>
+    /// True once a download decrypted with this key, which is the only proof it is right.
+    /// </summary>
+    public bool IsTitleKeyVerified => IsPresent;
     /// <summary>
     /// Display name.
     /// </summary>
@@ -117,6 +121,12 @@ public sealed partial class BaseRowViewModel : ViewModelBase
     /// Title ID as hex.
     /// </summary>
     public string TitleId => Base.TitleId.ToString();
+    /// <summary>
+    /// What the tick beside the title key means right now.
+    /// </summary>
+    public string TitleKeyHint => IsTitleKeyVerified
+        ? "This key decrypted the downloaded base, so it is the right one."
+        : "Stored, but only a download can show whether it is the right key.";
 
     /// <summary>
     /// Re-reads status and the stored title key.

@@ -14,6 +14,10 @@ public sealed partial class KeyEntryViewModel : ViewModelBase
     /// </summary>
     public const string NotSetText = "Not set";
     /// <summary>
+    /// Status text while the box holds something other than the stored key.
+    /// </summary>
+    public const string UnsavedText = "Not saved";
+    /// <summary>
     /// Status text when a key is stored.
     /// </summary>
     public const string SetText = "Set";
@@ -32,7 +36,7 @@ public sealed partial class KeyEntryViewModel : ViewModelBase
     private string _status = NotSetText;
     private bool _syncing;
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsValid), nameof(IsSaved))]
+    [NotifyPropertyChangedFor(nameof(IsValid), nameof(IsSaved), nameof(SavedStatus))]
     private string _text = string.Empty;
 
     /// <summary>
@@ -71,6 +75,10 @@ public sealed partial class KeyEntryViewModel : ViewModelBase
     /// Name shown to the user.
     /// </summary>
     public string Label { get; }
+    /// <summary>
+    /// Whether the box holds what is stored; never a claim that the key is the right one.
+    /// </summary>
+    public string SavedStatus => IsSaved ? SetText : IsSet ? UnsavedText : NotSetText;
 
     /// <summary>
     /// Re-reads the stored key into the text box and status.
@@ -105,6 +113,7 @@ public sealed partial class KeyEntryViewModel : ViewModelBase
     {
         OnPropertyChanged(nameof(IsSet));
         OnPropertyChanged(nameof(IsSaved));
+        OnPropertyChanged(nameof(SavedStatus));
     }
 
     /// <summary>

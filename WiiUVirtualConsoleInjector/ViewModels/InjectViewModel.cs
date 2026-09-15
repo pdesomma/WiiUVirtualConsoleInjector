@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PD.WiiU.VirtualConsole;
@@ -79,6 +79,9 @@ public sealed partial class InjectViewModel : PageViewModel
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsGamePadVisible), nameof(IsTurboCd), nameof(SelectedConsoleName), nameof(RomExtensions), nameof(ReviewGame))]
     private SourceConsole _selectedConsole;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ReviewGame))]
+    private string? _shortName;
     [ObservableProperty]
     private string? _status;
     [ObservableProperty]
@@ -258,7 +261,9 @@ public sealed partial class InjectViewModel : PageViewModel
     {
         get
         {
-            var parts = new List<string> { string.IsNullOrWhiteSpace(Name) ? "Not named" : Name!.Trim() };
+            var parts = new List<string> { string.IsNullOrWhiteSpace(Name) ? "Not named" : Name!.Trim().Replace(",", " / ") };
+            if (!string.IsNullOrWhiteSpace(ShortName))
+                parts.Add("icon: " + ShortName!.Trim());
             if (ClearedProductId(ProductId) is { } id)
                 parts.Add("#" + id);
             if (IsGamePadVisible && GamePad)
@@ -354,7 +359,7 @@ public sealed partial class InjectViewModel : PageViewModel
     };
 
     private Injection BuildInjection() =>
-        new(SelectedBase!.Base, new Rom(RomPath!, SelectedConsole), GameFactory.Create(Name!, ClearedProductId(ProductId), IsGamePadVisible && GamePad))
+        new(SelectedBase!.Base, new Rom(RomPath!, SelectedConsole), GameFactory.Create(Name!, ShortName, ClearedProductId(ProductId), IsGamePadVisible && GamePad))
         {
             Artwork = new Artwork { Icon = Icon.Path, BootTv = BootTv.Path, BootDrc = BootDrc.Path, BootLogo = BootLogo.Path },
             BootSoundPath = BootSound.Path,

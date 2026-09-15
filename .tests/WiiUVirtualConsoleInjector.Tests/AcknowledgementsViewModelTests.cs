@@ -1,4 +1,4 @@
-using WiiUVirtualConsoleInjector.Assets;
+﻿using WiiUVirtualConsoleInjector.Assets;
 using WiiUVirtualConsoleInjector.Services;
 using WiiUVirtualConsoleInjector.ViewModels;
 
@@ -80,16 +80,5 @@ public class AcknowledgementsViewModelTests
         await vm.OpenCommand.ExecuteAsync(null);
 
         Assert.AreEqual(0, opener.Opened.Count);
-    }
-
-    private sealed class FakeLinkOpener : ILinkOpener
-    {
-        public List<Uri> Opened { get; } = new();
-
-        public Task<bool> OpenAsync(Uri uri)
-        {
-            Opened.Add(uri);
-            return Task.FromResult(true);
-        }
     }
 }

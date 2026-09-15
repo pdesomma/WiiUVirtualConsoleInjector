@@ -62,6 +62,24 @@ internal sealed class FakeSettingsService : ISettingsService
     }
 }
 
+internal sealed class FakeLinkOpener : ILinkOpener
+{
+    public List<string> Folders { get; } = new();
+    public List<Uri> Opened { get; } = new();
+
+    public Task<bool> OpenAsync(Uri uri)
+    {
+        Opened.Add(uri);
+        return Task.FromResult(true);
+    }
+
+    public Task<bool> OpenFolderAsync(string path)
+    {
+        Folders.Add(path);
+        return Task.FromResult(true);
+    }
+}
+
 internal sealed class FakeToastService : IToastService
 {
     private readonly ObservableCollection<ToastViewModel> _toasts = new();

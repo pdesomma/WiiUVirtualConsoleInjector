@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels"
              x:Class="WiiUVirtualConsoleInjector.Views.SettingsView"
@@ -9,10 +9,23 @@
         <DataTemplate x:DataType="vm:FolderSettingViewModel">
             <StackPanel Spacing="4">
                 <TextBlock Classes="label" Text="{Binding Label}" />
-                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
                     <TextBox Grid.Column="0" Text="{Binding Folder, Mode=OneWay}" IsReadOnly="True" FontSize="12" VerticalAlignment="Center" />
                     <Button Grid.Column="1" Classes="sm" Content="Browse…" Command="{Binding BrowseCommand}" />
-                    <Button Grid.Column="2" Classes="sm ghost" Content="Reset to default" Command="{Binding ResetCommand}" />
+                    <Button Grid.Column="2" Classes="sm icon" Command="{Binding OpenCommand}" ToolTip.Tip="Show in the file manager">
+                        <Viewbox Width="15" Height="15">
+                            <Canvas Width="24" Height="24">
+                                <Path Classes="btn-glyph" Data="M3 7a1 1 0 0 1 1-1h5l2 2.5h9a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z" />
+                            </Canvas>
+                        </Viewbox>
+                    </Button>
+                    <Button Grid.Column="3" Classes="sm icon ghost" Command="{Binding ResetCommand}" ToolTip.Tip="Reset to default">
+                        <Viewbox Width="15" Height="15">
+                            <Canvas Width="24" Height="24">
+                                <Path Classes="btn-glyph" Data="M19.5 12a7.5 7.5 0 1 1-2.2-5.3 M19.5 4v4h-4" />
+                            </Canvas>
+                        </Viewbox>
+                    </Button>
                 </Grid>
             </StackPanel>
         </DataTemplate>

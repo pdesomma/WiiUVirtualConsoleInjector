@@ -1,7 +1,7 @@
-namespace WiiUVirtualConsoleInjector.Services;
+﻿namespace WiiUVirtualConsoleInjector.Services;
 
 /// <summary>
-/// Opens a web address in the user's browser.
+/// Hands addresses and folders to the user's shell.
 /// </summary>
 public interface ILinkOpener
 {
@@ -10,4 +10,10 @@ public interface ILinkOpener
     /// </summary>
     /// <param name="uri">Absolute address.</param>
     Task<bool> OpenAsync(Uri uri);
+
+    /// <summary>
+    /// Shows a folder in the file manager, creating it when it is not there yet.
+    /// </summary>
+    /// <param name="path">Folder to show.</param>
+    Task<bool> OpenFolderAsync(string path);
 }
