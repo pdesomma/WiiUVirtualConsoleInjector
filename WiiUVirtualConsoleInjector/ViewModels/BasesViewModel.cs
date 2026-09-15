@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PD.WiiU.VirtualConsole;
@@ -21,6 +21,7 @@ public sealed partial class BasesViewModel : PageViewModel
     private readonly IDialogService _dialogs;
     private readonly IInjectionServiceFactory _injections;
     private readonly IKeyStore _keys;
+    private readonly List<BaseRowViewModel> _rows = new();
 
     [ObservableProperty]
     private string _customName = string.Empty;
@@ -28,6 +29,8 @@ public sealed partial class BasesViewModel : PageViewModel
     private Region _customRegion = Region.UnitedStates;
     [ObservableProperty]
     private string _customTitleId = string.Empty;
+    [ObservableProperty]
+    private string _filter = string.Empty;
     [ObservableProperty]
     private SourceConsole _selectedConsole;
 
@@ -78,7 +81,7 @@ public sealed partial class BasesViewModel : PageViewModel
     /// </summary>
     public KeyEntryViewModel AncastKeyEntry { get; }
     /// <summary>
-    /// Rows for the selected console, custom ones last.
+    /// Rows for the selected console that match <see cref="Filter"/>, custom ones last.
     /// </summary>
     public ObservableCollection<BaseRowViewModel> Bases { get; }
     /// <summary>
@@ -124,7 +127,7 @@ public sealed partial class BasesViewModel : PageViewModel
             await _dialogs.ShowErrorAsync("Custom base", "Name is required.");
             return;
         }
-        if (Bases.Any(b => b.Base.TitleId.Equals(titleId)))
+        if (_rows.Any(b => b.Base.TitleId.Equals(titleId)))
         {
             await _dialogs.ShowErrorAsync("Custom base", $"Title {titleId} is already listed.");
             return;
@@ -132,9 +135,21 @@ public sealed partial class BasesViewModel : PageViewModel
 
         var title = new BaseTitle(titleId, CustomName.Trim(), CustomRegion, SelectedConsole);
         _customBases.Add(title);
-        Bases.Add(NewRow(title, isCustom: true));
+        _rows.Add(NewRow(title, isCustom: true));
+        ApplyFilter();
         CustomTitleId = string.Empty;
         CustomName = string.Empty;
+    }
+
+    /// <summary>
+    /// Shows the rows whose name, title ID or region contains the filter; all of them when it is blank.
+    /// </summary>
+    private void ApplyFilter()
+    {
+        var filter = Filter.Trim();
+        Bases.Clear();
+        foreach (var row in _rows.Where(r => Matches(r, filter)))
+            Bases.Add(row);
     }
 
     /// <summary>
@@ -166,12 +181,24 @@ public sealed partial class BasesViewModel : PageViewModel
     /// </summary>
     private void LoadBases()
     {
-        Bases.Clear();
+        _rows.Clear();
         foreach (var title in _bases.Available(SelectedConsole))
-            Bases.Add(NewRow(title, isCustom: false));
+            _rows.Add(NewRow(title, isCustom: false));
         foreach (var title in _customBases.Where(t => t.Console == SelectedConsole))
-            Bases.Add(NewRow(title, isCustom: true));
+            _rows.Add(NewRow(title, isCustom: true));
+        ApplyFilter();
     }
+
+    /// <summary>
+    /// Case-insensitive substring match against the row's name, title ID and region.
+    /// </summary>
+    /// <param name="row">Row to test.</param>
+    /// <param name="filter">Trimmed filter text.</param>
+    private static bool Matches(BaseRowViewModel row, string filter) =>
+        filter.Length == 0
+        || row.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)
+        || row.TitleId.Contains(filter, StringComparison.OrdinalIgnoreCase)
+        || row.Region.Contains(filter, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// A row wired to this page's services.
@@ -180,6 +207,8 @@ public sealed partial class BasesViewModel : PageViewModel
     /// <param name="isCustom">True when the user added it.</param>
     private BaseRowViewModel NewRow(BaseTitle title, bool isCustom) => new(title, isCustom, _bases, _keys, _injections, _dialogs);
 
+    partial void OnFilterChanged(string value) => ApplyFilter();
+
     partial void OnSelectedConsoleChanged(SourceConsole value) => LoadBases();
 
     /// <summary>
@@ -187,7 +216,7 @@ public sealed partial class BasesViewModel : PageViewModel
     /// </summary>
     private void RefreshStatuses()
     {
-        foreach (var row in Bases)
+        foreach (var row in _rows)
             row.Refresh();
     }
 }
