@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PD.WiiU.VirtualConsole;
@@ -88,6 +88,19 @@ public sealed partial class ArtworkSlotViewModel : ViewModelBase
     /// Slot this builds.
     /// </summary>
     public ImageSlot Slot { get; }
+
+    /// <summary>
+    /// Forgets the source image and every caption; the overlay choice stays.
+    /// </summary>
+    public void Clear()
+    {
+        SourcePath = null;
+        NameLine1 = null;
+        NameLine2 = null;
+        ReleaseYear = null;
+        Players = null;
+        LogoText = null;
+    }
 
     /// <summary>
     /// Offers the overlays for a console; keeps the current one when it still applies.

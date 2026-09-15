@@ -355,6 +355,33 @@ public sealed partial class InjectViewModel : PageViewModel
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Clears every field and returns to the first step, ready for the next title.
+    /// </summary>
+    public void StartOver()
+    {
+        RomPath = null;
+        Name = null;
+        ShortName = null;
+        ProductId = null;
+        GamePad = false;
+        Format = OutputFormat.Wup;
+        Icon.Path = null;
+        BootTv.Path = null;
+        BootDrc.Path = null;
+        BootLogo.Path = null;
+        BootSound.Path = null;
+        ArtworkBuilder.Clear();
+        Log.Clear();
+        Status = null;
+        CurrentStep = null;
+        SelectedConsole = SourceConsole.Nes;
+        CurrentOptions = CreateOptions(SelectedConsole);
+        ArtworkBuilder.Refresh(SelectedConsole, Name, ShortName);
+        Refresh();
+        Step = 1;
+    }
+
     private static string? ClearedProductId(string? productId) =>
         string.IsNullOrWhiteSpace(productId) ? null : productId.Trim();
 
@@ -483,6 +510,7 @@ public sealed partial class InjectViewModel : PageViewModel
         Log.Clear();
         CurrentStep = null;
         Status = "Running";
+        var succeeded = false;
         try
         {
             var service = _injections.Create();
@@ -493,6 +521,7 @@ public sealed partial class InjectViewModel : PageViewModel
             var copied = await CopyToCardAsync(result.OutputDirectory, copying, token).ConfigureAwait(true);
             Status = "Done";
             await _dialogs.ShowInfoAsync(DialogTitle, $"Title written to {copied ?? result.OutputDirectory}").ConfigureAwait(true);
+            succeeded = true;
         }
         catch (OperationCanceledException)
         {
@@ -514,6 +543,9 @@ public sealed partial class InjectViewModel : PageViewModel
             IsRunning = false;
             DeleteWork(work);
         }
+
+        if (succeeded)
+            StartOver();
     }
 
     /// <summary>

@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole;
+﻿using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Ports;
 using WiiUSharp;
 using WiiUVirtualConsoleInjector.Services;
@@ -59,6 +59,15 @@ public sealed class ArtworkBuilderViewModel : ViewModelBase
     /// The TV boot screen.
     /// </summary>
     public ArtworkSlotViewModel Tv { get; }
+
+    /// <summary>
+    /// Forgets every slot's source image and captions.
+    /// </summary>
+    public void Clear()
+    {
+        foreach (var slot in Slots)
+            slot.Clear();
+    }
 
     /// <summary>
     /// Offers each slot the console's overlays and fills in blank captions from the wizard's names.
