@@ -56,6 +56,38 @@
                 </StackPanel>
             </Border>
 
+            <!-- SD card -->
+            <Border Classes="card">
+                <StackPanel>
+                    <TextBlock Classes="section" Text="SD card" Margin="0,0,0,4" />
+                    <TextBlock Classes="hint" FontSize="12" Text="Picked up from the removable drives; the Wii U card is the one with a wiiu or install folder." Margin="0,0,0,12" />
+                    <StackPanel Spacing="4" DataContext="{Binding SdCard}">
+                        <TextBlock Classes="label" Text="Drive" />
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                            <ComboBox Grid.Column="0" ItemsSource="{Binding Drives}" SelectedItem="{Binding SelectedDrive}" HorizontalAlignment="Stretch" PlaceholderText="No removable drive found" />
+                            <Button Grid.Column="1" Classes="sm icon" Command="{Binding RescanCommand}" ToolTip.Tip="Scan for drives again">
+                                <Viewbox Width="15" Height="15">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Classes="btn-glyph" Data="M19.5 12a7.5 7.5 0 1 1-2.2-5.3 M19.5 4v4h-4" />
+                                    </Canvas>
+                                </Viewbox>
+                            </Button>
+                            <Button Grid.Column="2" Classes="sm icon" Command="{Binding OpenCommand}" IsEnabled="{Binding HasCard}" ToolTip.Tip="Show the install folder">
+                                <Viewbox Width="15" Height="15">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Classes="btn-glyph" Data="M3 7a1 1 0 0 1 1-1h5l2 2.5h9a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z" />
+                                    </Canvas>
+                                </Viewbox>
+                            </Button>
+                        </Grid>
+                        <TextBlock Classes="hint" FontSize="12" Text="{Binding Status}" Margin="0,1,0,10" />
+                        <CheckBox IsChecked="{Binding CopyAfterInject}" IsEnabled="{Binding HasCard}">
+                            <TextBlock Text="Copy each finished title to the card's install folder" FontSize="12.5" TextWrapping="Wrap" />
+                        </CheckBox>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
             <!-- Warnings -->
             <Border Classes="card">
                 <StackPanel>

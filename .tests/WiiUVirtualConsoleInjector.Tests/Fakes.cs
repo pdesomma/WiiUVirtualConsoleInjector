@@ -52,6 +52,8 @@ internal sealed class FakeSettingsService : ISettingsService
     public AppSettings Current { get; set; } = new();
     public string OutputPath => Current.OutputPath ?? DefaultOutput;
     public int Saves { get; private set; }
+    public string DetectedSdPath { get; set; } = string.Empty;
+    public string SdPath => Current.SdPath ?? DetectedSdPath;
     public string WorkPath => Current.WorkPath ?? DefaultWork;
 
     public void Update(Func<AppSettings, AppSettings> change)
@@ -60,6 +62,29 @@ internal sealed class FakeSettingsService : ISettingsService
         Saves++;
         Changed?.Invoke(this, EventArgs.Empty);
     }
+}
+
+internal sealed class FakeSdCard : ISdCard
+{
+    public List<(string Title, string Root)> Copies { get; } = new();
+    public string CopyResult { get; set; } = @"E:\install\[WUP]Test";
+    public RemovableDrive? Detected { get; set; }
+    public Exception? Failure { get; set; }
+    public List<RemovableDrive> Removable { get; } = new();
+
+    public Task<string> CopyAsync(string titleDirectory, string root, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
+    {
+        Copies.Add((titleDirectory, root));
+        if (Failure is not null)
+            return Task.FromException<string>(Failure);
+
+        progress?.Report("title.tmd");
+        return Task.FromResult(CopyResult);
+    }
+
+    public RemovableDrive? Detect() => Detected;
+
+    public IReadOnlyList<RemovableDrive> Drives() => Removable;
 }
 
 internal sealed class FakeLinkOpener : ILinkOpener

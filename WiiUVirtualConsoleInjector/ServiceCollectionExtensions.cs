@@ -33,6 +33,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IUiScheduler, AvaloniaUiScheduler>();
         services.AddSingleton<IToastService, ToastService>();
         services.AddSingleton<IKeyStore>(p => new ToastingKeyStore(new JsonKeyStore(paths.KeysFile), p.GetRequiredService<IToastService>()));
+        services.AddSingleton<IRemovableDrives, SystemRemovableDrives>();
+        services.AddSingleton<ISdCard, SdCard>();
         services.AddSingleton<ISettingsService, SettingsService>();
         services.AddSingleton(BaseCatalog.Bundled());
         services.AddSingleton(new HttpClient());

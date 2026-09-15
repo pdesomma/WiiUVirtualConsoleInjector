@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole.Infrastructure;
+﻿using PD.WiiU.VirtualConsole.Infrastructure;
 
 namespace PD.WiiU.VirtualConsole.Infrastructure.Tests;
 
@@ -36,7 +36,7 @@ public class JsonSettingsStoreTests
     public void Save_ThenLoad_RoundTripsEveryField()
     {
         var store = new JsonSettingsStore(_path);
-        var settings = new AppSettings { BasePath = @"C:\bases", OutputPath = @"D:\out", WorkPath = @"E:\tmp" }
+        var settings = new AppSettings { BasePath = @"C:\bases", OutputPath = @"D:\out", WorkPath = @"E:\tmp", SdPath = @"F:\", CopyToSdCard = true }
             .Suppress(InjectionWarning.GameCubeGcz)
             .Suppress(InjectionWarning.NdsDsiEnhanced);
 
@@ -46,6 +46,8 @@ public class JsonSettingsStoreTests
         Assert.AreEqual(@"C:\bases", loaded.BasePath);
         Assert.AreEqual(@"D:\out", loaded.OutputPath);
         Assert.AreEqual(@"E:\tmp", loaded.WorkPath);
+        Assert.AreEqual(@"F:\", loaded.SdPath);
+        Assert.IsTrue(loaded.CopyToSdCard);
         CollectionAssert.AreEquivalent(new[] { InjectionWarning.GameCubeGcz, InjectionWarning.NdsDsiEnhanced }, loaded.SuppressedWarnings.ToArray());
         var json = File.ReadAllText(_path);
         StringAssert.Contains(json, "\"basePath\"");

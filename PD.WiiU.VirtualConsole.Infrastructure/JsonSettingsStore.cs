@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using PD.WiiU.VirtualConsole.Ports;
 
@@ -57,7 +57,9 @@ public sealed class JsonSettingsStore : ISettingsStore
         return new AppSettings
         {
             BasePath = Blank(document.BasePath),
+            CopyToSdCard = document.CopyToSdCard ?? false,
             OutputPath = Blank(document.OutputPath),
+            SdPath = Blank(document.SdPath),
             WorkPath = Blank(document.WorkPath),
             SuppressedWarnings = document.SuppressedWarnings ?? Array.Empty<InjectionWarning>(),
             Theme = document.Theme ?? AppTheme.Light,
@@ -73,7 +75,9 @@ public sealed class JsonSettingsStore : ISettingsStore
         var document = new Document
         {
             BasePath = settings.BasePath,
+            CopyToSdCard = settings.CopyToSdCard,
             OutputPath = settings.OutputPath,
+            SdPath = settings.SdPath,
             WorkPath = settings.WorkPath,
             SuppressedWarnings = settings.SuppressedWarnings.ToArray(),
             Theme = settings.Theme,
@@ -91,7 +95,9 @@ public sealed class JsonSettingsStore : ISettingsStore
     private sealed class Document
     {
         public string? BasePath { get; set; }
+        public bool? CopyToSdCard { get; set; }
         public string? OutputPath { get; set; }
+        public string? SdPath { get; set; }
         public InjectionWarning[]? SuppressedWarnings { get; set; }
         public AppTheme? Theme { get; set; }
         public string? WorkPath { get; set; }

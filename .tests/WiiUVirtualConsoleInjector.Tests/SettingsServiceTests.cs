@@ -13,7 +13,7 @@ public class SettingsServiceTests
     [TestMethod]
     public void Paths_Unset_FallBackToDataFolder()
     {
-        var service = new SettingsService(new MemorySettingsStore(), Paths, new FakeToastService());
+        var service = new SettingsService(new MemorySettingsStore(), Paths, new FakeToastService(), new FakeSdCard());
 
         Assert.AreEqual(Paths.DefaultBasePath, service.BasePath);
         Assert.AreEqual(Paths.DefaultOutputPath, service.OutputPath);
@@ -25,7 +25,7 @@ public class SettingsServiceTests
     {
         var store = new MemorySettingsStore();
         var toasts = new FakeToastService();
-        var service = new SettingsService(store, Paths, toasts);
+        var service = new SettingsService(store, Paths, toasts, new FakeSdCard());
         var raised = 0;
         service.Changed += (_, _) => raised++;
 
@@ -42,9 +42,9 @@ public class SettingsServiceTests
     [TestMethod]
     public void Constructor_NullArguments_ThrowsArgumentNullException()
     {
-        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsService(null!, Paths, new FakeToastService()));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsService(new MemorySettingsStore(), null!, new FakeToastService()));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsService(new MemorySettingsStore(), Paths, null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsService(null!, Paths, new FakeToastService(), new FakeSdCard()));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsService(new MemorySettingsStore(), null!, new FakeToastService(), new FakeSdCard()));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsService(new MemorySettingsStore(), Paths, null!, new FakeSdCard()));
         Assert.ThrowsExactly<ArgumentException>(() => new AppPaths(" "));
     }
 
