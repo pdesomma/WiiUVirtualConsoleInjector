@@ -1,4 +1,4 @@
-using GMWare.M2.MArchive;
+﻿using GMWare.M2.MArchive;
 using GMWare.M2.Psb;
 using Newtonsoft.Json.Linq;
 
@@ -9,17 +9,28 @@ namespace PD.WiiU.VirtualConsole.Gba.Tests;
 /// </summary>
 internal static class FakeAllData
 {
-    public const string RomName = "rom/AGB-BASE.gba";
+    public const string PlainRomName = "rom/AGB-BASE.gba";
+    public const string RomName = "system/roms/AA88E0.D88.m";
 
     public static byte[] BaseRom => Enumerable.Range(0, 0x400).Select(i => (byte)(i * 3)).ToArray();
 
-    public static void Build(string contentDirectory, string scratch, int brightness = 0)
+    public static void Build(string contentDirectory, string scratch, int brightness = 0, bool plainRom = false)
     {
         var packer = Packer();
         var root = Path.Combine(scratch, "src");
-        Directory.CreateDirectory(Path.Combine(root, "rom"));
         Directory.CreateDirectory(Path.Combine(root, "config"));
-        File.WriteAllBytes(Path.Combine(root, RomName.Replace('/', Path.DirectorySeparatorChar)), BaseRom);
+        if (plainRom)
+        {
+            Directory.CreateDirectory(Path.Combine(root, "rom"));
+            File.WriteAllBytes(Path.Combine(root, PlainRomName.Replace('/', Path.DirectorySeparatorChar)), BaseRom);
+        }
+        else
+        {
+            Directory.CreateDirectory(Path.Combine(root, "system", "roms"));
+            var plainPath = Path.Combine(root, "system", "roms", "AA88E0.D88");
+            File.WriteAllBytes(plainPath, BaseRom);
+            packer.CompressFile(plainPath, keepOrig: false, null);
+        }
         File.WriteAllText(Path.Combine(root, "config", "readme.txt"), "keep me");
 
         var profile = new JObject
@@ -44,7 +55,16 @@ internal static class FakeAllData
         Directory.CreateDirectory(extracted);
         AllDataPacker.UnpackFiles(Path.Combine(contentDirectory, "alldata.psb.m"), extracted, packer, null);
 
-        var rom = File.ReadAllBytes(Directory.GetFiles(extracted, "*.gba", SearchOption.AllDirectories).Single());
+        var romEntry = Directory.GetFiles(extracted, "*", SearchOption.AllDirectories).Single(f => f.EndsWith(".gba", StringComparison.OrdinalIgnoreCase) || f.Replace('\\', '/').Contains("/system/roms/"));
+        byte[] rom;
+        if (romEntry.EndsWith(".m", StringComparison.OrdinalIgnoreCase))
+        {
+            var buffer = new MemoryStream();
+            packer.DecompressFile(romEntry, keepOrig: true, buffer);
+            rom = buffer.ToArray();
+        }
+        else
+            rom = File.ReadAllBytes(romEntry);
         var profilePath = Directory.GetFiles(extracted, "title_prof.psb.m", SearchOption.AllDirectories).Single();
         var plain = new MemoryStream();
         packer.DecompressFile(profilePath, keepOrig: true, plain);

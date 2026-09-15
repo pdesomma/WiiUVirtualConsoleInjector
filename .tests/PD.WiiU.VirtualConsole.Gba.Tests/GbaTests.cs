@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole.Options;
+﻿using PD.WiiU.VirtualConsole.Options;
 using WiiUSharp;
 
 namespace PD.WiiU.VirtualConsole.Gba.Tests;
@@ -94,8 +94,38 @@ public class GbaTests
         var (stored, brightness, files) = FakeAllData.Read(title.Content, Path.Combine(_root, "verify"));
         CollectionAssert.AreEqual(File.ReadAllBytes(rom), stored);
         Assert.AreEqual(0, brightness);
-        CollectionAssert.AreEqual(new[] { "config/readme.txt", "config/title_prof.psb.m", "rom/AGB-BASE.gba" }, files);
+        CollectionAssert.AreEqual(new[] { "config/readme.txt", "config/title_prof.psb.m", "system/roms/AA88E0.D88.m" }, files, "the retail entry keeps its name and stays MDF-compressed");
         Assert.AreEqual(1, messages.Count);
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_PlainGbaEntry_ReplacesItInPlace()
+    {
+        var title = StageBase(plainRom: true);
+        var rom = Write("game.gba", Enumerable.Range(0, 5000).Select(i => (byte)(i * 7)).ToArray());
+
+        await new GbaRomInjector().InjectAsync(Injection(rom), title);
+
+        var (stored, _, files) = FakeAllData.Read(title.Content, Path.Combine(_root, "verify"));
+        CollectionAssert.AreEqual(File.ReadAllBytes(rom), stored);
+        CollectionAssert.AreEqual(new[] { "config/readme.txt", "config/title_prof.psb.m", "rom/AGB-BASE.gba" }, files);
+    }
+
+    [TestMethod]
+    public void WriteEntry_CompressedName_WritesAnMdfEntryAndNoPlainFile()
+    {
+        var folder = Path.Combine(_root, "entry");
+        Directory.CreateDirectory(folder);
+        var entry = Path.Combine(folder, "AA88E0.D88.m");
+        var data = Enumerable.Range(0, 3000).Select(i => (byte)i).ToArray();
+
+        AllDataArchive.WriteEntry(entry, data);
+
+        Assert.IsTrue(File.Exists(entry));
+        Assert.IsFalse(File.Exists(Path.Combine(folder, "AA88E0.D88")));
+        CollectionAssert.AreEqual(new byte[] { 0x6D, 0x64, 0x66, 0x00 }, File.ReadAllBytes(entry).Take(4).ToArray(), "mdf magic");
+        Assert.ThrowsExactly<ArgumentNullException>(() => AllDataArchive.WriteEntry(null!, data));
+        Assert.ThrowsExactly<ArgumentNullException>(() => AllDataArchive.WriteEntry(entry, null!));
     }
 
     [TestMethod]
@@ -155,10 +185,10 @@ public class GbaTests
     private static Injection Injection(string rom) =>
         new(Base(), new Rom(rom, SourceConsole.Gba), Game());
 
-    private TitleDirectory StageBase()
+    private TitleDirectory StageBase(bool plainRom = false)
     {
         var title = TitleDirectory.Create(Path.Combine(_root, "title", Guid.NewGuid().ToString("N")));
-        FakeAllData.Build(title.Content, Path.Combine(_root, "build"));
+        FakeAllData.Build(title.Content, Path.Combine(_root, "build"), plainRom: plainRom);
         return title;
     }
 
