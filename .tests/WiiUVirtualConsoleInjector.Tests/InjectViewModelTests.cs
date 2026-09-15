@@ -326,7 +326,7 @@ public class InjectViewModelTests
         Assert.AreEqual(@"C:\art\boot.wav", injection.BootSoundPath);
         Assert.AreEqual("Super Game", injection.Game.Names[Language.English].ShortName);
         Assert.AreEqual("Super Game\nThe Sequel", injection.Game.Names[Language.English].LongName);
-        Assert.AreEqual(0u, injection.Game.GamePadUse, "GamePad flag only applies to Wii and GameCube");
+        Assert.IsNull(injection.Game.GamePadUse, "GamePad flag only applies to Wii and GameCube");
         Assert.AreEqual(_settings.OutputPath, _factory.Service.OutputDirectory);
     }
 
