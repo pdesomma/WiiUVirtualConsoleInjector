@@ -9,6 +9,11 @@ namespace PD.WiiU.VirtualConsole.Ports;
 public interface IKeyStore
 {
     /// <summary>
+    /// The console's ancast key, once the user has supplied it; only Wii homebrew overclocking needs it.
+    /// </summary>
+    AncastKey? AncastKey { get; set; }
+
+    /// <summary>
     /// The Wii U common key, once the user has supplied it.
     /// </summary>
     CommonKey? CommonKey { get; set; }
