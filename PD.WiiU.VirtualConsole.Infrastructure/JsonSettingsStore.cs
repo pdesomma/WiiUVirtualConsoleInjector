@@ -60,6 +60,7 @@ public sealed class JsonSettingsStore : ISettingsStore
             OutputPath = Blank(document.OutputPath),
             WorkPath = Blank(document.WorkPath),
             SuppressedWarnings = document.SuppressedWarnings ?? Array.Empty<InjectionWarning>(),
+            Theme = document.Theme ?? AppTheme.Light,
         };
     }
 
@@ -75,6 +76,7 @@ public sealed class JsonSettingsStore : ISettingsStore
             OutputPath = settings.OutputPath,
             WorkPath = settings.WorkPath,
             SuppressedWarnings = settings.SuppressedWarnings.ToArray(),
+            Theme = settings.Theme,
         };
         Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
         var temp = FilePath + TempSuffix;
@@ -91,6 +93,7 @@ public sealed class JsonSettingsStore : ISettingsStore
         public string? BasePath { get; set; }
         public string? OutputPath { get; set; }
         public InjectionWarning[]? SuppressedWarnings { get; set; }
+        public AppTheme? Theme { get; set; }
         public string? WorkPath { get; set; }
     }
 }

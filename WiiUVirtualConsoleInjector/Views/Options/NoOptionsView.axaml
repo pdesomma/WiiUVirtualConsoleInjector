@@ -3,5 +3,5 @@
              xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels.Options"
              x:Class="WiiUVirtualConsoleInjector.Views.Options.NoOptionsView"
              x:DataType="vm:NoOptionsViewModel">
-    <TextBlock Text="No options for this console." Opacity="0.7" />
+    <TextBlock Classes="hint" Text="No options for this console." />
 </UserControl>

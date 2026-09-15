@@ -1,83 +1,99 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels"
+             xmlns:vm2="using:PD.WiiU.VirtualConsole"
+             xmlns:conv="using:WiiUVirtualConsoleInjector.Converters"
              x:Class="WiiUVirtualConsoleInjector.Views.BasesView"
              x:DataType="vm:BasesViewModel">
 
     <UserControl.DataTemplates>
         <DataTemplate x:DataType="vm:KeyEntryViewModel">
-            <Grid ColumnDefinitions="160,*,Auto,Auto,Auto,80">
-                <TextBlock Grid.Column="0" Text="{Binding Label}" VerticalAlignment="Center" />
+            <Grid ColumnDefinitions="180,*,Auto,Auto,Auto,80" ColumnSpacing="8">
+                <TextBlock Grid.Column="0" Classes="label" Text="{Binding Label}" />
                 <TextBox Grid.Column="1" Text="{Binding Text}" PasswordChar="•" RevealPassword="{Binding IsRevealed}" PlaceholderText="32 hex characters" />
-                <ToggleButton Grid.Column="2" Content="Show" IsChecked="{Binding IsRevealed}" Margin="8,0,0,0" />
-                <Button Grid.Column="3" Content="Save" Command="{Binding SaveCommand}" Margin="8,0,0,0" />
-                <Button Grid.Column="4" Content="Clear" Command="{Binding ClearCommand}" Margin="8,0,0,0" />
-                <TextBlock Grid.Column="5" Text="{Binding Status}" VerticalAlignment="Center" Margin="12,0,0,0" />
+                <ToggleButton Grid.Column="2" Content="Show" IsChecked="{Binding IsRevealed}" />
+                <Button Grid.Column="3" Content="Save" Command="{Binding SaveCommand}" />
+                <Button Grid.Column="4" Content="Clear" Command="{Binding ClearCommand}" />
+                <TextBlock Grid.Column="5" Classes="label" Text="{Binding Status}" Margin="4,0,0,0" />
             </Grid>
         </DataTemplate>
     </UserControl.DataTemplates>
 
-    <StackPanel Spacing="20">
-        <TextBlock Text="{Binding Title}" FontSize="24" />
+    <StackPanel Spacing="12" MaxWidth="960" HorizontalAlignment="Left">
+        <TextBlock Classes="title" Text="{Binding Title}" />
 
-        <StackPanel Spacing="8">
-            <TextBlock Text="Keys" FontSize="18" FontWeight="SemiBold" />
-            <ContentControl Content="{Binding WiiUCommonKeyEntry}" />
-            <Button Content="Read from otp.bin…" Command="{Binding ImportOtpCommand}" Margin="160,0,0,0" />
-            <ContentControl Content="{Binding WiiCommonKeyEntry}" />
-            <ContentControl Content="{Binding AncastKeyEntry}" />
-        </StackPanel>
-
-        <StackPanel Spacing="8">
-            <TextBlock Text="Bases" FontSize="18" FontWeight="SemiBold" />
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <TextBlock Text="Console" VerticalAlignment="Center" />
-                <ComboBox ItemsSource="{Binding Consoles}" SelectedItem="{Binding SelectedConsole}" MinWidth="140" />
+        <!-- Keys -->
+        <Border Classes="card">
+            <StackPanel Spacing="8">
+                <TextBlock Classes="section" Text="Keys" />
+                <ContentControl Content="{Binding WiiUCommonKeyEntry}" />
+                <Button Content="Read from otp.bin…" Command="{Binding ImportOtpCommand}" Margin="188,0,0,0" />
+                <ContentControl Content="{Binding WiiCommonKeyEntry}" />
+                <ContentControl Content="{Binding AncastKeyEntry}" />
             </StackPanel>
+        </Border>
 
-            <ItemsControl ItemsSource="{Binding Bases}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:BaseRowViewModel">
-                        <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="0,0,0,1" Padding="0,10">
-                            <StackPanel Spacing="6">
-                                <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto">
-                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-                                        <TextBlock Text="{Binding Region}" />
-                                        <TextBlock Text="{Binding TitleId}" FontFamily="Consolas,monospace" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
-                                        <TextBlock Text="(custom)" IsVisible="{Binding IsCustom}" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
-                                    </StackPanel>
-                                    <TextBlock Grid.Column="1" Text="{Binding StatusText}" VerticalAlignment="Center" Margin="8,0" />
-                                    <Button Grid.Column="2" Content="Download" Command="{Binding DownloadCommand}" Margin="8,0,0,0" />
-                                    <Button Grid.Column="3" Content="Cancel" Command="{Binding DownloadCancelCommand}" Margin="8,0,0,0" />
-                                    <Button Grid.Column="4" Content="Inspect" Command="{Binding InspectCommand}" Margin="8,0,0,0" />
-                                </Grid>
-                                <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-                                    <TextBlock Grid.Column="0" Text="Title key" VerticalAlignment="Center" Margin="0,0,8,0" />
-                                    <TextBox Grid.Column="1" Text="{Binding TitleKey}" PasswordChar="•" RevealPassword="{Binding IsTitleKeyRevealed}" PlaceholderText="32 hex characters; empty to clear" />
-                                    <ToggleButton Grid.Column="2" Content="Show" IsChecked="{Binding IsTitleKeyRevealed}" Margin="8,0,0,0" />
-                                    <Button Grid.Column="3" Content="Save" Command="{Binding SaveTitleKeyCommand}" Margin="8,0,0,0" />
-                                </Grid>
-                                <TextBlock Text="{Binding ProgressText}" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" IsVisible="{Binding ProgressText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+        <!-- Console picker -->
+        <ListBox Classes="consoles" ItemsSource="{Binding Consoles}" SelectedItem="{Binding SelectedConsole}">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm2:SourceConsole">
+                    <Image Source="{Binding, Converter={x:Static conv:ConsoleConverters.Icon}}"
+                           ToolTip.Tip="{Binding, Converter={x:Static conv:ConsoleConverters.Name}}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
-            <StackPanel Spacing="8" Margin="0,8,0,0">
-                <TextBlock Text="Custom base" FontWeight="SemiBold" />
-                <TextBlock Text="Adds a title the catalog does not list, for the selected console, until the application closes." />
-                <Grid ColumnDefinitions="Auto,*,Auto,*,Auto,Auto,Auto">
-                    <TextBlock Grid.Column="0" Text="Title ID" VerticalAlignment="Center" Margin="0,0,8,0" />
+        <!-- Bases -->
+        <Border Classes="card">
+            <StackPanel Spacing="4">
+                <TextBlock Classes="section" Text="Bases" />
+                <ItemsControl ItemsSource="{Binding Bases}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:BaseRowViewModel">
+                            <Border BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="0,0,0,1" Padding="6,10">
+                                <StackPanel Spacing="6">
+                                    <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Region}" Opacity="0.85" />
+                                            <TextBlock Text="{Binding TitleId}" FontFamily="Consolas,monospace" Opacity="0.65" />
+                                            <TextBlock Text="(custom)" IsVisible="{Binding IsCustom}" Opacity="0.65" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Classes="label" Text="{Binding StatusText}" />
+                                        <Button Grid.Column="2" Content="Download" Command="{Binding DownloadCommand}" />
+                                        <Button Grid.Column="3" Content="Cancel" Command="{Binding DownloadCancelCommand}" />
+                                        <Button Grid.Column="4" Content="Inspect" Command="{Binding InspectCommand}" />
+                                    </Grid>
+                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+                                        <TextBlock Grid.Column="0" Classes="label" Text="Title key" />
+                                        <TextBox Grid.Column="1" Text="{Binding TitleKey}" PasswordChar="•" RevealPassword="{Binding IsTitleKeyRevealed}" PlaceholderText="32 hex characters; empty to clear" />
+                                        <ToggleButton Grid.Column="2" Content="Show" IsChecked="{Binding IsTitleKeyRevealed}" />
+                                        <Button Grid.Column="3" Content="Save" Command="{Binding SaveTitleKeyCommand}" />
+                                    </Grid>
+                                    <TextBlock Classes="hint" Text="{Binding ProgressText}" IsVisible="{Binding ProgressText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <!-- Custom base -->
+        <Border Classes="card">
+            <StackPanel Spacing="8">
+                <TextBlock Classes="section" Text="Custom base" />
+                <TextBlock Classes="hint" Text="Adds a title the catalog does not list, for the selected console, until the application closes." />
+                <Grid ColumnDefinitions="Auto,*,Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
+                    <TextBlock Grid.Column="0" Classes="label" Text="Title ID" />
                     <TextBox Grid.Column="1" Text="{Binding CustomTitleId}" PlaceholderText="0005000010100000" />
-                    <TextBlock Grid.Column="2" Text="Name" VerticalAlignment="Center" Margin="12,0,8,0" />
+                    <TextBlock Grid.Column="2" Classes="label" Text="Name" Margin="8,0,0,0" />
                     <TextBox Grid.Column="3" Text="{Binding CustomName}" />
-                    <TextBlock Grid.Column="4" Text="Region" VerticalAlignment="Center" Margin="12,0,8,0" />
+                    <TextBlock Grid.Column="4" Classes="label" Text="Region" Margin="8,0,0,0" />
                     <ComboBox Grid.Column="5" ItemsSource="{Binding Regions}" SelectedItem="{Binding CustomRegion}" MinWidth="120" />
-                    <Button Grid.Column="6" Content="Add" Command="{Binding AddCustomBaseCommand}" Margin="8,0,0,0" />
+                    <Button Grid.Column="6" Content="Add" Command="{Binding AddCustomBaseCommand}" />
                 </Grid>
             </StackPanel>
-        </StackPanel>
+        </Border>
     </StackPanel>
 </UserControl>

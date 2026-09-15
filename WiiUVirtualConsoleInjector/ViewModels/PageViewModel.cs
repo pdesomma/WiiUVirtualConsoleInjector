@@ -9,11 +9,21 @@ public abstract class PageViewModel : ViewModelBase
     /// Creates a new instance of the <see cref="PageViewModel"/> class.
     /// </summary>
     /// <param name="title">Label in the navigation list.</param>
-    protected PageViewModel(string title)
+    /// <param name="icon">Asset path of the navigation glyph, relative to the Assets folder.</param>
+    protected PageViewModel(string title, string icon)
     {
         Title = title ?? throw new ArgumentNullException(nameof(title));
+        NavIcon = icon ?? throw new ArgumentNullException(nameof(icon));
     }
 
+    /// <summary>
+    /// Asset path of the navigation glyph, relative to the Assets folder; white, for the dark rail.
+    /// </summary>
+    public string NavIcon { get; }
+    /// <summary>
+    /// The same glyph in near-black, for the light rail.
+    /// </summary>
+    public string NavIconDark => "Dark/" + NavIcon;
     /// <summary>
     /// Label in the navigation list.
     /// </summary>

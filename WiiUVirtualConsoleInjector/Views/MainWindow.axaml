@@ -1,27 +1,79 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels"
+        xmlns:conv="using:WiiUVirtualConsoleInjector.Converters"
         x:Class="WiiUVirtualConsoleInjector.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="{Binding Title}"
-        Width="1100" Height="760" MinWidth="900" MinHeight="600">
+        Icon="/Assets/app.ico"
+        Width="1280" Height="824" MinWidth="1000" MinHeight="660"
+        Background="{DynamicResource PageBrush}"
+        FontFamily="{DynamicResource UiFont}">
 
-    <Grid ColumnDefinitions="200,*">
-        <Border Grid.Column="0" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
-            <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Text="{Binding Title}" FontWeight="SemiBold" Margin="16,20,16,12" TextWrapping="Wrap" />
-                <ListBox ItemsSource="{Binding Pages}" SelectedItem="{Binding CurrentPage}" Background="Transparent">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate x:DataType="vm:PageViewModel">
-                            <TextBlock Text="{Binding Title}" Margin="8,6" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+    <Window.Styles>
+        <Style Selector="Button.knob">
+            <Setter Property="Width" Value="26" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="PART_Shell" CornerRadius="9999" Background="Transparent">
+                        <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.knob.on /template/ Border#PART_Shell">
+            <Setter Property="Background" Value="#38FFFFFF" />
+        </Style>
+    </Window.Styles>
+
+    <DockPanel>
+        <!-- Header -->
+        <Border DockPanel.Dock="Top" Height="58" Background="{DynamicResource HeaderBrush}" BoxShadow="0 2 6 0 #40000000" ZIndex="1">
+            <DockPanel Margin="22,0">
+                <Image DockPanel.Dock="Left" Source="/Assets/wiiu.png" Width="26" Height="26" VerticalAlignment="Center" />
+                <TextBlock DockPanel.Dock="Left" Text="{Binding Title}" Foreground="{DynamicResource HeaderTextBrush}" FontSize="16" FontWeight="ExtraBold" VerticalAlignment="Center" Margin="12,0,0,0" />
+
+                <!-- Light / dark toggle -->
+                <Border DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center" CornerRadius="9999" Background="#1AFFFFFF" Padding="3">
+                    <StackPanel Orientation="Horizontal" Spacing="2">
+                        <Button Classes="knob" Classes.on="{Binding IsLight}" Command="{Binding UseLightCommand}" ToolTip.Tip="Light">
+                            <Ellipse Width="18" Height="18" Fill="White" Opacity="{Binding IsLight, Converter={x:Static conv:BoolConverters.OpacityOn}}" />
+                        </Button>
+                        <Button Classes="knob" Classes.on="{Binding IsDark}" Command="{Binding UseDarkCommand}" ToolTip.Tip="Dark">
+                            <Panel Width="16" Height="16" ClipToBounds="True" Opacity="{Binding IsDark, Converter={x:Static conv:BoolConverters.OpacityOn}}">
+                                <Ellipse Fill="#DBE4EA" />
+                                <Ellipse Width="14" Height="14" Fill="#3A3A38" Margin="7,-6,-5,0" />
+                            </Panel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+                <Panel />
             </DockPanel>
         </Border>
 
-        <ScrollViewer Grid.Column="1" Padding="24">
-            <ContentControl Content="{Binding CurrentPage}" />
-        </ScrollViewer>
-    </Grid>
+        <!-- Nav rail -->
+        <Border DockPanel.Dock="Left" Width="90" Background="{DynamicResource RailBrush}" BorderBrush="{DynamicResource RailBorderBrush}" BorderThickness="0,0,1,0">
+            <ListBox Classes="nav" ItemsSource="{Binding Pages}" SelectedItem="{Binding CurrentPage}" Margin="0,16">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PageViewModel">
+                        <StackPanel>
+                            <Image Source="{Binding NavIcon, Converter={x:Static conv:AssetConverter.Bitmap}}" IsVisible="{Binding $parent[ListBox].((vm:MainWindowViewModel)DataContext).IsDark}" HorizontalAlignment="Center" />
+                            <Image Source="{Binding NavIconDark, Converter={x:Static conv:AssetConverter.Bitmap}}" IsVisible="{Binding $parent[ListBox].((vm:MainWindowViewModel)DataContext).IsLight}" HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding Title}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+
+        <!-- Content -->
+        <Border Background="{DynamicResource PageGradientBrush}">
+            <ScrollViewer Padding="24,20">
+                <ContentControl Content="{Binding CurrentPage}" />
+            </ScrollViewer>
+        </Border>
+    </DockPanel>
 </Window>

@@ -3,8 +3,9 @@
              xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels.Options"
              x:Class="WiiUVirtualConsoleInjector.Views.Options.GbaOptionsView"
              x:DataType="vm:GbaOptionsViewModel">
-    <StackPanel Spacing="8">
-        <CheckBox Content="Pokémon save patch" IsChecked="{Binding PokemonPatch}" />
-        <CheckBox Content="Remove dark filter" IsChecked="{Binding RemoveDarkFilter}" />
-    </StackPanel>
+    <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+        <TextBlock Grid.Row="0" Grid.Column="0" Classes="label" Text="Patches" />
+        <CheckBox Grid.Row="0" Grid.Column="1" Content="Pokémon save patch" IsChecked="{Binding PokemonPatch}" />
+        <CheckBox Grid.Row="1" Grid.Column="1" Content="Remove dark filter" IsChecked="{Binding RemoveDarkFilter}" />
+    </Grid>
 </UserControl>

@@ -15,7 +15,7 @@ public sealed class SettingsViewModel : PageViewModel
     /// <param name="dialogs">Folder picker.</param>
     /// <param name="paths">Per-user folders.</param>
     public SettingsViewModel(ISettingsService settings, IDialogService dialogs, AppPaths paths)
-        : base("Settings")
+        : base("Settings", "settings.png")
     {
         if (settings is null)
             throw new ArgumentNullException(nameof(settings));

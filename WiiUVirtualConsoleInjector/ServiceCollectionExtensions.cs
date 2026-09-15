@@ -39,6 +39,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IBaseService, BaseService>();
         services.AddSingleton<IInjectionServiceFactory, InjectionServiceFactory>();
         services.AddSingleton<IDialogService>(new AvaloniaDialogService(owner));
+        services.AddSingleton<INavigationService, NavigationService>();
 
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<InjectViewModel>();

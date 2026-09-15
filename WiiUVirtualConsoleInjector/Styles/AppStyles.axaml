@@ -1,0 +1,426 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:conv="using:WiiUVirtualConsoleInjector.Converters">
+
+    <!-- ===== Type ===== -->
+    <Style Selector="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource UiFont}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="TextBlock.section">
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{DynamicResource TealBrush}" />
+        <Setter Property="Margin" Value="0,0,0,14" />
+    </Style>
+    <Style Selector="TextBlock.label">
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBlock.hint">
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="TextBlock.fine">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="TextBlock.mono, SelectableTextBlock.mono">
+        <Setter Property="FontFamily" Value="{DynamicResource MonoFont}" />
+    </Style>
+    <Style Selector="TextBlock.warning">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="TextBlock.link">
+        <Setter Property="Foreground" Value="{DynamicResource CyanBrush}" />
+        <Setter Property="TextDecorations" Value="Underline" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+
+    <!-- ===== Surfaces ===== -->
+    <Style Selector="Border.card">
+        <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="Padding" Value="22,20" />
+        <Setter Property="BoxShadow" Value="0 1 3 0 #0F000000" />
+    </Style>
+    <Style Selector="Border.divider">
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+    </Style>
+    <Style Selector="Border.banner-warning">
+        <Setter Property="Background" Value="{DynamicResource WarningTintBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WarningBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="14,10" />
+    </Style>
+    <Style Selector="Border.banner-warning TextBlock">
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="Foreground" Value="{DynamicResource WarningTextBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="Border.log">
+        <Setter Property="Background" Value="{DynamicResource LogBrush}" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="14,12" />
+        <Setter Property="MaxHeight" Value="160" />
+    </Style>
+    <Style Selector="Border.log TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource MonoFont}" />
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="Foreground" Value="{DynamicResource LogTextBrush}" />
+        <Setter Property="LineHeight" Value="18" />
+    </Style>
+
+    <!-- ===== Status pill ===== -->
+    <Style Selector="Border.pill">
+        <Setter Property="CornerRadius" Value="9999" />
+        <Setter Property="Padding" Value="10,4" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Background" Value="{DynamicResource CyanTintBrush}" />
+    </Style>
+    <Style Selector="Border.pill TextBlock">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{DynamicResource CyanBrush}" />
+    </Style>
+    <Style Selector="Border.pill.present">
+        <Setter Property="Background" Value="{DynamicResource SuccessTintBrush}" />
+    </Style>
+    <Style Selector="Border.pill.present TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+    </Style>
+    <Style Selector="Border.pill.needs">
+        <Setter Property="Background" Value="{DynamicResource WarningTintBrush}" />
+    </Style>
+    <Style Selector="Border.pill.needs TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
+    </Style>
+
+    <!-- ===== Buttons: silvery Wii U pill ===== -->
+    <Style Selector="Button">
+        <Setter Property="FontFamily" Value="{DynamicResource UiFont}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="13.5" />
+        <Setter Property="Foreground" Value="{DynamicResource ButtonTextBrush}" />
+        <Setter Property="Padding" Value="24,11" />
+        <Setter Property="CornerRadius" Value="9999" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="PART_Shell" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                        BoxShadow="inset 0 1 0 0 #E6FFFFFF, 0 2 5 0 #2E000000">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                            <GradientStop Offset="0" Color="{DynamicResource ButtonTopColor}" />
+                            <GradientStop Offset="1" Color="{DynamicResource ButtonBottomColor}" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      Padding="{TemplateBinding Padding}" Foreground="{TemplateBinding Foreground}"
+                                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                      RecognizesAccessKey="True" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="Button:pointerover /template/ Border#PART_Shell">
+        <Setter Property="Opacity" Value="0.92" />
+    </Style>
+    <Style Selector="Button:pressed /template/ Border#PART_Shell">
+        <Setter Property="RenderTransform" Value="scale(0.97)" />
+    </Style>
+    <Style Selector="Button:disabled">
+        <Setter Property="Opacity" Value="0.42" />
+    </Style>
+    <Style Selector="Button.primary">
+        <Setter Property="BorderBrush" Value="{DynamicResource CyanFocusBrush}" />
+    </Style>
+    <Style Selector="Button.primary /template/ Border#PART_Shell">
+        <Setter Property="BoxShadow" Value="inset 0 1 0 0 #E6FFFFFF, 0 2 6 0 #29000000, 0 0 0 2 #525BC8DC" />
+    </Style>
+    <Style Selector="Button.sm">
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="Padding" Value="18,8" />
+    </Style>
+    <Style Selector="Button.lg">
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="Padding" Value="34,13" />
+    </Style>
+    <Style Selector="Button.ghost">
+        <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    </Style>
+    <Style Selector="Button.ghost /template/ Border#PART_Shell">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BoxShadow" Value="0 0 0 0 #00000000" />
+    </Style>
+
+    <!-- ===== Inputs ===== -->
+    <Style Selector="TextBox">
+        <Setter Property="FontFamily" Value="{DynamicResource UiFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="BorderThickness" Value="1.5" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBox.mono">
+        <Setter Property="FontFamily" Value="{DynamicResource MonoFont}" />
+    </Style>
+    <Style Selector="ComboBox">
+        <Setter Property="FontFamily" Value="{DynamicResource UiFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="BorderThickness" Value="1.5" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="MinHeight" Value="36" />
+    </Style>
+    <Style Selector="CheckBox">
+        <Setter Property="FontFamily" Value="{DynamicResource UiFont}" />
+        <Setter Property="FontSize" Value="13.5" />
+    </Style>
+    <Style Selector="NumericUpDown">
+        <Setter Property="FontFamily" Value="{DynamicResource UiFont}" />
+        <Setter Property="CornerRadius" Value="8" />
+    </Style>
+
+    <!-- ===== Validity dot beside a key field ===== -->
+    <Style Selector="Border.check">
+        <Setter Property="Width" Value="18" />
+        <Setter Property="Height" Value="18" />
+        <Setter Property="CornerRadius" Value="9999" />
+        <Setter Property="Background" Value="{DynamicResource SubtleBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.check.on">
+        <Setter Property="Background" Value="{DynamicResource TealBrush}" />
+    </Style>
+    <Style Selector="Border.check TextBlock">
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="Black" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- ===== Console tile grid (Inject step 1) ===== -->
+    <Style Selector="ListBox.tiles">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="ItemsPanel">
+            <ItemsPanelTemplate>
+                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" />
+            </ItemsPanelTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="ListBox.tiles ListBoxItem">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="10" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Width" Value="132" />
+    </Style>
+    <Style Selector="ListBox.tiles ListBoxItem /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBox.tiles ListBoxItem:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBox.tiles ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBox.tiles Border.tile-frame">
+        <Setter Property="Width" Value="132" />
+        <Setter Property="Height" Value="132" />
+        <Setter Property="CornerRadius" Value="29" />
+        <Setter Property="Padding" Value="12" />
+        <Setter Property="Background" Value="{DynamicResource TileFrameBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BoxShadow" Value="inset 0 1 0 0 #CCFFFFFF, 0 3 3 0 #1A000000, 0 6 12 0 #14000000" />
+    </Style>
+    <Style Selector="ListBox.tiles ListBoxItem:selected Border.tile-frame">
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BoxShadow" Value="0 0 0 3 #00AACC, 0 0 14 0 #6600AACC, 0 3 3 0 #1A000000, 0 6 12 0 #1A000000" />
+    </Style>
+    <Style Selector="ListBox.tiles ListBoxItem:pointerover Border.tile-frame">
+        <Setter Property="RenderTransform" Value="scale(1.04)" />
+    </Style>
+    <Style Selector="ListBox.tiles Border.tile-panel">
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Background" Value="{DynamicResource TileGradientBrush}" />
+        <Setter Property="BorderBrush" Value="#14000000" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+    <Style Selector="ListBox.tiles Border.tile-gloss">
+        <Setter Property="Background" Value="{DynamicResource TileGlossBrush}" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Height" Value="60" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+    <Style Selector="ListBox.tiles Image.tile-logo">
+        <Setter Property="Width" Value="50" />
+        <Setter Property="Height" Value="50" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ListBox.tiles TextBlock.tile-label">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="TextAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0,7,0,0" />
+    </Style>
+    <Style Selector="ListBox.tiles ListBoxItem:selected TextBlock.tile-label">
+        <Setter Property="Foreground" Value="{DynamicResource CyanDarkBrush}" />
+    </Style>
+
+    <!-- ===== Console tab pills (Bases page) ===== -->
+    <Style Selector="ListBox.tabs">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="ItemsPanel">
+            <ItemsPanelTemplate>
+                <WrapPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="ListBox.tabs ListBoxItem">
+        <Setter Property="Padding" Value="14,7" />
+        <Setter Property="Margin" Value="0,0,6,6" />
+        <Setter Property="CornerRadius" Value="9999" />
+        <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    </Style>
+    <Style Selector="ListBox.tabs ListBoxItem:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource SubtleBrush}" />
+    </Style>
+    <Style Selector="ListBox.tabs ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource CyanBrush}" />
+    </Style>
+    <Style Selector="ListBox.tabs ListBoxItem:selected">
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CyanBrush}" />
+    </Style>
+
+    <!-- ===== Navigation rail ===== -->
+    <Style Selector="ListBox.nav">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="ListBox.nav ListBoxItem">
+        <Setter Property="Width" Value="66" />
+        <Setter Property="Padding" Value="4,10" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBox.nav ListBoxItem:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource SubtleBrush}" />
+    </Style>
+    <Style Selector="ListBox.nav ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource CyanTintBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CyanRingBrush}" />
+        <Setter Property="BorderThickness" Value="1.5" />
+    </Style>
+    <Style Selector="ListBox.nav Image">
+        <Setter Property="Width" Value="22" />
+        <Setter Property="Height" Value="22" />
+        <Setter Property="Opacity" Value="0.6" />
+    </Style>
+    <Style Selector="ListBox.nav ListBoxItem:selected Image">
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="ListBox.nav TextBlock">
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="TextAlignment" Value="Center" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="Margin" Value="0,6,0,0" />
+        <Setter Property="Foreground" Value="{DynamicResource RailInactiveBrush}" />
+    </Style>
+    <Style Selector="ListBox.nav ListBoxItem:selected TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource CyanDarkBrush}" />
+    </Style>
+
+    <!-- ===== Step dots (Inject wizard) ===== -->
+    <Style Selector="ListBox.dots">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="ItemsPanel">
+            <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="7" />
+            </ItemsPanelTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="ListBox.dots ListBoxItem">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBox.dots ListBoxItem /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBox.dots ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBox.dots Border.dot">
+        <Setter Property="Width" Value="9" />
+        <Setter Property="Height" Value="9" />
+        <Setter Property="CornerRadius" Value="9999" />
+        <Setter Property="Background" Value="{DynamicResource DotInactiveBrush}" />
+        <Setter Property="Opacity" Value="0.6" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Width" Duration="0:0:0.15" Easing="CubicEaseOut" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="ListBox.dots ListBoxItem:selected Border.dot">
+        <Setter Property="Width" Value="26" />
+        <Setter Property="Background" Value="{DynamicResource CyanBrush}" />
+        <Setter Property="Opacity" Value="1" />
+        <Setter Property="BoxShadow" Value="0 0 4 0 #8000AACC" />
+    </Style>
+
+    <!-- ===== Wizard arrows ===== -->
+    <Style Selector="Button.arrow">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Width" Value="70" />
+        <Setter Property="Height" Value="105" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Content}" />
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="Button.arrow:disabled">
+        <Setter Property="Opacity" Value="0.25" />
+    </Style>
+
+    <!-- ===== Glyphs ===== -->
+    <Style Selector="Image.glyph">
+        <Setter Property="Width" Value="22" />
+        <Setter Property="Height" Value="22" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+</Styles>

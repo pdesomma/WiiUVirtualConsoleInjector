@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using WiiUVirtualConsoleInjector.ViewModels;
 using WiiUVirtualConsoleInjector.Views;
@@ -27,10 +28,19 @@ public partial class App : Application
         {
             var window = new MainWindow();
             Services = new ServiceCollection().AddApplication(AppPaths.Default(), () => window).BuildServiceProvider();
-            window.DataContext = Services.GetRequiredService<MainWindowViewModel>();
+            var shell = Services.GetRequiredService<MainWindowViewModel>();
+            ApplyTheme(shell.IsDark);
+            shell.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(MainWindowViewModel.IsDark))
+                    ApplyTheme(shell.IsDark);
+            };
+            window.DataContext = shell;
             desktop.MainWindow = window;
         }
 
         base.OnFrameworkInitializationCompleted();
     }
+
+    private void ApplyTheme(bool dark) => RequestedThemeVariant = dark ? ThemeVariant.Dark : ThemeVariant.Light;
 }
