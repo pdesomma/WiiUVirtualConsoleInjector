@@ -192,8 +192,8 @@ public class InjectViewModelTests
         Assert.IsFalse(duringRun);
         Assert.IsTrue(cancelDuringRun);
         Assert.IsFalse(vm.IsRunning);
-        Assert.IsTrue(vm.CanInject);
         Assert.IsFalse(vm.CancelCommand.CanExecute(null));
+        Assert.AreEqual(1, vm.Step, "a success starts the wizard over");
     }
 
     [TestMethod]
@@ -368,12 +368,16 @@ public class InjectViewModelTests
         _factory.Service.Reports.Add(new InjectionProgress(InjectionStep.StageBase, "Staging"));
         _factory.Service.Reports.Add(new InjectionProgress(InjectionStep.Pack, "Packing"));
         var vm = Ready();
+        string? status = null;
+        string? step = null;
+        string[]? log = null;
+        _dialogs.OnInfo = () => (status, step, log) = (vm.Status, vm.CurrentStep, vm.Log.ToArray());
 
         await vm.InjectCommand.ExecuteAsync(null);
 
-        Assert.AreEqual("Done", vm.Status);
-        Assert.AreEqual("Pack", vm.CurrentStep);
-        CollectionAssert.AreEqual(new[] { "StageBase: Staging", "Pack: Packing" }, vm.Log.ToArray());
+        Assert.AreEqual("Done", status, "while the done box is up");
+        Assert.AreEqual("Pack", step);
+        CollectionAssert.AreEqual(new[] { "StageBase: Staging", "Pack: Packing" }, log);
         Assert.AreEqual(1, _dialogs.Infos.Count);
         StringAssert.Contains(_dialogs.Infos[0].Message, _settings.OutputPath);
         Assert.AreEqual(0, _dialogs.Errors.Count);
@@ -481,6 +485,9 @@ public class InjectViewModelTests
     {
         var vm = Ready();
         _settings.Current = _settings.Current with { CopyToSdCard = true, SdPath = @"E:\" };
+        string[]? log = null;
+        string? status = null;
+        _dialogs.OnInfo = () => (log, status) = (vm.Log.ToArray(), vm.Status);
 
         await vm.InjectCommand.ExecuteAsync(null);
 
@@ -488,8 +495,8 @@ public class InjectViewModelTests
         Assert.AreEqual(_factory.Service.OutputDirectory, copy.Title);
         Assert.AreEqual(@"E:\", copy.Root);
         StringAssert.Contains(_dialogs.Infos.Single().Message, _sdCard.CopyResult);
-        CollectionAssert.Contains(vm.Log, "Copying title.tmd");
-        Assert.AreEqual("Done", vm.Status);
+        CollectionAssert.Contains(log!, "Copying title.tmd");
+        Assert.AreEqual("Done", status);
     }
 
     [TestMethod]
@@ -511,12 +518,15 @@ public class InjectViewModelTests
         var vm = Ready();
         _settings.Current = _settings.Current with { CopyToSdCard = true, SdPath = @"E:\" };
         _sdCard.Failure = new IOException("card full");
+        string? status = null;
+        _dialogs.OnInfo = () => status = vm.Status;
 
         await vm.InjectCommand.ExecuteAsync(null);
 
         StringAssert.Contains(_dialogs.Errors.Single().Message, "card full");
         StringAssert.Contains(_dialogs.Infos.Single().Message, _factory.Service.OutputDirectory!);
-        Assert.AreEqual("Done", vm.Status);
+        Assert.AreEqual("Done", status, "the inject still counts");
+        Assert.AreEqual(1, vm.Step, "and the wizard starts over");
     }
 
     [TestMethod]
@@ -622,6 +632,66 @@ public class InjectViewModelTests
 
         vm.ArtworkBuilder.Icon.SourcePath = @"C:\shot.png";
         Assert.IsTrue(vm.ArtworkBuilder.Icon.BuildCommand.CanExecute(null), "a source image is enough on the starting console");
+    }
+
+    [TestMethod]
+    public async Task InjectCommand_Succeeds_ClearsEveryFieldAndReturnsToTheFirstStep()
+    {
+        var vm = Ready(SourceConsole.Snes, @"C:\game.sfc");
+        vm.Step = 6;
+        vm.ShortName = "Short";
+        vm.ProductId = "ABCD";
+        vm.GamePad = true;
+        vm.Format = OutputFormat.Loadiine;
+        vm.Icon.Path = @"C:\icon.png";
+        vm.BootTv.Path = @"C:\tv.png";
+        vm.BootDrc.Path = @"C:\drc.png";
+        vm.BootLogo.Path = @"C:\logo.png";
+        vm.BootSound.Path = @"C:\boot.wav";
+        vm.ArtworkBuilder.Tv.SourcePath = @"C:\shot.png";
+        vm.ArtworkBuilder.Tv.ReleaseYear = "1994";
+        vm.ArtworkBuilder.Logo.LogoText = "Logo";
+
+        await vm.InjectCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(1, vm.Step);
+        Assert.AreEqual(SourceConsole.Nes, vm.SelectedConsole);
+        Assert.IsNull(vm.RomPath);
+        Assert.IsNull(vm.Name);
+        Assert.IsNull(vm.ShortName);
+        Assert.IsNull(vm.ProductId);
+        Assert.IsFalse(vm.GamePad);
+        Assert.AreEqual(OutputFormat.Wup, vm.Format);
+        Assert.IsNull(vm.Icon.Path);
+        Assert.IsNull(vm.BootTv.Path);
+        Assert.IsNull(vm.BootDrc.Path);
+        Assert.IsNull(vm.BootLogo.Path);
+        Assert.IsNull(vm.BootSound.Path);
+        Assert.IsNull(vm.ArtworkBuilder.Tv.SourcePath);
+        Assert.IsNull(vm.ArtworkBuilder.Tv.ReleaseYear);
+        Assert.IsNull(vm.ArtworkBuilder.Tv.NameLine1);
+        Assert.IsNull(vm.ArtworkBuilder.Logo.LogoText);
+        Assert.IsTrue(vm.ArtworkBuilder.Icon.Overlays.Count > 0, "overlays for the starting console are back");
+        Assert.AreEqual(0, vm.Log.Count);
+        Assert.IsNull(vm.Status);
+        Assert.IsFalse(vm.CanInject);
+    }
+
+    [TestMethod]
+    public async Task InjectCommand_Fails_KeepsEverythingSoItCanBeRetried()
+    {
+        var vm = Ready(SourceConsole.Snes, @"C:\game.sfc");
+        vm.Step = 6;
+        vm.Icon.Path = @"C:\icon.png";
+        _factory.Service.Throws = new InvalidOperationException("boom");
+
+        await vm.InjectCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(6, vm.Step);
+        Assert.AreEqual(SourceConsole.Snes, vm.SelectedConsole);
+        Assert.AreEqual(@"C:\game.sfc", vm.RomPath);
+        Assert.AreEqual(@"C:\icon.png", vm.Icon.Path);
+        Assert.AreEqual("Failed", vm.Status);
     }
 
     private ArtworkBuilderViewModel Builder() => new(new FakeArtworkComposer(), _dialogs, () => _settings.WorkPath);

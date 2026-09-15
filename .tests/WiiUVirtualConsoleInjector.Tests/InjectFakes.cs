@@ -56,9 +56,12 @@ internal static class InjectFakes
             return Task.CompletedTask;
         }
 
+        public Action? OnInfo { get; set; }
+
         public Task ShowInfoAsync(string title, string message)
         {
             Infos.Add((title, message));
+            OnInfo?.Invoke();
             return Task.CompletedTask;
         }
     }
