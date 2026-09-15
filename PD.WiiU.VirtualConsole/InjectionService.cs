@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole.Ports;
+﻿using PD.WiiU.VirtualConsole.Ports;
 using WiiUSharp;
 
 namespace PD.WiiU.VirtualConsole;
@@ -8,6 +8,11 @@ namespace PD.WiiU.VirtualConsole;
 /// </summary>
 public sealed class InjectionService : IInjectionService
 {
+    /// <summary>
+    /// What every packed title's folder name starts with.
+    /// </summary>
+    public const string TitlePrefix = "[WUP]";
+
     private readonly IBaseStore _bases;
     private readonly IBootSoundConverter _bootSounds;
     private readonly IImageConverter _images;
@@ -82,11 +87,12 @@ public sealed class InjectionService : IInjectionService
                 await Run(InjectionStep.ConvertBootSound, $"Converting {Path.GetFileName(sound)}", progress,
                     () => _bootSounds.ConvertAsync(sound, Path.Combine(title.Meta, BootSound.FileName), cancellationToken)).ConfigureAwait(false);
 
-            Directory.CreateDirectory(outputDirectory);
+            var folder = TitleFolder(injection.Game, outputDirectory);
+            Directory.CreateDirectory(folder);
             await Run(InjectionStep.Pack, "Packing", progress,
-                () => _packer.PackAsync(title, outputDirectory, Detail(InjectionStep.Pack, progress), cancellationToken)).ConfigureAwait(false);
+                () => _packer.PackAsync(title, folder, Detail(InjectionStep.Pack, progress), cancellationToken)).ConfigureAwait(false);
 
-            return new InjectedTitle(injection.Game, outputDirectory);
+            return new InjectedTitle(injection.Game, folder);
         }
         finally
         {
@@ -188,4 +194,37 @@ public sealed class InjectionService : IInjectionService
 
         public void Report(string value) => _progress?.Report(new InjectionProgress(_step, value));
     }
+    /// <summary>
+    /// Filename-safe form of a name, or null when nothing is left of it.
+    /// </summary>
+    /// <param name="name">Name as the user gave it.</param>
+    private static string? Sanitize(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return null;
+
+        var invalid = Path.GetInvalidFileNameChars();
+        var cleaned = new string(name!.Select(c => invalid.Contains(c) ? ' ' : c).ToArray());
+        cleaned = string.Join(" ", cleaned.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.');
+        return cleaned.Length == 0 ? null : cleaned;
+    }
+
+    /// <summary>
+    /// The title's own folder under the output root, numbered when one of that name already holds files.
+    /// </summary>
+    /// <param name="game">Title being packed.</param>
+    /// <param name="outputDirectory">Output root.</param>
+    private static string TitleFolder(Game game, string outputDirectory)
+    {
+        var name = game.NameIn(Language.English) is { } localized
+            ? Sanitize(localized.ShortName) ?? Sanitize(localized.LongName)
+            : null;
+        var stem = TitlePrefix + (name ?? game.TitleId.ToString());
+        var folder = Path.Combine(outputDirectory, stem);
+        for (var n = 2; Directory.Exists(folder) && Directory.EnumerateFileSystemEntries(folder).Any(); n++)
+            folder = Path.Combine(outputDirectory, $"{stem} ({n})");
+
+        return folder;
+    }
+
 }
