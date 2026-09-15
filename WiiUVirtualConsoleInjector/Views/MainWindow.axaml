@@ -60,8 +60,15 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:PageViewModel">
                         <StackPanel>
-                            <Image Source="{Binding NavIcon, Converter={x:Static conv:AssetConverter.Bitmap}}" IsVisible="{Binding $parent[ListBox].((vm:MainWindowViewModel)DataContext).IsDark}" HorizontalAlignment="Center" />
-                            <Image Source="{Binding NavIconDark, Converter={x:Static conv:AssetConverter.Bitmap}}" IsVisible="{Binding $parent[ListBox].((vm:MainWindowViewModel)DataContext).IsLight}" HorizontalAlignment="Center" />
+                            <Panel IsVisible="{Binding !HasNavGlyph}">
+                                <Image Source="{Binding NavIcon, Converter={x:Static conv:AssetConverter.Bitmap}}" IsVisible="{Binding $parent[ListBox].((vm:MainWindowViewModel)DataContext).IsDark}" HorizontalAlignment="Center" />
+                                <Image Source="{Binding NavIconDark, Converter={x:Static conv:AssetConverter.Bitmap}}" IsVisible="{Binding $parent[ListBox].((vm:MainWindowViewModel)DataContext).IsLight}" HorizontalAlignment="Center" />
+                            </Panel>
+                            <Viewbox Width="22" Height="22" HorizontalAlignment="Center" IsVisible="{Binding HasNavGlyph}">
+                                <Canvas Width="24" Height="24">
+                                    <Path Classes="nav-glyph" Data="{Binding NavGlyph, Converter={x:Static conv:GeometryConverter.Parse}}" StrokeThickness="2" StrokeLineCap="Round" StrokeJoin="Round" />
+                                </Canvas>
+                            </Viewbox>
                             <TextBlock Text="{Binding Title}" />
                         </StackPanel>
                     </DataTemplate>

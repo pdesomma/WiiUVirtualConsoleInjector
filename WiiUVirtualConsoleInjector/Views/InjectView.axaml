@@ -347,16 +347,27 @@
             </Border>
         </StackPanel>
 
-        <!-- Wizard arrows -->
+        <!-- Wizard arrows: the mockup's glossy chevron, drawn as paths -->
         <Button Classes="arrow" Command="{Binding PreviousStepCommand}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0" ToolTip.Tip="Previous step">
-            <Image Source="/Assets/arrow.png" Width="70" Height="105" RenderTransformOrigin="50%,50%">
-                <Image.RenderTransform>
+            <Viewbox Width="70" Height="105" RenderTransformOrigin="50%,50%">
+                <Viewbox.RenderTransform>
                     <ScaleTransform ScaleX="-1" />
-                </Image.RenderTransform>
-            </Image>
+                </Viewbox.RenderTransform>
+                <Canvas Width="200" Height="300">
+                    <Path Classes="arrow-top" Data="M 50 20 C 40 10, 30 25, 45 60 C 55 90, 55 120, 50 150 L 180 150 Z" />
+                    <Path Classes="arrow-bottom" Data="M 50 150 C 55 180, 55 210, 45 240 C 30 275, 40 290, 50 280 L 180 150 Z" />
+                    <Path Classes="arrow-edge" Data="M 50 20 C 40 10, 30 25, 45 60 C 55 90, 55 210, 45 240 C 30 275, 40 290, 50 280 L 180 150 Z" />
+                </Canvas>
+            </Viewbox>
         </Button>
         <Button Classes="arrow" Command="{Binding NextStepCommand}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,4,0" ToolTip.Tip="Next step">
-            <Image Source="/Assets/arrow.png" Width="70" Height="105" />
+            <Viewbox Width="70" Height="105">
+                <Canvas Width="200" Height="300">
+                    <Path Classes="arrow-top" Data="M 50 20 C 40 10, 30 25, 45 60 C 55 90, 55 120, 50 150 L 180 150 Z" />
+                    <Path Classes="arrow-bottom" Data="M 50 150 C 55 180, 55 210, 45 240 C 30 275, 40 290, 50 280 L 180 150 Z" />
+                    <Path Classes="arrow-edge" Data="M 50 20 C 40 10, 30 25, 45 60 C 55 90, 55 210, 45 240 C 30 275, 40 290, 50 280 L 180 150 Z" />
+                </Canvas>
+            </Viewbox>
         </Button>
     </Grid>
 </UserControl>

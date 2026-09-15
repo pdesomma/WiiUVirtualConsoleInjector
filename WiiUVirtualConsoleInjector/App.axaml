@@ -58,6 +58,8 @@
                     <Color x:Key="ArrowTop2">#F0F0F0</Color>
                     <Color x:Key="ArrowBottom1">#E6E6E6</Color>
                     <Color x:Key="ArrowBottom2">#D9D9D9</Color>
+                    <Color x:Key="ArrowEdge1">#CCFFFFFF</Color>
+                    <Color x:Key="ArrowEdge2">#4DCCCCCC</Color>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="PageBrush" Color="#1C1C1A" />
@@ -105,6 +107,8 @@
                     <Color x:Key="ArrowTop2">#63635F</Color>
                     <Color x:Key="ArrowBottom1">#525250</Color>
                     <Color x:Key="ArrowBottom2">#414140</Color>
+                    <Color x:Key="ArrowEdge1">#CCC9C9C6</Color>
+                    <Color x:Key="ArrowEdge2">#4D333331</Color>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
 

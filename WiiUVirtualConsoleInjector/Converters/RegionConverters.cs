@@ -28,12 +28,7 @@ public static class RegionConverters
         },
     };
     private static readonly IBrush OtherFlag = new SolidColorBrush(Color.Parse("#9A9A98"));
-    private static readonly IBrush UnitedStatesFlag = new LinearGradientBrush
-    {
-        StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
-        EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
-        GradientStops = Stripes(),
-    };
+    private static readonly IBrush UnitedStatesFlag = StarsAndStripes();
 
     /// <summary>
     /// Region to its flag brush; gray for regions without one.
@@ -53,18 +48,19 @@ public static class RegionConverters
     };
 
     /// <summary>
-    /// Hard-edged red and white bands, red first.
+    /// Seven stripes with a blue canton over the top four, in flag proportions.
     /// </summary>
-    private static GradientStops Stripes()
+    private static IBrush StarsAndStripes()
     {
-        var red = Color.Parse("#B22234");
-        var stops = new GradientStops();
-        for (var i = 0; i < StripeCount; i++)
-        {
-            var color = i % 2 == 0 ? red : Colors.White;
-            stops.Add(new GradientStop(color, (double)i / StripeCount));
-            stops.Add(new GradientStop(color, (double)(i + 1) / StripeCount));
-        }
-        return stops;
+        const double width = 190;
+        const double height = 100;
+        var red = new SolidColorBrush(Color.Parse("#B22234"));
+        var group = new DrawingGroup();
+        group.Children.Add(new GeometryDrawing { Brush = Brushes.White, Geometry = new RectangleGeometry(new Rect(0, 0, width, height)) });
+        var stripe = height / StripeCount;
+        for (var i = 0; i < StripeCount; i += 2)
+            group.Children.Add(new GeometryDrawing { Brush = red, Geometry = new RectangleGeometry(new Rect(0, i * stripe, width, stripe)) });
+        group.Children.Add(new GeometryDrawing { Brush = new SolidColorBrush(Color.Parse("#3C3B6E")), Geometry = new RectangleGeometry(new Rect(0, 0, width * 0.4, stripe * 4)) });
+        return new DrawingBrush(group) { Stretch = Stretch.Fill };
     }
 }
