@@ -578,16 +578,16 @@ public class InjectViewModelTests
     {
         var vm = Ready();
         vm.Step = 4;
-        vm.ArtworkBuilder.ScreenshotPath = @"C:\shot.png";
+        vm.ArtworkBuilder.Tv.SourcePath = @"C:\shot.png";
 
-        await vm.ArtworkBuilder.BuildCommand.ExecuteAsync(ImageSlot.BootTv);
+        await vm.ArtworkBuilder.Tv.BuildCommand.ExecuteAsync(null);
 
         StringAssert.EndsWith(vm.BootTv.Path!, "bootTvTex.png");
         Assert.IsNull(vm.Icon.Path);
         Assert.IsNull(vm.BootDrc.Path);
         Assert.IsNull(vm.BootLogo.Path);
 
-        await vm.ArtworkBuilder.BuildCommand.ExecuteAsync(ImageSlot.BootLogo);
+        await vm.ArtworkBuilder.Logo.BuildCommand.ExecuteAsync(null);
 
         StringAssert.EndsWith(vm.BootLogo.Path!, "bootLogoTex.png");
         Assert.IsNull(vm.Icon.Path, "still untouched");

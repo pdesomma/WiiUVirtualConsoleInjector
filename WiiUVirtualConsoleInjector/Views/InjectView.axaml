@@ -197,148 +197,327 @@
                     <StackPanel IsVisible="{Binding IsArtworkStep}">
                         <TextBlock Classes="section" Text="Artwork" />
 
-                        <!-- Shared inputs for building any slot from a screenshot -->
-                        <Border Classes="card" Margin="0,0,0,18" DataContext="{Binding ArtworkBuilder}">
-                            <StackPanel Spacing="12">
-                                <StackPanel Spacing="2">
-                                    <TextBlock FontSize="13" FontWeight="Bold" Text="Build from a screenshot" />
-                                    <TextBlock Classes="hint" FontSize="12" Text="Set these once, then build any slot below on its own with its Build button." />
-                                </StackPanel>
-                                <Grid ColumnDefinitions="*,*" ColumnSpacing="14" RowDefinitions="Auto,Auto,Auto" RowSpacing="12">
-                                    <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Spacing="4">
-                                        <TextBlock Classes="label" Text="Screenshot" />
+                        <StackPanel Spacing="16">
+                            <!-- Icon -->
+                            <Border Classes="card">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="22">
+                                    <!-- The slot itself: what will be injected -->
+                                    <StackPanel Grid.Column="0" Spacing="7">
+                                        <TextBlock Classes="label" Text="{Binding Icon.Label}" />
+                                        <Button Classes="slot" Command="{Binding Icon.PickCommand}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Pick a finished image for this slot">
+                                            <Panel Width="128" Height="128">
+                                                <Rectangle Classes="slot-frame" RadiusX="16" RadiusY="16" />
+                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding Icon.Path, Converter={x:Static conv:FileImageConverter.IsMissing}}">
+                                                    <TextBlock Classes="fine" Text="Menu icon" TextAlignment="Center" />
+                                                    <TextBlock Classes="fine" Text="No preview" TextAlignment="Center" IsVisible="{Binding Icon.HasPath}" />
+                                                </StackPanel>
+                                                <Border CornerRadius="16" ClipToBounds="True" Margin="2">
+                                                    <Image Source="{Binding Icon.Path, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="UniformToFill" />
+                                                </Border>
+                                            </Panel>
+                                        </Button>
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Classes="fine" Text="{Binding Icon.Hint}" VerticalAlignment="Center" />
+                                            <Button Classes="ghost sm tiny" Content="Clear" Command="{Binding Icon.ClearCommand}" IsVisible="{Binding Icon.HasPath}" IsEnabled="{Binding !IsRunning}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <!-- Or build one for this slot alone -->
+                                    <StackPanel Grid.Column="1" Spacing="10" MaxWidth="520" HorizontalAlignment="Left">
+                                        <TextBlock FontSize="12.5" FontWeight="Bold" Text="Build this one" />
+                                    <StackPanel Spacing="4" IsVisible="{Binding !ArtworkBuilder.Icon.IsLogo}">
+                                        <TextBlock Classes="label" Text="Source image" />
                                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                            <TextBox Grid.Column="0" Text="{Binding ScreenshotPath}" PlaceholderText="Pick an image of the game" FontSize="12" />
-                                            <Button Grid.Column="1" Classes="sm" Content="Browse…" Command="{Binding PickScreenshotCommand}" />
+                                            <TextBox Grid.Column="0" Text="{Binding ArtworkBuilder.Icon.SourcePath}" FontSize="12" PlaceholderText="Screenshot to put inside the overlay" IsEnabled="{Binding !IsRunning}" />
+                                            <Button Grid.Column="1" Classes="sm" Content="Browse…" Command="{Binding ArtworkBuilder.Icon.PickSourceCommand}" IsEnabled="{Binding !IsRunning}" />
                                         </Grid>
                                     </StackPanel>
-                                    <StackPanel Grid.Row="1" Grid.Column="0" Spacing="4">
-                                        <TextBlock Classes="label" Text="Name, line 1" />
-                                        <TextBox Text="{Binding NameLine1}" />
-                                    </StackPanel>
-                                    <StackPanel Grid.Row="1" Grid.Column="1" Spacing="4">
-                                        <TextBlock Classes="label" Text="Name, line 2" />
-                                        <TextBox Text="{Binding NameLine2}" PlaceholderText="Optional" />
-                                    </StackPanel>
-                                    <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Spacing="12">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Classes="label" Text="Overlay" />
+                                            <ComboBox ItemsSource="{Binding ArtworkBuilder.Icon.Overlays}" SelectedItem="{Binding ArtworkBuilder.Icon.Overlay}" HorizontalAlignment="Stretch" IsEnabled="{Binding !IsRunning}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate x:DataType="vc:ArtworkFrame">
+                                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                                            <Border Width="64" Height="36" CornerRadius="4" ClipToBounds="True" Background="{DynamicResource SubtleBrush}">
+                                                                <Image Source="{Binding, Converter={x:Static conv:OverlayConverters.Thumbnail}}" Stretch="Uniform" />
+                                                            </Border>
+                                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </StackPanel>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" IsVisible="{Binding ArtworkBuilder.Icon.IsBootScreen}">
+                                        <StackPanel Grid.Column="0" Spacing="4">
+                                            <TextBlock Classes="label" Text="Name, line 1" />
+                                            <TextBox Text="{Binding ArtworkBuilder.Icon.NameLine1}" FontSize="12" IsEnabled="{Binding !IsRunning}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="4">
+                                            <TextBlock Classes="label" Text="Name, line 2" />
+                                            <TextBox Text="{Binding ArtworkBuilder.Icon.NameLine2}" FontSize="12" PlaceholderText="Optional" IsEnabled="{Binding !IsRunning}" />
+                                        </StackPanel>
+                                    </Grid>
+                                    <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding ArtworkBuilder.Icon.IsBootScreen}">
                                         <StackPanel Spacing="4">
                                             <TextBlock Classes="label" Text="Released" />
-                                            <TextBox Classes="mono" Text="{Binding ReleaseYear}" MaxLength="4" Width="90" PlaceholderText="Year" />
+                                            <TextBox Classes="mono" Text="{Binding ArtworkBuilder.Icon.ReleaseYear}" MaxLength="4" Width="90" FontSize="12" PlaceholderText="Year" IsEnabled="{Binding !IsRunning}" />
                                         </StackPanel>
                                         <StackPanel Spacing="4">
                                             <TextBlock Classes="label" Text="Players" />
-                                            <ComboBox ItemsSource="{Binding PlayerChoices}" SelectedItem="{Binding Players}" Width="90" />
+                                            <ComboBox ItemsSource="{Binding ArtworkBuilder.Icon.PlayerChoices}" SelectedItem="{Binding ArtworkBuilder.Icon.Players}" Width="90" IsEnabled="{Binding !IsRunning}" />
                                         </StackPanel>
                                     </StackPanel>
-                                    <StackPanel Grid.Row="2" Grid.Column="1" Spacing="4">
-                                        <TextBlock Classes="label" Text="Boot logo text" />
-                                        <TextBox Text="{Binding LogoText}" PlaceholderText="Optional" />
+                                    <StackPanel Spacing="4" IsVisible="{Binding ArtworkBuilder.Icon.IsLogo}">
+                                        <TextBlock Classes="label" Text="Text" />
+                                        <TextBox Text="{Binding ArtworkBuilder.Icon.LogoText}" FontSize="12" IsEnabled="{Binding !IsRunning}" />
+                                    </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <Button Classes="primary sm" Content="Build" Command="{Binding ArtworkBuilder.Icon.BuildCommand}" IsEnabled="{Binding !IsRunning}" />
+                                            <TextBlock Classes="hint" FontSize="12" Text="Rendering…" VerticalAlignment="Center" IsVisible="{Binding ArtworkBuilder.Icon.IsBuilding}" />
+                                        </StackPanel>
                                     </StackPanel>
                                 </Grid>
-                            </StackPanel>
-                        </Border>
-
-                        <WrapPanel ItemSpacing="22" LineSpacing="22">
-                            <!-- Icon -->
-                            <StackPanel Spacing="7">
-                                <TextBlock Classes="label" Text="{Binding Icon.Label}" />
-                                <Button Classes="slot" Command="{Binding Icon.PickCommand}" IsEnabled="{Binding !IsRunning}">
-                                    <Panel Width="128" Height="128">
-                                        <Rectangle Classes="slot-frame" RadiusX="16" RadiusY="16" />
-                                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding Icon.Path, Converter={x:Static conv:FileImageConverter.IsMissing}}">
-                                            <TextBlock Classes="fine" Text="Menu icon" TextAlignment="Center" />
-                                            <TextBlock Classes="fine" Text="No preview" TextAlignment="Center" IsVisible="{Binding Icon.HasPath}" />
-                                        </StackPanel>
-                                        <Border CornerRadius="16" ClipToBounds="True" Margin="2">
-                                            <Image Source="{Binding Icon.Path, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="UniformToFill" />
-                                        </Border>
-                                    </Panel>
-                                </Button>
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Classes="fine" Text="{Binding Icon.Hint}" VerticalAlignment="Center" />
-                                    <Button Classes="ghost sm tiny" Content="Clear" Command="{Binding Icon.ClearCommand}" IsVisible="{Binding Icon.HasPath}" IsEnabled="{Binding !IsRunning}" />
-                                </StackPanel>
-                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                    <ComboBox Grid.Column="0" ItemsSource="{Binding ArtworkBuilder.IconFrames}" SelectedItem="{Binding ArtworkBuilder.IconFrame}" HorizontalAlignment="Stretch" FontSize="12" IsEnabled="{Binding !IsRunning}" />
-                                    <Button Grid.Column="1" Classes="sm" Content="Build" Command="{Binding ArtworkBuilder.BuildCommand}" CommandParameter="{x:Static wiiu:ImageSlot.Icon}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Draw this one from the screenshot and the frame chosen here" />
-                                </Grid>
-                            </StackPanel>
+                            </Border>
                             <!-- TV boot screen -->
-                            <StackPanel Spacing="7">
-                                <TextBlock Classes="label" Text="{Binding BootTv.Label}" />
-                                <Button Classes="slot" Command="{Binding BootTv.PickCommand}" IsEnabled="{Binding !IsRunning}">
-                                    <Panel Width="256" Height="144">
-                                        <Rectangle Classes="slot-frame" RadiusX="10" RadiusY="10" />
-                                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding BootTv.Path, Converter={x:Static conv:FileImageConverter.IsMissing}}">
-                                            <TextBlock Classes="fine" Text="TV boot screen" TextAlignment="Center" />
-                                            <TextBlock Classes="fine" Text="No preview" TextAlignment="Center" IsVisible="{Binding BootTv.HasPath}" />
+                            <Border Classes="card">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="22">
+                                    <!-- The slot itself: what will be injected -->
+                                    <StackPanel Grid.Column="0" Spacing="7">
+                                        <TextBlock Classes="label" Text="{Binding BootTv.Label}" />
+                                        <Button Classes="slot" Command="{Binding BootTv.PickCommand}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Pick a finished image for this slot">
+                                            <Panel Width="256" Height="144">
+                                                <Rectangle Classes="slot-frame" RadiusX="10" RadiusY="10" />
+                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding BootTv.Path, Converter={x:Static conv:FileImageConverter.IsMissing}}">
+                                                    <TextBlock Classes="fine" Text="TV boot screen" TextAlignment="Center" />
+                                                    <TextBlock Classes="fine" Text="No preview" TextAlignment="Center" IsVisible="{Binding BootTv.HasPath}" />
+                                                </StackPanel>
+                                                <Border CornerRadius="10" ClipToBounds="True" Margin="2">
+                                                    <Image Source="{Binding BootTv.Path, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="UniformToFill" />
+                                                </Border>
+                                            </Panel>
+                                        </Button>
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Classes="fine" Text="{Binding BootTv.Hint}" VerticalAlignment="Center" />
+                                            <Button Classes="ghost sm tiny" Content="Clear" Command="{Binding BootTv.ClearCommand}" IsVisible="{Binding BootTv.HasPath}" IsEnabled="{Binding !IsRunning}" />
                                         </StackPanel>
-                                        <Border CornerRadius="10" ClipToBounds="True" Margin="2">
-                                            <Image Source="{Binding BootTv.Path, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="UniformToFill" />
-                                        </Border>
-                                    </Panel>
-                                </Button>
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Classes="fine" Text="{Binding BootTv.Hint}" VerticalAlignment="Center" />
-                                    <Button Classes="ghost sm tiny" Content="Clear" Command="{Binding BootTv.ClearCommand}" IsVisible="{Binding BootTv.HasPath}" IsEnabled="{Binding !IsRunning}" />
-                                </StackPanel>
-                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                    <ComboBox Grid.Column="0" ItemsSource="{Binding ArtworkBuilder.TvFrames}" SelectedItem="{Binding ArtworkBuilder.TvFrame}" HorizontalAlignment="Stretch" FontSize="12" IsEnabled="{Binding !IsRunning}" />
-                                    <Button Grid.Column="1" Classes="sm" Content="Build" Command="{Binding ArtworkBuilder.BuildCommand}" CommandParameter="{x:Static wiiu:ImageSlot.BootTv}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Draw this one from the screenshot and the frame chosen here" />
+                                    </StackPanel>
+                                    <!-- Or build one for this slot alone -->
+                                    <StackPanel Grid.Column="1" Spacing="10" MaxWidth="520" HorizontalAlignment="Left">
+                                        <TextBlock FontSize="12.5" FontWeight="Bold" Text="Build this one" />
+                                    <StackPanel Spacing="4" IsVisible="{Binding !ArtworkBuilder.Tv.IsLogo}">
+                                        <TextBlock Classes="label" Text="Source image" />
+                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                            <TextBox Grid.Column="0" Text="{Binding ArtworkBuilder.Tv.SourcePath}" FontSize="12" PlaceholderText="Screenshot to put inside the overlay" IsEnabled="{Binding !IsRunning}" />
+                                            <Button Grid.Column="1" Classes="sm" Content="Browse…" Command="{Binding ArtworkBuilder.Tv.PickSourceCommand}" IsEnabled="{Binding !IsRunning}" />
+                                        </Grid>
+                                    </StackPanel>
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Classes="label" Text="Overlay" />
+                                            <ComboBox ItemsSource="{Binding ArtworkBuilder.Tv.Overlays}" SelectedItem="{Binding ArtworkBuilder.Tv.Overlay}" HorizontalAlignment="Stretch" IsEnabled="{Binding !IsRunning}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate x:DataType="vc:ArtworkFrame">
+                                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                                            <Border Width="64" Height="36" CornerRadius="4" ClipToBounds="True" Background="{DynamicResource SubtleBrush}">
+                                                                <Image Source="{Binding, Converter={x:Static conv:OverlayConverters.Thumbnail}}" Stretch="Uniform" />
+                                                            </Border>
+                                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </StackPanel>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" IsVisible="{Binding ArtworkBuilder.Tv.IsBootScreen}">
+                                        <StackPanel Grid.Column="0" Spacing="4">
+                                            <TextBlock Classes="label" Text="Name, line 1" />
+                                            <TextBox Text="{Binding ArtworkBuilder.Tv.NameLine1}" FontSize="12" IsEnabled="{Binding !IsRunning}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="4">
+                                            <TextBlock Classes="label" Text="Name, line 2" />
+                                            <TextBox Text="{Binding ArtworkBuilder.Tv.NameLine2}" FontSize="12" PlaceholderText="Optional" IsEnabled="{Binding !IsRunning}" />
+                                        </StackPanel>
+                                    </Grid>
+                                    <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding ArtworkBuilder.Tv.IsBootScreen}">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Classes="label" Text="Released" />
+                                            <TextBox Classes="mono" Text="{Binding ArtworkBuilder.Tv.ReleaseYear}" MaxLength="4" Width="90" FontSize="12" PlaceholderText="Year" IsEnabled="{Binding !IsRunning}" />
+                                        </StackPanel>
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Classes="label" Text="Players" />
+                                            <ComboBox ItemsSource="{Binding ArtworkBuilder.Tv.PlayerChoices}" SelectedItem="{Binding ArtworkBuilder.Tv.Players}" Width="90" IsEnabled="{Binding !IsRunning}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <StackPanel Spacing="4" IsVisible="{Binding ArtworkBuilder.Tv.IsLogo}">
+                                        <TextBlock Classes="label" Text="Text" />
+                                        <TextBox Text="{Binding ArtworkBuilder.Tv.LogoText}" FontSize="12" IsEnabled="{Binding !IsRunning}" />
+                                    </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <Button Classes="primary sm" Content="Build" Command="{Binding ArtworkBuilder.Tv.BuildCommand}" IsEnabled="{Binding !IsRunning}" />
+                                            <TextBlock Classes="hint" FontSize="12" Text="Rendering…" VerticalAlignment="Center" IsVisible="{Binding ArtworkBuilder.Tv.IsBuilding}" />
+                                        </StackPanel>
+                                    </StackPanel>
                                 </Grid>
-                            </StackPanel>
+                            </Border>
                             <!-- GamePad boot screen -->
-                            <StackPanel Spacing="7">
-                                <TextBlock Classes="label" Text="{Binding BootDrc.Label}" />
-                                <Button Classes="slot" Command="{Binding BootDrc.PickCommand}" IsEnabled="{Binding !IsRunning}">
-                                    <Panel Width="227" Height="128">
-                                        <Rectangle Classes="slot-frame" RadiusX="10" RadiusY="10" />
-                                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding BootDrc.Path, Converter={x:Static conv:FileImageConverter.IsMissing}}">
-                                            <TextBlock Classes="fine" Text="GamePad boot screen" TextAlignment="Center" />
-                                            <TextBlock Classes="fine" Text="No preview" TextAlignment="Center" IsVisible="{Binding BootDrc.HasPath}" />
+                            <Border Classes="card">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="22">
+                                    <!-- The slot itself: what will be injected -->
+                                    <StackPanel Grid.Column="0" Spacing="7">
+                                        <TextBlock Classes="label" Text="{Binding BootDrc.Label}" />
+                                        <Button Classes="slot" Command="{Binding BootDrc.PickCommand}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Pick a finished image for this slot">
+                                            <Panel Width="256" Height="144">
+                                                <Rectangle Classes="slot-frame" RadiusX="10" RadiusY="10" />
+                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding BootDrc.Path, Converter={x:Static conv:FileImageConverter.IsMissing}}">
+                                                    <TextBlock Classes="fine" Text="GamePad boot screen" TextAlignment="Center" />
+                                                    <TextBlock Classes="fine" Text="No preview" TextAlignment="Center" IsVisible="{Binding BootDrc.HasPath}" />
+                                                </StackPanel>
+                                                <Border CornerRadius="10" ClipToBounds="True" Margin="2">
+                                                    <Image Source="{Binding BootDrc.Path, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="UniformToFill" />
+                                                </Border>
+                                            </Panel>
+                                        </Button>
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Classes="fine" Text="{Binding BootDrc.Hint}" VerticalAlignment="Center" />
+                                            <Button Classes="ghost sm tiny" Content="Clear" Command="{Binding BootDrc.ClearCommand}" IsVisible="{Binding BootDrc.HasPath}" IsEnabled="{Binding !IsRunning}" />
                                         </StackPanel>
-                                        <Border CornerRadius="10" ClipToBounds="True" Margin="2">
-                                            <Image Source="{Binding BootDrc.Path, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="UniformToFill" />
-                                        </Border>
-                                    </Panel>
-                                </Button>
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Classes="fine" Text="{Binding BootDrc.Hint}" VerticalAlignment="Center" />
-                                    <Button Classes="ghost sm tiny" Content="Clear" Command="{Binding BootDrc.ClearCommand}" IsVisible="{Binding BootDrc.HasPath}" IsEnabled="{Binding !IsRunning}" />
-                                </StackPanel>
-                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                    <ComboBox Grid.Column="0" ItemsSource="{Binding ArtworkBuilder.GamePadFrames}" SelectedItem="{Binding ArtworkBuilder.GamePadFrame}" HorizontalAlignment="Stretch" FontSize="12" IsEnabled="{Binding !IsRunning}" />
-                                    <Button Grid.Column="1" Classes="sm" Content="Build" Command="{Binding ArtworkBuilder.BuildCommand}" CommandParameter="{x:Static wiiu:ImageSlot.BootDrc}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Draw this one from the screenshot and the frame chosen here" />
+                                    </StackPanel>
+                                    <!-- Or build one for this slot alone -->
+                                    <StackPanel Grid.Column="1" Spacing="10" MaxWidth="520" HorizontalAlignment="Left">
+                                        <TextBlock FontSize="12.5" FontWeight="Bold" Text="Build this one" />
+                                    <StackPanel Spacing="4" IsVisible="{Binding !ArtworkBuilder.GamePad.IsLogo}">
+                                        <TextBlock Classes="label" Text="Source image" />
+                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                            <TextBox Grid.Column="0" Text="{Binding ArtworkBuilder.GamePad.SourcePath}" FontSize="12" PlaceholderText="Screenshot to put inside the overlay" IsEnabled="{Binding !IsRunning}" />
+                                            <Button Grid.Column="1" Classes="sm" Content="Browse…" Command="{Binding ArtworkBuilder.GamePad.PickSourceCommand}" IsEnabled="{Binding !IsRunning}" />
+                                        </Grid>
+                                    </StackPanel>
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Classes="label" Text="Overlay" />
+                                            <ComboBox ItemsSource="{Binding ArtworkBuilder.GamePad.Overlays}" SelectedItem="{Binding ArtworkBuilder.GamePad.Overlay}" HorizontalAlignment="Stretch" IsEnabled="{Binding !IsRunning}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate x:DataType="vc:ArtworkFrame">
+                                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                                            <Border Width="64" Height="36" CornerRadius="4" ClipToBounds="True" Background="{DynamicResource SubtleBrush}">
+                                                                <Image Source="{Binding, Converter={x:Static conv:OverlayConverters.Thumbnail}}" Stretch="Uniform" />
+                                                            </Border>
+                                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </StackPanel>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" IsVisible="{Binding ArtworkBuilder.GamePad.IsBootScreen}">
+                                        <StackPanel Grid.Column="0" Spacing="4">
+                                            <TextBlock Classes="label" Text="Name, line 1" />
+                                            <TextBox Text="{Binding ArtworkBuilder.GamePad.NameLine1}" FontSize="12" IsEnabled="{Binding !IsRunning}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="4">
+                                            <TextBlock Classes="label" Text="Name, line 2" />
+                                            <TextBox Text="{Binding ArtworkBuilder.GamePad.NameLine2}" FontSize="12" PlaceholderText="Optional" IsEnabled="{Binding !IsRunning}" />
+                                        </StackPanel>
+                                    </Grid>
+                                    <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding ArtworkBuilder.GamePad.IsBootScreen}">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Classes="label" Text="Released" />
+                                            <TextBox Classes="mono" Text="{Binding ArtworkBuilder.GamePad.ReleaseYear}" MaxLength="4" Width="90" FontSize="12" PlaceholderText="Year" IsEnabled="{Binding !IsRunning}" />
+                                        </StackPanel>
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Classes="label" Text="Players" />
+                                            <ComboBox ItemsSource="{Binding ArtworkBuilder.GamePad.PlayerChoices}" SelectedItem="{Binding ArtworkBuilder.GamePad.Players}" Width="90" IsEnabled="{Binding !IsRunning}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <StackPanel Spacing="4" IsVisible="{Binding ArtworkBuilder.GamePad.IsLogo}">
+                                        <TextBlock Classes="label" Text="Text" />
+                                        <TextBox Text="{Binding ArtworkBuilder.GamePad.LogoText}" FontSize="12" IsEnabled="{Binding !IsRunning}" />
+                                    </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <Button Classes="primary sm" Content="Build" Command="{Binding ArtworkBuilder.GamePad.BuildCommand}" IsEnabled="{Binding !IsRunning}" />
+                                            <TextBlock Classes="hint" FontSize="12" Text="Rendering…" VerticalAlignment="Center" IsVisible="{Binding ArtworkBuilder.GamePad.IsBuilding}" />
+                                        </StackPanel>
+                                    </StackPanel>
                                 </Grid>
-                            </StackPanel>
+                            </Border>
                             <!-- Boot logo -->
-                            <StackPanel Spacing="7">
-                                <TextBlock Classes="label" Text="{Binding BootLogo.Label}" />
-                                <Button Classes="slot" Command="{Binding BootLogo.PickCommand}" IsEnabled="{Binding !IsRunning}">
-                                    <Panel Width="227" Height="56">
-                                        <Rectangle Classes="slot-frame" RadiusX="8" RadiusY="8" />
-                                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding BootLogo.Path, Converter={x:Static conv:FileImageConverter.IsMissing}}">
-                                            <TextBlock Classes="fine" Text="Boot logo" TextAlignment="Center" />
-                                            <TextBlock Classes="fine" Text="No preview" TextAlignment="Center" IsVisible="{Binding BootLogo.HasPath}" />
+                            <Border Classes="card">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="22">
+                                    <!-- The slot itself: what will be injected -->
+                                    <StackPanel Grid.Column="0" Spacing="7">
+                                        <TextBlock Classes="label" Text="{Binding BootLogo.Label}" />
+                                        <Button Classes="slot" Command="{Binding BootLogo.PickCommand}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Pick a finished image for this slot">
+                                            <Panel Width="227" Height="56">
+                                                <Rectangle Classes="slot-frame" RadiusX="8" RadiusY="8" />
+                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding BootLogo.Path, Converter={x:Static conv:FileImageConverter.IsMissing}}">
+                                                    <TextBlock Classes="fine" Text="Boot logo" TextAlignment="Center" />
+                                                    <TextBlock Classes="fine" Text="No preview" TextAlignment="Center" IsVisible="{Binding BootLogo.HasPath}" />
+                                                </StackPanel>
+                                                <Border CornerRadius="8" ClipToBounds="True" Margin="2">
+                                                    <Image Source="{Binding BootLogo.Path, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="Uniform" />
+                                                </Border>
+                                            </Panel>
+                                        </Button>
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Classes="fine" Text="{Binding BootLogo.Hint}" VerticalAlignment="Center" />
+                                            <Button Classes="ghost sm tiny" Content="Clear" Command="{Binding BootLogo.ClearCommand}" IsVisible="{Binding BootLogo.HasPath}" IsEnabled="{Binding !IsRunning}" />
                                         </StackPanel>
-                                        <Border CornerRadius="8" ClipToBounds="True" Margin="2">
-                                            <Image Source="{Binding BootLogo.Path, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="Uniform" />
-                                        </Border>
-                                    </Panel>
-                                </Button>
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Classes="fine" Text="{Binding BootLogo.Hint}" VerticalAlignment="Center" />
-                                    <Button Classes="ghost sm tiny" Content="Clear" Command="{Binding BootLogo.ClearCommand}" IsVisible="{Binding BootLogo.HasPath}" IsEnabled="{Binding !IsRunning}" />
-                                </StackPanel>
-                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                    <ComboBox Grid.Column="0" ItemsSource="{Binding ArtworkBuilder.LogoFrames}" SelectedItem="{Binding ArtworkBuilder.LogoFrame}" HorizontalAlignment="Stretch" FontSize="12" IsEnabled="{Binding !IsRunning}" />
-                                    <Button Grid.Column="1" Classes="sm" Content="Build" Command="{Binding ArtworkBuilder.BuildCommand}" CommandParameter="{x:Static wiiu:ImageSlot.BootLogo}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Draw this one from the screenshot and the frame chosen here" />
+                                    </StackPanel>
+                                    <!-- Or build one for this slot alone -->
+                                    <StackPanel Grid.Column="1" Spacing="10" MaxWidth="520" HorizontalAlignment="Left">
+                                        <TextBlock FontSize="12.5" FontWeight="Bold" Text="Build this one" />
+                                    <StackPanel Spacing="4" IsVisible="{Binding !ArtworkBuilder.Logo.IsLogo}">
+                                        <TextBlock Classes="label" Text="Source image" />
+                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                            <TextBox Grid.Column="0" Text="{Binding ArtworkBuilder.Logo.SourcePath}" FontSize="12" PlaceholderText="Screenshot to put inside the overlay" IsEnabled="{Binding !IsRunning}" />
+                                            <Button Grid.Column="1" Classes="sm" Content="Browse…" Command="{Binding ArtworkBuilder.Logo.PickSourceCommand}" IsEnabled="{Binding !IsRunning}" />
+                                        </Grid>
+                                    </StackPanel>
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Classes="label" Text="Overlay" />
+                                            <ComboBox ItemsSource="{Binding ArtworkBuilder.Logo.Overlays}" SelectedItem="{Binding ArtworkBuilder.Logo.Overlay}" HorizontalAlignment="Stretch" IsEnabled="{Binding !IsRunning}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate x:DataType="vc:ArtworkFrame">
+                                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                                            <Border Width="64" Height="36" CornerRadius="4" ClipToBounds="True" Background="{DynamicResource SubtleBrush}">
+                                                                <Image Source="{Binding, Converter={x:Static conv:OverlayConverters.Thumbnail}}" Stretch="Uniform" />
+                                                            </Border>
+                                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </StackPanel>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" IsVisible="{Binding ArtworkBuilder.Logo.IsBootScreen}">
+                                        <StackPanel Grid.Column="0" Spacing="4">
+                                            <TextBlock Classes="label" Text="Name, line 1" />
+                                            <TextBox Text="{Binding ArtworkBuilder.Logo.NameLine1}" FontSize="12" IsEnabled="{Binding !IsRunning}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="4">
+                                            <TextBlock Classes="label" Text="Name, line 2" />
+                                            <TextBox Text="{Binding ArtworkBuilder.Logo.NameLine2}" FontSize="12" PlaceholderText="Optional" IsEnabled="{Binding !IsRunning}" />
+                                        </StackPanel>
+                                    </Grid>
+                                    <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding ArtworkBuilder.Logo.IsBootScreen}">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Classes="label" Text="Released" />
+                                            <TextBox Classes="mono" Text="{Binding ArtworkBuilder.Logo.ReleaseYear}" MaxLength="4" Width="90" FontSize="12" PlaceholderText="Year" IsEnabled="{Binding !IsRunning}" />
+                                        </StackPanel>
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Classes="label" Text="Players" />
+                                            <ComboBox ItemsSource="{Binding ArtworkBuilder.Logo.PlayerChoices}" SelectedItem="{Binding ArtworkBuilder.Logo.Players}" Width="90" IsEnabled="{Binding !IsRunning}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <StackPanel Spacing="4" IsVisible="{Binding ArtworkBuilder.Logo.IsLogo}">
+                                        <TextBlock Classes="label" Text="Text" />
+                                        <TextBox Text="{Binding ArtworkBuilder.Logo.LogoText}" FontSize="12" IsEnabled="{Binding !IsRunning}" />
+                                    </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <Button Classes="primary sm" Content="Build" Command="{Binding ArtworkBuilder.Logo.BuildCommand}" IsEnabled="{Binding !IsRunning}" />
+                                            <TextBlock Classes="hint" FontSize="12" Text="Rendering…" VerticalAlignment="Center" IsVisible="{Binding ArtworkBuilder.Logo.IsBuilding}" />
+                                        </StackPanel>
+                                    </StackPanel>
                                 </Grid>
-                            </StackPanel>
-                        </WrapPanel>
+                            </Border>
+                        </StackPanel>
 
                         <!-- Boot sound -->
-                        <Border Classes="divider" Margin="0,18,0,0" Padding="0,16,0,0" Width="560" HorizontalAlignment="Left">
+                        <Border Classes="divider" Margin="0,18,0,0" Padding="0,16,0,0" MaxWidth="700" HorizontalAlignment="Left">
                             <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
                                 <StackPanel Grid.Column="0" Spacing="4">
                                     <TextBlock Classes="label" Text="{Binding BootSound.Label}" />
