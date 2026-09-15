@@ -63,15 +63,17 @@ public class ConverterTests
     }
 
     [TestMethod]
-    public void RegionConverters_UnitedStates_IsHardStripedRedAndWhite()
+    public void RegionConverters_UnitedStates_IsStripesWithACanton()
     {
-        var brush = (LinearGradientBrush)RegionConverters.FlagFor(Region.UnitedStates);
+        var brush = (DrawingBrush)RegionConverters.FlagFor(Region.UnitedStates);
+        var drawings = ((DrawingGroup)brush.Drawing!).Children.OfType<GeometryDrawing>().ToArray();
 
-        Assert.AreEqual(14, brush.GradientStops.Count);
-        Assert.AreEqual(brush.GradientStops[0].Color, brush.GradientStops[1].Color);
-        Assert.AreNotEqual(brush.GradientStops[1].Color, brush.GradientStops[2].Color);
-        Assert.AreEqual(brush.GradientStops[1].Offset, brush.GradientStops[2].Offset);
-        Assert.AreEqual(1.0, brush.GradientStops[^1].Offset);
+        Assert.AreEqual(6, drawings.Length, "white field, four red stripes, blue canton");
+        Assert.AreEqual(Brushes.White, drawings[0].Brush);
+        Assert.AreEqual(Color.Parse("#3C3B6E"), ((SolidColorBrush)drawings[^1].Brush!).Color);
+        var canton = ((RectangleGeometry)drawings[^1].Geometry!).Rect;
+        var field = ((RectangleGeometry)drawings[0].Geometry!).Rect;
+        Assert.IsTrue(canton.Width < field.Width / 2 && canton.Height < field.Height * 0.6);
     }
 
     [TestMethod]

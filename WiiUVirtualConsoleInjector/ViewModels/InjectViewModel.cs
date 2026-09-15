@@ -95,7 +95,7 @@ public sealed partial class InjectViewModel : PageViewModel
     /// <param name="settings">Work and output folders, suppressed warnings.</param>
     /// <param name="navigation">Lets the page jump to Bases and Keys.</param>
     public InjectViewModel(IBaseService bases, IDialogService dialogs, IInjectionServiceFactory injections, ISettingsService settings, INavigationService navigation)
-        : base("Inject", "inject-icon.png")
+        : base("Inject", "inject-icon.png", "M12 3v11 M7.5 10.5L12 15l4.5-4.5 M4 17.5V19a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5")
     {
         _bases = bases ?? throw new ArgumentNullException(nameof(bases));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));

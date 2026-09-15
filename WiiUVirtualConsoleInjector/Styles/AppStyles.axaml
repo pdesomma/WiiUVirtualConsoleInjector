@@ -135,6 +135,19 @@
             </ControlTemplate>
         </Setter>
     </Style>
+    <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="9999" />
+    </Style>
+    <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource ButtonTextBrush}" />
+    </Style>
+    <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource ButtonTextBrush}" />
+    </Style>
     <Style Selector="Button:pointerover /template/ Border#PART_Shell">
         <Setter Property="Opacity" Value="0.92" />
     </Style>
@@ -251,8 +264,10 @@
         <Setter Property="BoxShadow" Value="inset 0 1 0 0 #CCFFFFFF, 0 3 3 0 #1A000000, 0 6 12 0 #14000000" />
     </Style>
     <Style Selector="ListBox.tiles ListBoxItem:selected Border.tile-frame">
-        <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="BoxShadow" Value="0 0 0 3 #00AACC, 0 0 14 0 #6600AACC, 0 3 3 0 #1A000000, 0 6 12 0 #1A000000" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CyanBrush}" />
+        <Setter Property="BorderThickness" Value="3" />
+        <Setter Property="Padding" Value="10" />
+        <Setter Property="BoxShadow" Value="0 0 14 0 #5900AACC, 0 3 3 0 #1A000000, 0 6 12 0 #1A000000" />
     </Style>
     <Style Selector="ListBox.tiles ListBoxItem:pointerover Border.tile-frame">
         <Setter Property="RenderTransform" Value="scale(1.04)" />
@@ -348,6 +363,14 @@
     <Style Selector="ListBox.nav ListBoxItem:selected Image">
         <Setter Property="Opacity" Value="1" />
     </Style>
+    <Style Selector="ListBox.nav Path.nav-glyph">
+        <Setter Property="Stroke" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="Opacity" Value="0.6" />
+    </Style>
+    <Style Selector="ListBox.nav ListBoxItem:selected Path.nav-glyph">
+        <Setter Property="Stroke" Value="{DynamicResource CyanDarkBrush}" />
+        <Setter Property="Opacity" Value="1" />
+    </Style>
     <Style Selector="ListBox.nav TextBlock">
         <Setter Property="FontSize" Value="10" />
         <Setter Property="FontWeight" Value="Bold" />
@@ -415,6 +438,34 @@
     </Style>
     <Style Selector="Button.arrow:disabled">
         <Setter Property="Opacity" Value="0.25" />
+    </Style>
+    <Style Selector="Button.arrow:pointerover">
+        <Setter Property="RenderTransform" Value="scale(1.05)" />
+    </Style>
+    <Style Selector="Path.arrow-top">
+        <Setter Property="Fill">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Offset="0" Color="{DynamicResource ArrowTop1}" />
+                <GradientStop Offset="1" Color="{DynamicResource ArrowTop2}" />
+            </LinearGradientBrush>
+        </Setter>
+    </Style>
+    <Style Selector="Path.arrow-bottom">
+        <Setter Property="Fill">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Offset="0" Color="{DynamicResource ArrowBottom1}" />
+                <GradientStop Offset="1" Color="{DynamicResource ArrowBottom2}" />
+            </LinearGradientBrush>
+        </Setter>
+    </Style>
+    <Style Selector="Path.arrow-edge">
+        <Setter Property="StrokeThickness" Value="2.5" />
+        <Setter Property="Stroke">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Offset="0" Color="{DynamicResource ArrowEdge1}" />
+                <GradientStop Offset="1" Color="{DynamicResource ArrowEdge2}" />
+            </LinearGradientBrush>
+        </Setter>
     </Style>
 
     <!-- ===== Glyphs ===== -->

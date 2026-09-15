@@ -10,11 +10,23 @@ public abstract class PageViewModel : ViewModelBase
     /// </summary>
     /// <param name="title">Label in the navigation list.</param>
     /// <param name="icon">Asset path of the navigation glyph, relative to the Assets folder.</param>
-    protected PageViewModel(string title, string icon)
+    /// <param name="glyph">SVG path data drawn instead of the asset when given; stroked, 24-unit box.</param>
+    protected PageViewModel(string title, string icon, string? glyph = null)
     {
         Title = title ?? throw new ArgumentNullException(nameof(title));
         NavIcon = icon ?? throw new ArgumentNullException(nameof(icon));
+        NavGlyph = glyph;
     }
+
+    /// <summary>
+    /// True when the rail draws a stroked path rather than the asset.
+    /// </summary>
+    public bool HasNavGlyph => NavGlyph is not null;
+
+    /// <summary>
+    /// SVG path data drawn in the rail instead of the asset, or null.
+    /// </summary>
+    public string? NavGlyph { get; }
 
     /// <summary>
     /// Asset path of the navigation glyph, relative to the Assets folder; white, for the dark rail.

@@ -7,33 +7,6 @@
              x:DataType="vm:BasesViewModel">
 
     <UserControl.Styles>
-        <!-- Small "Show" toggle beside a masked key -->
-        <Style Selector="ToggleButton.reveal">
-            <Setter Property="FontFamily" Value="{DynamicResource UiFont}" />
-            <Setter Property="FontSize" Value="11.5" />
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Padding" Value="12,0" />
-            <Setter Property="MinHeight" Value="28" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Border Name="PART_Shell" CornerRadius="9999" Background="Transparent" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Padding="{TemplateBinding Padding}">
-                        <TextBlock Name="PART_Label" Text="{TemplateBinding Content}" FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}"
-                                   Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
-                    </Border>
-                </ControlTemplate>
-            </Setter>
-        </Style>
-        <Style Selector="ToggleButton.reveal:pointerover /template/ Border#PART_Shell">
-            <Setter Property="Background" Value="{DynamicResource SubtleBrush}" />
-        </Style>
-        <Style Selector="ToggleButton.reveal:checked /template/ Border#PART_Shell">
-            <Setter Property="Background" Value="{DynamicResource CyanTintBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource CyanBrush}" />
-        </Style>
-        <Style Selector="ToggleButton.reveal:checked /template/ TextBlock#PART_Label">
-            <Setter Property="Foreground" Value="{DynamicResource CyanDarkBrush}" />
-        </Style>
 
         <!-- Tab pill labels follow the pill's selection colour -->
         <Style Selector="ListBox.tabs ListBoxItem TextBlock">
@@ -67,14 +40,13 @@
     </UserControl.Styles>
 
     <UserControl.DataTemplates>
-        <!-- One of the three keys: label above, masked text, Show toggle, validity dot -->
+        <!-- One of the three keys: label above, text, validity dot -->
         <DataTemplate x:DataType="vm:KeyEntryViewModel">
             <StackPanel Spacing="6">
                 <TextBlock Classes="label" Text="{Binding Label}" />
-                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-                    <TextBox Grid.Column="0" Classes="mono" Text="{Binding Text}" PasswordChar="•" RevealPassword="{Binding IsRevealed}" PlaceholderText="32 hex characters" />
-                    <ToggleButton Grid.Column="1" Classes="reveal" Content="Show" IsChecked="{Binding IsRevealed}" />
-                    <Border Grid.Column="2" Classes="check" Classes.on="{Binding IsValid}">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <TextBox Grid.Column="0" Classes="mono" Text="{Binding Text}" PlaceholderText="32 hex characters" />
+                    <Border Grid.Column="1" Classes="check" Classes.on="{Binding IsValid}">
                         <TextBlock Text="✓" IsVisible="{Binding IsValid}" />
                     </Border>
                 </Grid>
@@ -126,25 +98,21 @@
                             <DataTemplate x:DataType="vm:BaseRowViewModel">
                                 <Border BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,0,1" Padding="0,14">
                                     <StackPanel Spacing="8">
-                                        <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
+                                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
                                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                                 <TextBlock Classes="base-name" Text="{Binding Name}" />
                                                 <TextBlock Classes="base-region" Text="{Binding Region}" />
                                                 <TextBlock Classes="base-id mono" Text="{Binding TitleId}" />
                                                 <TextBlock Classes="base-id" Text="(custom)" IsVisible="{Binding IsCustom}" />
                                             </StackPanel>
-                                            <Border Grid.Column="1" Classes="pill" Classes.present="{Binding IsPresent}" Classes.needs="{Binding NeedsKey}">
-                                                <TextBlock Text="{Binding StatusText}" />
-                                            </Border>
-                                            <Button Grid.Column="2" Classes="sm primary" Content="Download" Command="{Binding DownloadCommand}" IsVisible="{Binding !DownloadCommand.IsRunning}" />
-                                            <Button Grid.Column="2" Classes="sm ghost" Content="Cancel" Command="{Binding DownloadCancelCommand}" IsVisible="{Binding DownloadCommand.IsRunning}" />
-                                            <Button Grid.Column="3" Classes="sm" Content="Inspect" Command="{Binding InspectCommand}" />
+                                            <Button Grid.Column="1" Classes="sm primary" Content="Download" Command="{Binding DownloadCommand}" IsVisible="{Binding !DownloadCommand.IsRunning}" />
+                                            <Button Grid.Column="1" Classes="sm ghost" Content="Cancel" Command="{Binding DownloadCancelCommand}" IsVisible="{Binding DownloadCommand.IsRunning}" />
+                                            <Button Grid.Column="2" Classes="sm" Content="Inspect" Command="{Binding InspectCommand}" />
                                         </Grid>
-                                        <Grid ColumnDefinitions="64,*,Auto,Auto" ColumnSpacing="8">
+                                        <Grid ColumnDefinitions="64,*,Auto" ColumnSpacing="8">
                                             <TextBlock Grid.Column="0" Classes="hint" Text="Title key" VerticalAlignment="Center" />
-                                            <TextBox Grid.Column="1" Classes="mono title-key" Text="{Binding TitleKey}" PasswordChar="•" RevealPassword="{Binding IsTitleKeyRevealed}" PlaceholderText="32 hex characters; empty to clear" />
-                                            <ToggleButton Grid.Column="2" Classes="reveal" Content="Show" IsChecked="{Binding IsTitleKeyRevealed}" />
-                                            <Border Grid.Column="3" Classes="check" Classes.on="{Binding IsTitleKeyValid}">
+                                            <TextBox Grid.Column="1" Classes="mono title-key" Text="{Binding TitleKey}" PlaceholderText="32 hex characters; empty to clear" />
+                                            <Border Grid.Column="2" Classes="check" Classes.on="{Binding IsTitleKeyValid}">
                                                 <TextBlock Text="✓" IsVisible="{Binding IsTitleKeyValid}" />
                                             </Border>
                                         </Grid>
