@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole;
+﻿using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Gba;
 using PD.WiiU.VirtualConsole.Infrastructure;
 using PD.WiiU.VirtualConsole.Ports;
@@ -13,7 +13,7 @@ namespace WiiUVirtualConsoleInjector.Services;
 public sealed class InjectionServiceFactory : IInjectionServiceFactory
 {
     /// <summary>
-    /// Display name of the key Wii and GameCube injects need.
+    /// Display name of the key Wii disc injects need.
     /// </summary>
     public const string WiiCommonKeyName = "Wii common key";
     /// <summary>
@@ -48,12 +48,11 @@ public sealed class InjectionServiceFactory : IInjectionServiceFactory
             new NdsRomInjector(),
             new Tg16RomInjector(),
             new MsxRomInjector(),
+            new GameCubeRomInjector(),
         };
+        // only Wii discs need the Wii common key; GameCube reads the NFS key from the base itself
         if (_keys.WiiCommonKey is { } wiiKey)
-        {
             injectors.Add(new WiiRomInjector(wiiKey));
-            injectors.Add(new GameCubeRomInjector());
-        }
 
         return new InjectionService(
             new DirectoryBaseStore(_settings.BasePath),
@@ -69,7 +68,7 @@ public sealed class InjectionServiceFactory : IInjectionServiceFactory
         var missing = new List<string>();
         if (_keys.CommonKey is null)
             missing.Add(WiiUCommonKeyName);
-        if (console is SourceConsole.Wii or SourceConsole.GameCube && _keys.WiiCommonKey is null)
+        if (console == SourceConsole.Wii && _keys.WiiCommonKey is null)
             missing.Add(WiiCommonKeyName);
         return missing;
     }
