@@ -16,7 +16,7 @@ public class GameFactoryTests
         Assert.IsTrue(game.GroupId.Value >= GameFactory.MinimumIdHalf && game.GroupId.Value <= 0xFFFF);
         Assert.AreEqual(ProductCode.EShop, game.ProductCode.Category);
         Assert.AreEqual(game.GroupId.Value.ToString("X4"), game.ProductCode.Id);
-        Assert.AreEqual(0u, game.GamePadUse);
+        Assert.IsNull(game.GamePadUse, "the base's drc_use is kept");
         Assert.AreEqual("Super Metroid", game.NameIn(Language.English)!.ShortName);
         Assert.AreEqual("Super Metroid", game.NameIn(Language.Japanese)!.LongName);
     }

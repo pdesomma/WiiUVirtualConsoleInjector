@@ -19,7 +19,7 @@ public static class GameFactory
     /// <param name="name">Long name, commas as line breaks.</param>
     /// <param name="shortName">Short name shown under the icon, or null to take it from the long name.</param>
     /// <param name="productId">Four-character product ID, or null for a random one.</param>
-    /// <param name="gamePad">Advertise GamePad-as-controller use.</param>
+    /// <param name="gamePad">Advertise GamePad-as-controller use; otherwise the base's drc_use is kept.</param>
     /// <param name="random">Source of IDs; null for a new one.</param>
     /// <exception cref="ArgumentException">Blank name or a product ID that is not four characters.</exception>
     public static Game Create(string name, string? shortName = null, string? productId = null, bool gamePad = false, Random? random = null)
@@ -41,7 +41,7 @@ public static class GameFactory
         return new Game(titleId, group, product)
         {
             Names = LocalizedName.ForAllLanguages(new LocalizedName(shown, longName)),
-            GamePadUse = gamePad ? 65537u : 0u,
+            GamePadUse = gamePad ? 65537u : null,
         };
     }
 
