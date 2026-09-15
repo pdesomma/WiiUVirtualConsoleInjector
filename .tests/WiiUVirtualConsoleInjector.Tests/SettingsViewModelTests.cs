@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole;
+﻿using PD.WiiU.VirtualConsole;
 using WiiUVirtualConsoleInjector.ViewModels;
 
 namespace WiiUVirtualConsoleInjector.Tests;
@@ -9,6 +9,7 @@ public class SettingsViewModelTests
     private static readonly AppPaths Paths = new(Path.Combine(Path.GetTempPath(), "WiiUVirtualConsoleInjector.Tests", "data"));
 
     private FakeDialogService _dialogs = null!;
+    private FakeLinkOpener _links = null!;
     private FakeSettingsService _settings = null!;
 
     [TestInitialize]
@@ -16,6 +17,7 @@ public class SettingsViewModelTests
     {
         _dialogs = new FakeDialogService();
         _settings = new FakeSettingsService();
+        _links = new FakeLinkOpener();
     }
 
     [TestMethod]
@@ -37,9 +39,10 @@ public class SettingsViewModelTests
     [TestMethod]
     public void Constructor_NullArguments_ThrowsArgumentNullException()
     {
-        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(null!, _dialogs, Paths));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, null!, Paths));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, _dialogs, null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(null!, _dialogs, Paths, _links));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, null!, Paths, _links));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, _dialogs, null!, _links));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, _dialogs, Paths, null!));
     }
 
     [TestMethod]
@@ -151,5 +154,16 @@ public class SettingsViewModelTests
         CollectionAssert.Contains(changed, nameof(WarningSettingViewModel.ShowAgain));
     }
 
-    private SettingsViewModel Create() => new(_settings, _dialogs, Paths);
+    [TestMethod]
+    public async Task OpenCommand_EveryFolder_ShowsItsEffectivePathInTheFileManager()
+    {
+        var vm = Create();
+
+        foreach (var folder in vm.Folders)
+            await folder.OpenCommand.ExecuteAsync(null);
+
+        CollectionAssert.AreEqual(vm.Folders.Select(f => f.Folder).ToArray(), _links.Folders);
+    }
+
+    private SettingsViewModel Create() => new(_settings, _dialogs, Paths, _links);
 }

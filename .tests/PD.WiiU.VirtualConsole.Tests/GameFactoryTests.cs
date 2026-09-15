@@ -1,4 +1,4 @@
-using WiiUSharp;
+﻿using WiiUSharp;
 
 namespace PD.WiiU.VirtualConsole.Tests;
 
@@ -24,10 +24,10 @@ public class GameFactoryTests
     [TestMethod]
     public void Create_CommaInName_SplitsLongAndShortNames()
     {
-        var game = GameFactory.Create(" The Legend of Zelda, Majora's Mask ", "ZELD", gamePad: true);
+        var game = GameFactory.Create(" The Legend of Zelda, Majora's Mask ", productId: "ZELD", gamePad: true);
 
         Assert.AreEqual("The Legend of Zelda", game.NameIn(Language.English)!.ShortName);
-        Assert.AreEqual("The Legend of Zelda\n Majora's Mask", game.NameIn(Language.English)!.LongName);
+        Assert.AreEqual("The Legend of Zelda\nMajora's Mask", game.NameIn(Language.English)!.LongName);
         Assert.AreEqual("ZELD", game.ProductCode.Id);
         Assert.AreEqual(65537u, game.GamePadUse);
     }
@@ -47,6 +47,27 @@ public class GameFactoryTests
     public void Create_BadArguments_ThrowsArgumentException()
     {
         Assert.ThrowsExactly<ArgumentException>(() => GameFactory.Create(" "));
-        Assert.ThrowsExactly<ArgumentException>(() => GameFactory.Create("x", "TOOLONG"));
+        Assert.ThrowsExactly<ArgumentException>(() => GameFactory.Create("x", productId: "TOOLONG"));
     }
+    [TestMethod]
+    public void Create_ShortNameGiven_UsesItInsteadOfTheFirstSegment()
+    {
+        var game = GameFactory.Create("The Legend of Zelda, Majora's Mask", "  Majora's Mask  ");
+
+        var name = game.NameIn(Language.English)!;
+        Assert.AreEqual("Majora's Mask", name.ShortName);
+        Assert.AreEqual("The Legend of Zelda\nMajora's Mask", name.LongName);
+    }
+
+    [TestMethod]
+    public void Create_BlankShortName_FallsBackToTheFirstSegment()
+    {
+        foreach (var shortName in new[] { null, "", "   " })
+        {
+            var name = GameFactory.Create("The Legend of Zelda, Majora's Mask", shortName).NameIn(Language.English)!;
+
+            Assert.AreEqual("The Legend of Zelda", name.ShortName);
+        }
+    }
+
 }

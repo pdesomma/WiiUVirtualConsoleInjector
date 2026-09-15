@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using PD.WiiU.VirtualConsole;
 using WiiUVirtualConsoleInjector.Services;
 
@@ -12,6 +12,7 @@ public sealed partial class FolderSettingViewModel : ViewModelBase
     private readonly Func<AppSettings, string?, AppSettings> _apply;
     private readonly IDialogService _dialogs;
     private readonly Func<string> _effective;
+    private readonly ILinkOpener _links;
     private readonly ISettingsService _settings;
 
     /// <summary>
@@ -22,13 +23,15 @@ public sealed partial class FolderSettingViewModel : ViewModelBase
     /// <param name="apply">Writes a chosen path, or null for the default, into settings.</param>
     /// <param name="settings">Where the change is saved.</param>
     /// <param name="dialogs">Folder picker.</param>
-    public FolderSettingViewModel(string label, Func<string> effective, Func<AppSettings, string?, AppSettings> apply, ISettingsService settings, IDialogService dialogs)
+    /// <param name="links">Opens the folder in the file manager.</param>
+    public FolderSettingViewModel(string label, Func<string> effective, Func<AppSettings, string?, AppSettings> apply, ISettingsService settings, IDialogService dialogs, ILinkOpener links)
     {
         Label = label ?? throw new ArgumentNullException(nameof(label));
         _effective = effective ?? throw new ArgumentNullException(nameof(effective));
         _apply = apply ?? throw new ArgumentNullException(nameof(apply));
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
+        _links = links ?? throw new ArgumentNullException(nameof(links));
     }
 
     /// <summary>
@@ -55,6 +58,12 @@ public sealed partial class FolderSettingViewModel : ViewModelBase
         if (picked is not null)
             Set(picked);
     }
+
+    /// <summary>
+    /// Shows the folder in the file manager.
+    /// </summary>
+    [RelayCommand]
+    private Task OpenAsync() => _links.OpenFolderAsync(Folder);
 
     /// <summary>
     /// Returns the setting to its default.

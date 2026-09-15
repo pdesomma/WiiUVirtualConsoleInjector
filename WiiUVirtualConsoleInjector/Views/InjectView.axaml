@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels"
              xmlns:vc="using:PD.WiiU.VirtualConsole"
@@ -173,9 +173,14 @@
                                 <TextBlock Classes="hint" Text="{Binding RomExtensions, StringFormat='Accepts {0}'}" Margin="0,1,0,0" />
                             </StackPanel>
                             <StackPanel Spacing="4">
-                                <TextBlock Classes="label" Text="Name" />
+                                <TextBlock Classes="label" Text="Long name" />
                                 <TextBox Text="{Binding Name}" PlaceholderText="Required" IsEnabled="{Binding !IsRunning}" />
-                                <TextBlock Classes="hint" Text="A comma splits a long name into lines; the text before it is the short name." Margin="0,1,0,0" />
+                                <TextBlock Classes="hint" Text="Shown on the title's own page; a comma splits it into lines." Margin="0,1,0,0" />
+                            </StackPanel>
+                            <StackPanel Spacing="4">
+                                <TextBlock Classes="label" Text="Short name" />
+                                <TextBox Text="{Binding ShortName}" PlaceholderText="Optional" IsEnabled="{Binding !IsRunning}" />
+                                <TextBlock Classes="hint" Text="Shown under the icon on the Wii U menu; defaults to the long name's first line." Margin="0,1,0,0" />
                             </StackPanel>
                             <StackPanel Spacing="4">
                                 <TextBlock Classes="label" Text="Product ID" />

@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole;
+﻿using PD.WiiU.VirtualConsole;
 using WiiUVirtualConsoleInjector.Services;
 
 namespace WiiUVirtualConsoleInjector.ViewModels;
@@ -14,7 +14,8 @@ public sealed class SettingsViewModel : PageViewModel
     /// <param name="settings">Live settings.</param>
     /// <param name="dialogs">Folder picker.</param>
     /// <param name="paths">Per-user folders.</param>
-    public SettingsViewModel(ISettingsService settings, IDialogService dialogs, AppPaths paths)
+    /// <param name="links">Opens a folder in the file manager.</param>
+    public SettingsViewModel(ISettingsService settings, IDialogService dialogs, AppPaths paths, ILinkOpener links)
         : base("Settings", "settings.png")
     {
         if (settings is null)
@@ -23,10 +24,12 @@ public sealed class SettingsViewModel : PageViewModel
             throw new ArgumentNullException(nameof(dialogs));
         if (paths is null)
             throw new ArgumentNullException(nameof(paths));
+        if (links is null)
+            throw new ArgumentNullException(nameof(links));
 
-        BaseFolder = new FolderSettingViewModel("Base store folder", () => settings.BasePath, (s, v) => s with { BasePath = v }, settings, dialogs);
-        OutputFolder = new FolderSettingViewModel("Output folder", () => settings.OutputPath, (s, v) => s with { OutputPath = v }, settings, dialogs);
-        WorkFolder = new FolderSettingViewModel("Work folder", () => settings.WorkPath, (s, v) => s with { WorkPath = v }, settings, dialogs);
+        BaseFolder = new FolderSettingViewModel("Base store folder", () => settings.BasePath, (s, v) => s with { BasePath = v }, settings, dialogs, links);
+        OutputFolder = new FolderSettingViewModel("Output folder", () => settings.OutputPath, (s, v) => s with { OutputPath = v }, settings, dialogs, links);
+        WorkFolder = new FolderSettingViewModel("Work folder", () => settings.WorkPath, (s, v) => s with { WorkPath = v }, settings, dialogs, links);
         Folders = new[] { BaseFolder, OutputFolder, WorkFolder };
         Warnings = Enum.GetValues<InjectionWarning>().Select(w => new WarningSettingViewModel(w, settings)).ToArray();
         DataFolder = paths.DataFolder;

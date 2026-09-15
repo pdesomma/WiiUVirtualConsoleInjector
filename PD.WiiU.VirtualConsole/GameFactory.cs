@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using WiiUSharp;
 
 namespace PD.WiiU.VirtualConsole;
@@ -14,14 +14,15 @@ public static class GameFactory
     public const int MinimumIdHalf = 0x3000;
 
     /// <summary>
-    /// A game with random IDs. Commas in the name break the long name into lines; the short name is the first segment.
+    /// A game with random IDs. Commas in the long name break it into lines; a blank short name takes the first segment.
     /// </summary>
-    /// <param name="name">Display name, commas as line breaks.</param>
+    /// <param name="name">Long name, commas as line breaks.</param>
+    /// <param name="shortName">Short name shown under the icon, or null to take it from the long name.</param>
     /// <param name="productId">Four-character product ID, or null for a random one.</param>
     /// <param name="gamePad">Advertise GamePad-as-controller use.</param>
     /// <param name="random">Source of IDs; null for a new one.</param>
     /// <exception cref="ArgumentException">Blank name or a product ID that is not four characters.</exception>
-    public static Game Create(string name, string? productId = null, bool gamePad = false, Random? random = null)
+    public static Game Create(string name, string? shortName = null, string? productId = null, bool gamePad = false, Random? random = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name is required.", nameof(name));
@@ -35,11 +36,11 @@ public static class GameFactory
         var product = new ProductCode(ProductCode.EShop, productId ?? groupHalf.ToString("X4", CultureInfo.InvariantCulture));
 
         var trimmed = name.Trim();
-        var longName = trimmed.Replace(",", "\n");
-        var shortName = trimmed.Split(',')[0].Trim();
+        var longName = string.Join("\n", trimmed.Split(',').Select(part => part.Trim()));
+        var shown = string.IsNullOrWhiteSpace(shortName) ? trimmed.Split(',')[0].Trim() : shortName!.Trim();
         return new Game(titleId, group, product)
         {
-            Names = LocalizedName.ForAllLanguages(new LocalizedName(shortName, longName)),
+            Names = LocalizedName.ForAllLanguages(new LocalizedName(shown, longName)),
             GamePadUse = gamePad ? 65537u : 0u,
         };
     }

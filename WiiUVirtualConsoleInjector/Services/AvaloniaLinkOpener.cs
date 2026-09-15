@@ -1,9 +1,10 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 
 namespace WiiUVirtualConsoleInjector.Services;
 
 /// <summary>
-/// Opens links through the owning window's launcher.
+/// Opens links and folders through the owning window's launcher.
 /// </summary>
 public sealed class AvaloniaLinkOpener : ILinkOpener
 {
@@ -25,5 +26,15 @@ public sealed class AvaloniaLinkOpener : ILinkOpener
             throw new ArgumentNullException(nameof(uri));
 
         return _owner().Launcher.LaunchUriAsync(uri);
+    }
+
+    /// <inheritdoc/>
+    public Task<bool> OpenFolderAsync(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            throw new ArgumentException("Path is required.", nameof(path));
+
+        var folder = Directory.CreateDirectory(path);
+        return _owner().Launcher.LaunchDirectoryInfoAsync(folder);
     }
 }
