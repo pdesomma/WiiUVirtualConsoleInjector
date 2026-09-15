@@ -1,19 +1,27 @@
 namespace PD.WiiU.VirtualConsole;
 
 /// <summary>
-/// What to draw on a generated icon or boot screen.
+/// What to draw on one generated image: the frame for its slot, the screenshot, and the captions.
 /// </summary>
 public sealed class ArtworkRequest
 {
     /// <summary>
     /// Creates a new instance of the <see cref="ArtworkRequest"/> class.
     /// </summary>
-    /// <param name="template">Frame to dress the screenshot in.</param>
-    public ArtworkRequest(ArtworkTemplate template)
+    /// <param name="frame">Frame for the slot being drawn; null for none.</param>
+    public ArtworkRequest(ArtworkFrame? frame)
     {
-        Template = template ?? throw new ArgumentNullException(nameof(template));
+        Frame = frame;
     }
 
+    /// <summary>
+    /// Frame for the slot being drawn; null for none.
+    /// </summary>
+    public ArtworkFrame? Frame { get; }
+    /// <summary>
+    /// Text on the boot logo, or null.
+    /// </summary>
+    public string? LogoText { get; init; }
     /// <summary>
     /// First line of the game's name, or null.
     /// </summary>
@@ -31,19 +39,14 @@ public sealed class ArtworkRequest
     /// </summary>
     public int? ReleaseYear { get; init; }
     /// <summary>
-    /// Screenshot to sit inside the frame; null leaves the screen black.
+    /// Screenshot to sit inside the frame; null leaves the window black.
     /// </summary>
     public string? ScreenshotPath { get; init; }
-    /// <summary>
-    /// Frame to dress the screenshot in.
-    /// </summary>
-    public ArtworkTemplate Template { get; }
 
     /// <summary>
     /// True when a name line carries Japanese, which is what the console's own screens caption in Japanese.
     /// </summary>
     public bool IsJapanese => HasJapanese(NameLine1) || HasJapanese(NameLine2);
-
     /// <summary>
     /// The players line as the boot screen prints it, or null.
     /// </summary>

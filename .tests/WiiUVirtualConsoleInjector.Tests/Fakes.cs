@@ -83,6 +83,38 @@ internal sealed class FakeArtworkComposer : IArtworkComposer
     }
 }
 
+internal sealed class FakeSoundPlayer : ISoundPlayer
+{
+    public Exception? Failure { get; set; }
+    public bool IsPlaying { get; private set; }
+    public List<string> Played { get; } = new();
+    public int Stops { get; private set; }
+
+    public event EventHandler? Stopped;
+
+    public void Finish()
+    {
+        IsPlaying = false;
+        Stopped?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void Play(string path)
+    {
+        if (Failure is not null)
+            throw Failure;
+
+        Played.Add(path);
+        IsPlaying = true;
+    }
+
+    public void Stop()
+    {
+        Stops++;
+        if (IsPlaying)
+            Finish();
+    }
+}
+
 internal sealed class FakeSdCard : ISdCard
 {
     public List<(string Title, string Root)> Copies { get; } = new();

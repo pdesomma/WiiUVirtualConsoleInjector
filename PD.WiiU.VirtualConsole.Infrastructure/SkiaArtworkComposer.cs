@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using PD.WiiU.VirtualConsole.Ports;
 using SkiaSharp;
 using WiiUSharp;
@@ -6,21 +6,23 @@ using WiiUSharp;
 namespace PD.WiiU.VirtualConsole.Infrastructure;
 
 /// <summary>
-/// Draws icons and boot screens with SkiaSharp: screenshot into the frame's window, frame on top, then the caption text.
+/// Draws icons, boot screens and boot logos with SkiaSharp: screenshot into the frame's window, frame on top, then the text.
 /// </summary>
 public sealed class SkiaArtworkComposer : IArtworkComposer
 {
     /// <summary>
-    /// Folder frames are read from when one is given; otherwise they come from the embedded copies.
+    /// Embedded resource prefix the bundled frames live under.
     /// </summary>
     public const string ResourcePrefix = "PD.WiiU.VirtualConsole.Infrastructure.Assets.Frames.";
 
     private const float DetailSize = 25;
+    private const float LogoSize = 20;
     private const float NameSize = 37;
 
+    private static readonly SKColor DarkGround = new(30, 30, 30);
     private static readonly SKColor Fill = new(32, 32, 32);
-    private static readonly SKColor IconBackground = new(30, 30, 30);
     private static readonly SKColor IconText = new(147, 149, 152);
+    private static readonly SKColor LogoInk = new(180, 180, 180);
     private static readonly SKColor Outline = new(222, 222, 222);
     private static readonly SKColor Shadow = new(190, 190, 190);
 
@@ -54,11 +56,13 @@ public sealed class SkiaArtworkComposer : IArtworkComposer
             throw new ArgumentNullException(nameof(slot));
         if (string.IsNullOrWhiteSpace(destinationPath))
             throw new ArgumentException("Destination path is required.", nameof(destinationPath));
-        if (slot != ImageSlot.Icon && slot != ImageSlot.BootTv && slot != ImageSlot.BootDrc)
-            throw new NotSupportedException($"{slot.Name} is not drawn from a screenshot.");
+        if (request.Frame is { } frame && frame.Slot != slot && !(frame.Slot == ImageSlot.BootTv && slot == ImageSlot.BootDrc))
+            throw new ArgumentException($"{frame.Name} is a {frame.Slot.Name} frame, not {slot.Name}.", nameof(request));
 
         cancellationToken.ThrowIfCancellationRequested();
-        using var bitmap = slot == ImageSlot.Icon ? DrawIcon(request) : DrawBootScreen(request, slot);
+        using var bitmap = slot == ImageSlot.Icon ? DrawIcon(request)
+            : slot == ImageSlot.BootLogo ? DrawLogo(request)
+            : DrawBootScreen(request, slot);
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(destinationPath))!);
         using var output = File.Create(destinationPath);
         bitmap.Encode(output, SKEncodedImageFormat.Png, 100);
@@ -66,28 +70,56 @@ public sealed class SkiaArtworkComposer : IArtworkComposer
     }
 
     /// <summary>
-    /// The 128x128 menu icon.
+    /// The 128x128 menu icon: dark ground, screenshot, frame; the plain one is captioned "Virtual Console".
     /// </summary>
     /// <param name="request">What to draw.</param>
     private SKBitmap DrawIcon(ArtworkRequest request)
     {
         var bitmap = new SKBitmap(ImageSlot.Icon.Width, ImageSlot.Icon.Height);
         using var canvas = new SKCanvas(bitmap);
-        canvas.Clear(IconBackground);
-        DrawScreenshot(canvas, request.ScreenshotPath, request.Template.Layout.IconArea);
+        canvas.Clear(DarkGround);
+        DrawScreenshot(canvas, request.ScreenshotPath, Window(request, ImageSlot.Icon));
 
-        using var frame = LoadFrame(request.Template.IconFrame);
+        using var frame = LoadFrame(request.Frame);
         if (frame is not null)
         {
-            canvas.DrawImage(SKImage.FromBitmap(frame), new SKRect(0, 0, ImageSlot.Icon.Width, ImageSlot.Icon.Height));
+            canvas.DrawImage(frame, new SKRect(0, 0, ImageSlot.Icon.Width, ImageSlot.Icon.Height));
             return bitmap;
         }
 
         var text = "Virtual Console";
         using var font = Font(text, 9.2f, bold: true);
         using var paint = new SKPaint { Color = IconText, IsAntialias = true };
-        var width = font.MeasureText(text);
-        canvas.DrawText(text, (ImageSlot.Icon.Width - width) / 2, 119, font, paint);
+        canvas.DrawText(text, (ImageSlot.Icon.Width - font.MeasureText(text)) / 2, 119, font, paint);
+        return bitmap;
+    }
+
+    /// <summary>
+    /// The 170x42 boot logo: dark ground, frame, then the text centred in the pill.
+    /// </summary>
+    /// <param name="request">What to draw.</param>
+    private SKBitmap DrawLogo(ArtworkRequest request)
+    {
+        var bitmap = new SKBitmap(ImageSlot.BootLogo.Width, ImageSlot.BootLogo.Height);
+        using var canvas = new SKCanvas(bitmap);
+        canvas.Clear(DarkGround);
+        using var frame = LoadFrame(request.Frame);
+        if (frame is not null)
+            canvas.DrawImage(frame, new SKRect(0, 0, ImageSlot.BootLogo.Width, ImageSlot.BootLogo.Height));
+
+        if (string.IsNullOrWhiteSpace(request.LogoText))
+            return bitmap;
+
+        var text = request.LogoText!.Trim();
+        var box = ArtworkFrames.LogoText;
+        using var font = Font(text, LogoSize, bold: true);
+        while (font.Size > 5 && font.MeasureText(text) > box.Width - 2)
+            font.Size -= 1;
+
+        using var ink = new SKPaint { Color = LogoInk, IsAntialias = true };
+        var x = box.X + (box.Width - font.MeasureText(text)) / 2;
+        var y = box.Y + (box.Height - font.Metrics.Descent - font.Metrics.Ascent) / 2;
+        canvas.DrawText(text, x, y, font, ink);
         return bitmap;
     }
 
@@ -102,10 +134,10 @@ public sealed class SkiaArtworkComposer : IArtworkComposer
         using (var canvas = new SKCanvas(bitmap))
         {
             canvas.Clear(SKColors.White);
-            DrawScreenshot(canvas, request.ScreenshotPath, request.Template.Layout.BootArea);
-            using var frame = LoadFrame(request.Template.BootFrame);
+            DrawScreenshot(canvas, request.ScreenshotPath, Window(request, ImageSlot.BootTv));
+            using var frame = LoadFrame(request.Frame);
             if (frame is not null)
-                canvas.DrawImage(SKImage.FromBitmap(frame), new SKRect(0, 0, ImageSlot.BootTv.Width, ImageSlot.BootTv.Height));
+                canvas.DrawImage(frame, new SKRect(0, 0, ImageSlot.BootTv.Width, ImageSlot.BootTv.Height));
 
             var twoLines = !string.IsNullOrWhiteSpace(request.NameLine2);
             if (!string.IsNullOrWhiteSpace(request.NameLine1))
@@ -150,14 +182,17 @@ public sealed class SkiaArtworkComposer : IArtworkComposer
     }
 
     /// <summary>
-    /// Stretches the screenshot into its window, or fills it black when there is none.
+    /// Stretches the screenshot into its window, or fills it black when there is none; no window draws nothing.
     /// </summary>
     /// <param name="canvas">Canvas to draw on.</param>
     /// <param name="path">Screenshot path, or null.</param>
-    /// <param name="area">Where it goes.</param>
-    private static void DrawScreenshot(SKCanvas canvas, string? path, PixelRect area)
+    /// <param name="area">Where it goes, or null.</param>
+    private static void DrawScreenshot(SKCanvas canvas, string? path, PixelRect? area)
     {
-        var target = new SKRect(area.X, area.Y, area.Right, area.Bottom);
+        if (area is not { } window)
+            return;
+
+        var target = new SKRect(window.X, window.Y, window.Right, window.Bottom);
         using var screenshot = string.IsNullOrWhiteSpace(path) ? null : SKBitmap.Decode(path);
         if (screenshot is null)
         {
@@ -169,6 +204,13 @@ public sealed class SkiaArtworkComposer : IArtworkComposer
         using var image = SKImage.FromBitmap(screenshot);
         canvas.DrawImage(image, target, new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear));
     }
+
+    /// <summary>
+    /// The screenshot window: the frame's, else the slot's plain one.
+    /// </summary>
+    /// <param name="request">What is being drawn.</param>
+    /// <param name="slot">Slot being drawn.</param>
+    private static PixelRect? Window(ArtworkRequest request, ImageSlot slot) => request.Frame?.Window ?? ArtworkFrames.DefaultWindow(slot);
 
     /// <summary>
     /// A font that can draw the text at the size the stock screens use; falls back to whatever the system has for scripts the first face lacks.
@@ -216,20 +258,30 @@ public sealed class SkiaArtworkComposer : IArtworkComposer
         SKTypeface.FromFamilyName("Nunito", style) ?? SKTypeface.FromFamilyName("Trebuchet MS", style) ?? SKTypeface.Default;
 
     /// <summary>
-    /// Reads a frame from the folder given at construction, else from the embedded copies; null when there is no frame.
+    /// Reads a frame's art from the folder given at construction, else from the embedded copies; null when there is none.
     /// </summary>
-    /// <param name="name">Frame file name, or null.</param>
-    private SKBitmap? LoadFrame(string? name)
+    /// <param name="frame">Frame to load, or null.</param>
+    private SKImage? LoadFrame(ArtworkFrame? frame)
     {
-        if (name is null)
+        if (frame?.Resource is not { } name)
             return null;
+
+        SKBitmap? bitmap;
         if (_frameDirectory is not null)
         {
             var path = Path.Combine(_frameDirectory, name);
-            return File.Exists(path) ? SKBitmap.Decode(path) : null;
+            bitmap = File.Exists(path) ? SKBitmap.Decode(path) : null;
+        }
+        else
+        {
+            using var stream = typeof(SkiaArtworkComposer).GetTypeInfo().Assembly.GetManifestResourceStream(ResourcePrefix + name);
+            bitmap = stream is null ? null : SKBitmap.Decode(stream);
         }
 
-        using var stream = typeof(SkiaArtworkComposer).GetTypeInfo().Assembly.GetManifestResourceStream(ResourcePrefix + name);
-        return stream is null ? null : SKBitmap.Decode(stream);
+        if (bitmap is null)
+            return null;
+
+        using (bitmap)
+            return SKImage.FromBitmap(bitmap);
     }
 }

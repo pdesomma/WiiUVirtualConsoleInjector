@@ -32,6 +32,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISettingsStore>(new JsonSettingsStore(paths.SettingsFile));
         services.AddSingleton<IUiScheduler, AvaloniaUiScheduler>();
         services.AddSingleton<IToastService, ToastService>();
+        services.AddSingleton<ISoundPlayer>(p => OperatingSystem.IsWindows()
+            ? new NAudioSoundPlayer(p.GetRequiredService<IUiScheduler>())
+            : new LauncherSoundPlayer(p.GetRequiredService<ILinkOpener>()));
         services.AddSingleton<IKeyStore>(p => new ToastingKeyStore(new JsonKeyStore(paths.KeysFile), p.GetRequiredService<IToastService>()));
         services.AddSingleton<IRemovableDrives, SystemRemovableDrives>();
         services.AddSingleton<IArtworkComposer>(p => new SkiaArtworkComposer(null, () => p.GetRequiredService<ISettingsService>().CaptionFontPath));
