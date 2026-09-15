@@ -12,6 +12,10 @@ public sealed record AppSettings
     /// </summary>
     public string? BasePath { get; init; }
     /// <summary>
+    /// Font file the generated boot screens are captioned in; null to use whatever can be found.
+    /// </summary>
+    public string? CaptionFontPath { get; init; }
+    /// <summary>
     /// Copy each finished title onto the SD card's install folder.
     /// </summary>
     public bool CopyToSdCard { get; init; }

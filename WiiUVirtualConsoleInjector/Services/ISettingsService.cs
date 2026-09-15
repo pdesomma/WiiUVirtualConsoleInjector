@@ -17,6 +17,10 @@ public interface ISettingsService
     /// </summary>
     string BasePath { get; }
     /// <summary>
+    /// Font file for boot screen captions: the setting, else the previous application's copy; null to use the bundled UI font.
+    /// </summary>
+    string? CaptionFontPath { get; }
+    /// <summary>
     /// Settings as last saved.
     /// </summary>
     AppSettings Current { get; }

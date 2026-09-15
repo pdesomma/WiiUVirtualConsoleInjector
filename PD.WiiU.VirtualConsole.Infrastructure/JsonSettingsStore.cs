@@ -57,6 +57,7 @@ public sealed class JsonSettingsStore : ISettingsStore
         return new AppSettings
         {
             BasePath = Blank(document.BasePath),
+            CaptionFontPath = Blank(document.CaptionFontPath),
             CopyToSdCard = document.CopyToSdCard ?? false,
             OutputPath = Blank(document.OutputPath),
             SdPath = Blank(document.SdPath),
@@ -75,6 +76,7 @@ public sealed class JsonSettingsStore : ISettingsStore
         var document = new Document
         {
             BasePath = settings.BasePath,
+            CaptionFontPath = settings.CaptionFontPath,
             CopyToSdCard = settings.CopyToSdCard,
             OutputPath = settings.OutputPath,
             SdPath = settings.SdPath,
@@ -95,6 +97,7 @@ public sealed class JsonSettingsStore : ISettingsStore
     private sealed class Document
     {
         public string? BasePath { get; set; }
+        public string? CaptionFontPath { get; set; }
         public bool? CopyToSdCard { get; set; }
         public string? OutputPath { get; set; }
         public string? SdPath { get; set; }

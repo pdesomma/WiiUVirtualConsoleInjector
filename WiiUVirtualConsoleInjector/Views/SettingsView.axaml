@@ -56,6 +56,28 @@
                 </StackPanel>
             </Border>
 
+            <!-- Artwork -->
+            <Border Classes="card">
+                <StackPanel>
+                    <TextBlock Classes="section" Text="Artwork" Margin="0,0,0,4" />
+                    <TextBlock Classes="hint" FontSize="12" Text="Generated boot screens are lettered in this font. The previous application's font.otf is picked up when it is on this machine." Margin="0,0,0,12" TextWrapping="Wrap" />
+                    <StackPanel Spacing="4" DataContext="{Binding CaptionFont}">
+                        <TextBlock Classes="label" Text="Caption font" />
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                            <TextBox Grid.Column="0" Text="{Binding Status, Mode=OneWay}" IsReadOnly="True" FontSize="12" VerticalAlignment="Center" />
+                            <Button Grid.Column="1" Classes="sm" Content="Browse…" Command="{Binding BrowseCommand}" />
+                            <Button Grid.Column="2" Classes="sm icon ghost" Command="{Binding ResetCommand}" IsEnabled="{Binding IsChosen}" ToolTip.Tip="Forget the chosen file">
+                                <Viewbox Width="15" Height="15">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Classes="btn-glyph" Data="M19.5 12a7.5 7.5 0 1 1-2.2-5.3 M19.5 4v4h-4" />
+                                    </Canvas>
+                                </Viewbox>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
             <!-- SD card -->
             <Border Classes="card">
                 <StackPanel>

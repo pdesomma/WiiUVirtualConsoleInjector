@@ -49,7 +49,9 @@ internal sealed class FakeSettingsService : ISettingsService
     public event EventHandler? Changed;
 
     public string BasePath => Current.BasePath ?? DefaultBase;
+    public string? CaptionFontPath => Current.CaptionFontPath ?? FoundCaptionFont;
     public AppSettings Current { get; set; } = new();
+    public string? FoundCaptionFont { get; set; }
     public string OutputPath => Current.OutputPath ?? DefaultOutput;
     public int Saves { get; private set; }
     public string DetectedSdPath { get; set; } = string.Empty;
