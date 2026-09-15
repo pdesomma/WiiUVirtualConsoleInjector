@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole;
+﻿using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Ports;
 using WiiUVirtualConsoleInjector;
 using WiiUVirtualConsoleInjector.Services;
@@ -13,7 +13,7 @@ public class SettingsServiceTests
     [TestMethod]
     public void Paths_Unset_FallBackToDataFolder()
     {
-        var service = new SettingsService(new MemorySettingsStore(), Paths);
+        var service = new SettingsService(new MemorySettingsStore(), Paths, new FakeToastService());
 
         Assert.AreEqual(Paths.DefaultBasePath, service.BasePath);
         Assert.AreEqual(Paths.DefaultOutputPath, service.OutputPath);
@@ -24,7 +24,8 @@ public class SettingsServiceTests
     public void Update_Change_SavesAndRaisesChanged()
     {
         var store = new MemorySettingsStore();
-        var service = new SettingsService(store, Paths);
+        var toasts = new FakeToastService();
+        var service = new SettingsService(store, Paths, toasts);
         var raised = 0;
         service.Changed += (_, _) => raised++;
 
@@ -33,6 +34,7 @@ public class SettingsServiceTests
         Assert.AreEqual(@"C:\bases", service.BasePath);
         Assert.AreEqual(@"C:\bases", store.Saved!.BasePath);
         Assert.AreEqual(1, raised);
+        CollectionAssert.AreEqual(new[] { SettingsService.SavedText }, toasts.Shown);
         Assert.ThrowsExactly<ArgumentNullException>(() => service.Update(null!));
         Assert.ThrowsExactly<InvalidOperationException>(() => service.Update(_ => null!));
     }
@@ -40,8 +42,9 @@ public class SettingsServiceTests
     [TestMethod]
     public void Constructor_NullArguments_ThrowsArgumentNullException()
     {
-        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsService(null!, Paths));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsService(new MemorySettingsStore(), null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsService(null!, Paths, new FakeToastService()));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsService(new MemorySettingsStore(), null!, new FakeToastService()));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsService(new MemorySettingsStore(), Paths, null!));
         Assert.ThrowsExactly<ArgumentException>(() => new AppPaths(" "));
     }
 

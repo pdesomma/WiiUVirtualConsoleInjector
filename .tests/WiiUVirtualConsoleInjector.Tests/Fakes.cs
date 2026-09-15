@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole;
+﻿using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Ports;
 using WiiUSharp;
 using WiiUSharp.Nus;
@@ -58,6 +58,13 @@ internal sealed class FakeSettingsService : ISettingsService
         Saves++;
         Changed?.Invoke(this, EventArgs.Empty);
     }
+}
+
+internal sealed class FakeToastService : IToastService
+{
+    public List<string> Shown { get; } = new();
+
+    public void Show(string message) => Shown.Add(message);
 }
 
 internal sealed class FakeKeyStore : IKeyStore

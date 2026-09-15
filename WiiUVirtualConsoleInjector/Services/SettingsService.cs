@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole;
+﻿using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Ports;
 
 namespace WiiUVirtualConsoleInjector.Services;
@@ -8,18 +8,26 @@ namespace WiiUVirtualConsoleInjector.Services;
 /// </summary>
 public sealed class SettingsService : ISettingsService
 {
+    /// <summary>
+    /// What every save toasts.
+    /// </summary>
+    public const string SavedText = "Saved";
+
     private readonly AppPaths _paths;
     private readonly ISettingsStore _store;
+    private readonly IToastService _toasts;
 
     /// <summary>
     /// Creates a new instance of the <see cref="SettingsService"/> class and loads what is saved.
     /// </summary>
     /// <param name="store">Where settings persist.</param>
     /// <param name="paths">Defaults for unset paths.</param>
-    public SettingsService(ISettingsStore store, AppPaths paths)
+    /// <param name="toasts">Told after each save.</param>
+    public SettingsService(ISettingsStore store, AppPaths paths, IToastService toasts)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _paths = paths ?? throw new ArgumentNullException(nameof(paths));
+        _toasts = toasts ?? throw new ArgumentNullException(nameof(toasts));
         Current = _store.Load();
     }
 
@@ -47,5 +55,6 @@ public sealed class SettingsService : ISettingsService
         Current = change(Current) ?? throw new InvalidOperationException("Settings change produced null.");
         _store.Save(Current);
         Changed?.Invoke(this, EventArgs.Empty);
+        _toasts.Show(SavedText);
     }
 }
