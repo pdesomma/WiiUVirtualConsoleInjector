@@ -304,7 +304,7 @@ internal sealed class FakeInjectionServiceFactory : IInjectionServiceFactory
         return Service;
     }
 
-    public IReadOnlyList<string> MissingKeys(SourceConsole console) => Array.Empty<string>();
+    public IReadOnlyList<string> MissingKeys(SourceConsole console, string? romPath = null) => Array.Empty<string>();
 }
 
 internal sealed class FakeInjectionHistory : IInjectionHistory

@@ -36,15 +36,15 @@ public sealed class WiiRomInjector : IRomInjector
     private const string PayloadFileName = "game.iso";
     private const string RebuiltFileName = "rebuilt.iso";
 
-    private readonly WiiPartitionCipher _cipher;
+    private readonly WiiPartitionCipher? _cipher;
 
     /// <summary>
     /// Creates a new instance of the <see cref="WiiRomInjector"/> class.
     /// </summary>
-    /// <param name="commonKey">Key that unlocks disc partitions.</param>
-    public WiiRomInjector(CommonKey commonKey)
+    /// <param name="commonKey">Key that unlocks disc partitions, or null to serve only what needs no decrypt: NKit images, homebrew and channels.</param>
+    public WiiRomInjector(CommonKey? commonKey)
     {
-        _cipher = new WiiPartitionCipher(commonKey);
+        _cipher = commonKey is { } key ? new WiiPartitionCipher(key) : null;
     }
 
     /// <inheritdoc/>
@@ -61,6 +61,7 @@ public sealed class WiiRomInjector : IRomInjector
 
     /// <inheritdoc/>
     /// <exception cref="NotSupportedException">Not an ISO or WBFS, or an option this injector cannot apply yet.</exception>
+    /// <exception cref="InvalidOperationException">An encrypted disc with no common key supplied.</exception>
     public Task InjectAsync(Injection injection, TitleDirectory title, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
         if (injection is null)
@@ -105,6 +106,27 @@ public sealed class WiiRomInjector : IRomInjector
             throw new ArgumentException("A title ID is 8 bytes.", nameof(titleId));
 
         return Encoding.ASCII.GetString(titleId, 4, 4) + "01";
+    }
+
+    /// <summary>
+    /// True when injecting <paramref name="path"/> would decrypt a disc: an encrypted .iso or a .wbfs. NKit images, homebrew and channels need no key.
+    /// </summary>
+    /// <param name="path">ROM path; may not exist yet.</param>
+    public static bool NeedsCommonKey(string path)
+    {
+        if (path is null)
+            throw new ArgumentNullException(nameof(path));
+
+        var extension = Path.GetExtension(path);
+        if (string.Equals(extension, ".wbfs", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (!string.Equals(extension, ".iso", StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (!File.Exists(path))
+            return true;
+
+        using var image = File.OpenRead(path);
+        return !WiiDiscRebuilder.IsNkit(image);
     }
 
     /// <summary>
@@ -169,6 +191,9 @@ public sealed class WiiRomInjector : IRomInjector
         var disc = WiiDisc.Read(iso);
         if (disc.DataPartitions.Count == 0)
             throw new InvalidDataException("Disc has no data partition.");
+
+        if (!WiiDiscRebuilder.IsNkit(iso) && _cipher is null)
+            throw new InvalidOperationException("The Wii common key is needed to read an encrypted disc image.");
 
         var (ticket, tmd) = WiiDiscRebuilder.IsNkit(iso)
             ? WriteNfsFromNkit(iso, options, title, progress, cancellationToken)
@@ -298,7 +323,7 @@ public sealed class WiiRomInjector : IRomInjector
             using (payload)
             {
                 progress?.Report("Decrypting disc");
-                var span = _cipher.Decrypt(iso, payload, cancellationToken);
+                var span = _cipher!.Decrypt(iso, payload, cancellationToken);
 
                 if (RegionPatcher.Apply(payload, options))
                     progress?.Report($"Region set to {options.TargetRegion}");

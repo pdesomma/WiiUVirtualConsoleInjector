@@ -130,6 +130,33 @@ public class WiiRomInjectorTests
     }
 
     [TestMethod]
+    public async Task InjectAsync_NoCommonKey_ServesNkitButNotEncryptedDiscs()
+    {
+        var title = StageBase();
+        var nkit = Write("retail.nkit.iso", FakeRetailDisc.Nkit(FakeRetailDisc.Dol()));
+
+        await new WiiRomInjector(null).InjectAsync(new Injection(Base(), new Rom(nkit, SourceConsole.Wii), Game()), title);
+        Assert.IsTrue(File.Exists(Path.Combine(title.Content, "hif_000000.nfs")));
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => new WiiRomInjector(null).InjectAsync(Injection(), title));
+    }
+
+    [TestMethod]
+    public void NeedsCommonKey_OnlyForEncryptedDiscs()
+    {
+        var nkit = Write("retail.nkit.iso", FakeRetailDisc.Nkit(FakeRetailDisc.Dol()));
+        var encrypted = Write("retail.iso", FakeRetailDisc.Encrypted(FakeRetailDisc.Dol()));
+
+        Assert.IsFalse(WiiRomInjector.NeedsCommonKey(nkit));
+        Assert.IsTrue(WiiRomInjector.NeedsCommonKey(encrypted));
+        Assert.IsTrue(WiiRomInjector.NeedsCommonKey(Path.Combine(_root, "missing.iso")), "an image that cannot be read is assumed encrypted");
+        Assert.IsTrue(WiiRomInjector.NeedsCommonKey(Path.Combine(_root, "game.wbfs")));
+        Assert.IsFalse(WiiRomInjector.NeedsCommonKey(Path.Combine(_root, "boot.dol")));
+        Assert.IsFalse(WiiRomInjector.NeedsCommonKey(Path.Combine(_root, "channel.wad")));
+        Assert.ThrowsExactly<ArgumentNullException>(() => WiiRomInjector.NeedsCommonKey(null!));
+    }
+
+    [TestMethod]
     public void OpenImage_NkitName_OpensLikeAnyIso()
     {
         var nkit = Write("game.nkit.iso", FakeRetailDisc.Nkit(FakeRetailDisc.Dol()));
