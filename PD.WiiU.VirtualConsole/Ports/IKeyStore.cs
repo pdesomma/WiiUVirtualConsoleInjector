@@ -19,6 +19,11 @@ public interface IKeyStore
     CommonKey? CommonKey { get; set; }
 
     /// <summary>
+    /// The Wii common key, once the user has supplied it; Wii and GameCube injects need it to open disc partitions.
+    /// </summary>
+    WiiSharp.CommonKey? WiiCommonKey { get; set; }
+
+    /// <summary>
     /// The wrapped title key for a title, or null when the user has not supplied one.
     /// </summary>
     /// <param name="titleId">Title the key unlocks.</param>

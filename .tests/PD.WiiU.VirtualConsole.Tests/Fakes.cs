@@ -88,6 +88,7 @@ internal sealed class FakeKeyStore : IKeyStore
 
     public AncastKey? AncastKey { get; set; }
     public WiiUSharp.Nus.CommonKey? CommonKey { get; set; }
+    public WiiSharp.CommonKey? WiiCommonKey { get; set; }
 
     public WiiUSharp.Nus.EncryptedTitleKey? GetTitleKey(TitleId titleId) => _titleKeys.TryGetValue(titleId, out var key) ? key : null;
 

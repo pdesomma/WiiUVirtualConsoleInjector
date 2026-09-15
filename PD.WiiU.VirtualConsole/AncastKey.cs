@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace PD.WiiU.VirtualConsole;
 
 /// <summary>
@@ -47,18 +45,7 @@ public readonly struct AncastKey : IEquatable<AncastKey>
     /// </summary>
     /// <param name="hex">Key as hex.</param>
     /// <exception cref="FormatException">Not thirty-two hex characters.</exception>
-    public static AncastKey Parse(string hex)
-    {
-        if (hex is null)
-            throw new ArgumentNullException(nameof(hex));
-        if (hex.Length != Size * 2)
-            throw new FormatException($"Key must be {Size * 2} hex characters.");
-
-        var bytes = new byte[Size];
-        for (var i = 0; i < bytes.Length; i++)
-            bytes[i] = byte.Parse(hex.Substring(i * 2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-        return new AncastKey(bytes);
-    }
+    public static AncastKey Parse(string hex) => new(KeyHex.Parse(hex, Size));
 
     /// <summary>
     /// Copy of the key bytes.
@@ -68,5 +55,5 @@ public readonly struct AncastKey : IEquatable<AncastKey>
     /// <summary>
     /// Key as lowercase hex.
     /// </summary>
-    public override string ToString() => string.Concat(ToArray().Select(b => b.ToString("x2", CultureInfo.InvariantCulture)));
+    public override string ToString() => KeyHex.Format(ToArray());
 }

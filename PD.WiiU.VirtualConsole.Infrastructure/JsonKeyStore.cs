@@ -20,6 +20,7 @@ public sealed class JsonKeyStore : IKeyStore
     private AncastKey? _ancastKey;
     private CommonKey? _commonKey;
     private Dictionary<TitleId, EncryptedTitleKey>? _titleKeys;
+    private WiiSharp.CommonKey? _wiiCommonKey;
 
     /// <summary>
     /// Creates a new instance of the <see cref="JsonKeyStore"/> class.
@@ -71,6 +72,22 @@ public sealed class JsonKeyStore : IKeyStore
     public string FilePath { get; }
 
     /// <inheritdoc/>
+    public WiiSharp.CommonKey? WiiCommonKey
+    {
+        get
+        {
+            Load();
+            return _wiiCommonKey;
+        }
+        set
+        {
+            Load();
+            _wiiCommonKey = value;
+            Save();
+        }
+    }
+
+    /// <inheritdoc/>
     public EncryptedTitleKey? GetTitleKey(TitleId titleId)
     {
         Load();
@@ -105,6 +122,7 @@ public sealed class JsonKeyStore : IKeyStore
                 titleKeys[TitleId.Parse(pair.Key)] = EncryptedTitleKey.Parse(pair.Value!);
             _commonKey = document.CommonKey is null ? null : WiiUSharp.Nus.CommonKey.Parse(document.CommonKey);
             _ancastKey = document.AncastKey is null ? null : VirtualConsole.AncastKey.Parse(document.AncastKey);
+            _wiiCommonKey = document.WiiCommonKey is null ? null : new WiiSharp.CommonKey(KeyHex.Parse(document.WiiCommonKey, NusFormat.KeySize));
         }
         catch (Exception e) when (e is FormatException or ArgumentNullException or OverflowException)
         {
@@ -139,6 +157,7 @@ public sealed class JsonKeyStore : IKeyStore
         {
             AncastKey = _ancastKey?.ToString(),
             CommonKey = _commonKey?.ToString(),
+            WiiCommonKey = _wiiCommonKey is null ? null : KeyHex.Format(_wiiCommonKey.Value.ToArray()),
             TitleKeys = _titleKeys!.ToDictionary(p => p.Key.ToString(), p => (string?)p.Value.ToString()),
         };
         Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
@@ -150,5 +169,6 @@ public sealed class JsonKeyStore : IKeyStore
         public string? AncastKey { get; set; }
         public string? CommonKey { get; set; }
         public Dictionary<string, string?>? TitleKeys { get; set; }
+        public string? WiiCommonKey { get; set; }
     }
 }

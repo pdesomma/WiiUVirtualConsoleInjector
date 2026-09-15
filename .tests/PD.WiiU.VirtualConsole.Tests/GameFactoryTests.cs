@@ -1,0 +1,52 @@
+using WiiUSharp;
+
+namespace PD.WiiU.VirtualConsole.Tests;
+
+[TestClass]
+public class GameFactoryTests
+{
+    [TestMethod]
+    public void Create_Name_MakesDemoTitleWithRandomIdsAboveTheFloor()
+    {
+        var game = GameFactory.Create("Super Metroid", random: new Random(7));
+
+        Assert.AreEqual(TitleType.Demo, game.TitleId.Type);
+        Assert.IsTrue((game.TitleId.UniqueId >> 16) >= GameFactory.MinimumIdHalf);
+        Assert.IsTrue((game.TitleId.UniqueId & 0xFFFF) >= GameFactory.MinimumIdHalf);
+        Assert.IsTrue(game.GroupId.Value >= GameFactory.MinimumIdHalf && game.GroupId.Value <= 0xFFFF);
+        Assert.AreEqual(ProductCode.EShop, game.ProductCode.Category);
+        Assert.AreEqual(game.GroupId.Value.ToString("X4"), game.ProductCode.Id);
+        Assert.AreEqual(0u, game.GamePadUse);
+        Assert.AreEqual("Super Metroid", game.NameIn(Language.English)!.ShortName);
+        Assert.AreEqual("Super Metroid", game.NameIn(Language.Japanese)!.LongName);
+    }
+
+    [TestMethod]
+    public void Create_CommaInName_SplitsLongAndShortNames()
+    {
+        var game = GameFactory.Create(" The Legend of Zelda, Majora's Mask ", "ZELD", gamePad: true);
+
+        Assert.AreEqual("The Legend of Zelda", game.NameIn(Language.English)!.ShortName);
+        Assert.AreEqual("The Legend of Zelda\n Majora's Mask", game.NameIn(Language.English)!.LongName);
+        Assert.AreEqual("ZELD", game.ProductCode.Id);
+        Assert.AreEqual(65537u, game.GamePadUse);
+    }
+
+    [TestMethod]
+    public void Create_SameSeed_IsDeterministicAndDifferentSeedsDiffer()
+    {
+        var a = GameFactory.Create("x", random: new Random(1));
+        var b = GameFactory.Create("x", random: new Random(1));
+        var c = GameFactory.Create("x", random: new Random(2));
+
+        Assert.AreEqual(a.TitleId, b.TitleId);
+        Assert.AreNotEqual(a.TitleId, c.TitleId);
+    }
+
+    [TestMethod]
+    public void Create_BadArguments_ThrowsArgumentException()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => GameFactory.Create(" "));
+        Assert.ThrowsExactly<ArgumentException>(() => GameFactory.Create("x", "TOOLONG"));
+    }
+}
