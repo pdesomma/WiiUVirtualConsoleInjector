@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Options;
 using WiiUVirtualConsoleInjector.Services;
@@ -37,4 +37,13 @@ public sealed partial class NdsOptionsViewModel : ConsoleOptionsViewModel
         LayoutScreensPath = LayoutScreens.Path,
         PixelArtUpscaler = PixelArtUpscaler,
     };
+
+    /// <inheritdoc/>
+    public override void Load(IConsoleOptions? options)
+    {
+        var nds = options as NdsOptions;
+        Brightness = nds?.Brightness ?? NdsOptions.DefaultBrightness;
+        LayoutScreens.Path = nds?.LayoutScreensPath;
+        PixelArtUpscaler = nds?.PixelArtUpscaler ?? 0;
+    }
 }

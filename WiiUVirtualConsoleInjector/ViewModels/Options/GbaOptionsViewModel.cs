@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Options;
 
@@ -24,4 +24,12 @@ public sealed partial class GbaOptionsViewModel : ConsoleOptionsViewModel
 
     /// <inheritdoc/>
     public override IConsoleOptions? Build() => new GbaOptions { PokemonPatch = PokemonPatch, RemoveDarkFilter = RemoveDarkFilter };
+
+    /// <inheritdoc/>
+    public override void Load(IConsoleOptions? options)
+    {
+        var gba = options as GbaOptions;
+        PokemonPatch = gba?.PokemonPatch ?? false;
+        RemoveDarkFilter = gba?.RemoveDarkFilter ?? false;
+    }
 }

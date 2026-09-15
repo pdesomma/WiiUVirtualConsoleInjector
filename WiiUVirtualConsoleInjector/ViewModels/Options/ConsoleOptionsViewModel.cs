@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole;
+﻿using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Options;
 
 namespace WiiUVirtualConsoleInjector.ViewModels.Options;
@@ -26,4 +26,10 @@ public abstract class ConsoleOptionsViewModel : ViewModelBase
     /// The domain options as edited, or null when the console has none.
     /// </summary>
     public abstract IConsoleOptions? Build();
+
+    /// <summary>
+    /// Shows earlier settings; null or another console's settings reset to defaults.
+    /// </summary>
+    /// <param name="options">Settings to show.</param>
+    public abstract void Load(IConsoleOptions? options);
 }

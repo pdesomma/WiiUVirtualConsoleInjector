@@ -1,0 +1,57 @@
+using PD.WiiU.VirtualConsole;
+
+namespace WiiUVirtualConsoleInjector.ViewModels;
+
+/// <summary>
+/// One tile on the history grid.
+/// </summary>
+public sealed class HistoryEntryViewModel : ViewModelBase
+{
+    /// <summary>
+    /// Creates a new instance of the <see cref="HistoryEntryViewModel"/> class.
+    /// </summary>
+    /// <param name="record">The inject it shows.</param>
+    public HistoryEntryViewModel(InjectionRecord record)
+    {
+        Record = record ?? throw new ArgumentNullException(nameof(record));
+    }
+
+    /// <summary>
+    /// Console it was built for.
+    /// </summary>
+    public string ConsoleName => Assets.ConsoleIcons.DisplayName(Record.Console);
+    /// <summary>
+    /// Console it was built for.
+    /// </summary>
+    public SourceConsole Console => Record.Console;
+    /// <summary>
+    /// True when the icon PNG is on disk.
+    /// </summary>
+    public bool HasIcon => Record.IconPath is { } path && File.Exists(path);
+    /// <summary>
+    /// The shipped icon, or null when it was not captured.
+    /// </summary>
+    public string? IconPath => HasIcon ? Record.IconPath : null;
+    /// <summary>
+    /// True when the ROM is no longer where it was.
+    /// </summary>
+    public bool IsRomMissing => !File.Exists(Record.RomPath);
+    /// <summary>
+    /// What the tile says.
+    /// </summary>
+    public string Name => Record.DisplayName;
+    /// <summary>
+    /// The inject it shows.
+    /// </summary>
+    public InjectionRecord Record { get; }
+    /// <summary>
+    /// Hover text: console, when, IDs and where the ROM was.
+    /// </summary>
+    public string Tooltip =>
+        $"{string.Join(" / ", Record.Name.Split(',').Select(l => l.Trim()))}\n{ConsoleName} · {Record.CreatedAt.LocalDateTime:g}\n{Record.Identity.ProductCode} · {Record.Identity.TitleId}\n{Record.RomPath}"
+        + (IsRomMissing ? "\n⚠ ROM not found" : string.Empty);
+    /// <summary>
+    /// When it was made.
+    /// </summary>
+    public string When => Record.CreatedAt.LocalDateTime.ToString("d");
+}

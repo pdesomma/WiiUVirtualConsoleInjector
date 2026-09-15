@@ -52,7 +52,9 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton(p => new ArtworkBuilderViewModel(p.GetRequiredService<IArtworkComposer>(), p.GetRequiredService<IDialogService>(), () => p.GetRequiredService<ISettingsService>().WorkPath));
+        services.AddSingleton<IInjectionHistory>(new JsonInjectionHistory(paths.HistoryFolder));
         services.AddSingleton<InjectViewModel>();
+        services.AddSingleton<HistoryViewModel>();
         services.AddSingleton<BasesViewModel>();
         services.AddSingleton<SettingsViewModel>();
         services.AddSingleton<AcknowledgementsViewModel>();

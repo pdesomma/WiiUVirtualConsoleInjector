@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Options;
 using WiiUVirtualConsoleInjector.Services;
@@ -37,4 +37,13 @@ public sealed partial class N64OptionsViewModel : ConsoleOptionsViewModel
         RemoveDarkFilter = RemoveDarkFilter,
         WideScreen = WideScreen,
     };
+
+    /// <inheritdoc/>
+    public override void Load(IConsoleOptions? options)
+    {
+        var n64 = options as N64Options;
+        Ini.Path = n64?.IniPath;
+        RemoveDarkFilter = n64?.RemoveDarkFilter ?? false;
+        WideScreen = n64?.WideScreen ?? false;
+    }
 }

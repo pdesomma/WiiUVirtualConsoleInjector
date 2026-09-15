@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Options;
 using WiiUVirtualConsoleInjector.Services;
@@ -41,4 +41,13 @@ public sealed partial class GameCubeOptionsViewModel : ConsoleOptionsViewModel
         ForwarderPath = Forwarder.Path,
         SecondDiscPath = SecondDisc.Path,
     };
+
+    /// <inheritdoc/>
+    public override void Load(IConsoleOptions? options)
+    {
+        var cube = options as GameCubeOptions;
+        ForceFourByThree = cube?.ForceFourByThree ?? false;
+        Forwarder.Path = cube?.ForwarderPath;
+        SecondDisc.Path = cube?.SecondDiscPath;
+    }
 }

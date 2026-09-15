@@ -6,6 +6,36 @@ namespace PD.WiiU.VirtualConsole.Tests;
 public class GameFactoryTests
 {
     [TestMethod]
+    public void Create_Identity_KeepsItsIdsAndProductCode()
+    {
+        var identity = new TitleIdentity(new TitleId(TitleType.Demo, 0x31323334), new GroupId(0x3456), new ProductCode(ProductCode.EShop, "WXYZ"));
+
+        var game = GameFactory.Create("Again", identity: identity, random: new Random(7));
+
+        Assert.AreEqual(identity.TitleId, game.TitleId);
+        Assert.AreEqual(identity.GroupId, game.GroupId);
+        Assert.AreEqual(identity.ProductCode, game.ProductCode);
+        Assert.AreEqual(identity, TitleIdentity.Of(game));
+    }
+
+    [TestMethod]
+    public void Create_IdentityAndProductId_TakesTheTypedProductIdOverTheIdentitys()
+    {
+        var identity = new TitleIdentity(new TitleId(TitleType.Demo, 0x31323334), new GroupId(0x3456), new ProductCode(ProductCode.EShop, "WXYZ"));
+
+        var game = GameFactory.Create("Again", productId: "QRST", identity: identity);
+
+        Assert.AreEqual(identity.TitleId, game.TitleId);
+        Assert.AreEqual("QRST", game.ProductCode.Id);
+    }
+
+    [TestMethod]
+    public void TitleIdentity_Of_Null_ThrowsArgumentNullException()
+    {
+        Assert.ThrowsExactly<ArgumentNullException>(() => TitleIdentity.Of(null!));
+    }
+
+    [TestMethod]
     public void Create_Name_MakesDemoTitleWithRandomIdsAboveTheFloor()
     {
         var game = GameFactory.Create("Super Metroid", random: new Random(7));

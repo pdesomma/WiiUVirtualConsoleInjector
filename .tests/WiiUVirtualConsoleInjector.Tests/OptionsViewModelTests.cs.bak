@@ -264,12 +264,12 @@ public class OptionsViewModelTests
         Assert.AreEqual(NdsOptions.DefaultBrightness, nds.Brightness);
 
         var wii = new WiiOptionsViewModel(_dialogs);
-        wii.Load(new WiiOptions { CheatCodesPath = @"C:\c.gct", ControllerMode = WiiControllerMode.WiiRemote, ForceFourByThree = true, ForwarderPath = @"C:\f.dol", HalfVerticalFilter = true, LrPatch = true, Passthrough = false, RemoveDeflicker = true, RemoveDithering = true, TargetRegion = Region.Japan, TrimDisc = false, VideoMode = WiiVideoMode.Ntsc });
+        wii.Load(new WiiOptions { CheatCodesPath = @"C:\c.gct", ControllerMode = WiiControllerMode.WiiRemote, ForceFourByThree = true, ForwarderPath = @"C:.dol", HalfVerticalFilter = true, LrPatch = true, Passthrough = false, RemoveDeflicker = true, RemoveDithering = true, TargetRegion = Region.Japan, TrimDisc = false, VideoMode = WiiVideoMode.Ntsc });
         Assert.AreEqual(@"C:\c.gct", wii.CheatCodes.Path);
         Assert.AreEqual(WiiControllerMode.WiiRemote, wii.ControllerMode);
         Assert.IsTrue(wii.ForceFourByThree && wii.HalfVerticalFilter && wii.LrPatch && wii.RemoveDeflicker && wii.RemoveDithering);
         Assert.IsFalse(wii.Passthrough || wii.TrimDisc);
-        Assert.AreEqual(@"C:\f.dol", wii.Forwarder.Path);
+        Assert.AreEqual(@"C:.dol", wii.Forwarder.Path);
         Assert.AreEqual(Choice("Japan"), wii.TargetRegion);
         Assert.AreEqual(WiiVideoMode.Ntsc, wii.VideoMode);
         wii.Load(null);
@@ -277,9 +277,11 @@ public class OptionsViewModelTests
         Assert.IsTrue(wii.Passthrough && wii.TrimDisc);
 
         var cube = new GameCubeOptionsViewModel(_dialogs);
-        cube.Load(new GameCubeOptions { ForceFourByThree = true, ForwarderPath = @"C:\n.dol", SecondDiscPath = @"C:\d2.iso" });
+        cube.Load(new GameCubeOptions { ForceFourByThree = true, ForwarderPath = @"C:
+.dol", SecondDiscPath = @"C:\d2.iso" });
         Assert.IsTrue(cube.ForceFourByThree);
-        Assert.AreEqual(@"C:\n.dol", cube.Forwarder.Path);
+        Assert.AreEqual(@"C:
+.dol", cube.Forwarder.Path);
         Assert.AreEqual(@"C:\d2.iso", cube.SecondDisc.Path);
 
         new NoOptionsViewModel(SourceConsole.Msx).Load(new NesOptions());

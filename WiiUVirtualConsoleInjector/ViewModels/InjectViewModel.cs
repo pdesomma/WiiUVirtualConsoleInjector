@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PD.WiiU.VirtualConsole;
+using PD.WiiU.VirtualConsole.Ports;
 using WiiUSharp;
 using WiiUVirtualConsoleInjector.Services;
 using WiiUVirtualConsoleInjector.ViewModels.Options;
@@ -11,7 +12,7 @@ namespace WiiUVirtualConsoleInjector.ViewModels;
 /// <summary>
 /// The inject page: pick a console, base, ROM, artwork and options, then run the injection.
 /// </summary>
-public sealed partial class InjectViewModel : PageViewModel
+public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
 {
     /// <summary>
     /// Title of the confirmation shown before a risky inject.
@@ -41,12 +42,14 @@ public sealed partial class InjectViewModel : PageViewModel
 
     private readonly IBaseService _bases;
     private readonly IDialogService _dialogs;
+    private readonly IInjectionHistory _history;
     private readonly IInjectionServiceFactory _injections;
     private readonly INavigationService _navigation;
     private readonly ISdCard _sdCard;
     private readonly ISettingsService _settings;
     private readonly ISoundPlayer _sounds;
     private CancellationTokenSource? _cancellation;
+    private TitleIdentity? _identity;
 
     [ObservableProperty]
     private ConsoleOptionsViewModel _currentOptions;
@@ -108,11 +111,13 @@ public sealed partial class InjectViewModel : PageViewModel
     /// <param name="sdCard">Copies the finished title to the card.</param>
     /// <param name="artwork">Builds icons and boot screens from a screenshot.</param>
     /// <param name="sounds">Plays the boot sound back.</param>
-    public InjectViewModel(IBaseService bases, IDialogService dialogs, IInjectionServiceFactory injections, ISettingsService settings, INavigationService navigation, ISdCard sdCard, ArtworkBuilderViewModel artwork, ISoundPlayer sounds)
+    /// <param name="history">Remembers finished injects.</param>
+    public InjectViewModel(IBaseService bases, IDialogService dialogs, IInjectionServiceFactory injections, ISettingsService settings, INavigationService navigation, ISdCard sdCard, ArtworkBuilderViewModel artwork, ISoundPlayer sounds, IInjectionHistory history)
         : base("Inject", "inject-icon.png", "M12 3v11 M7.5 10.5L12 15l4.5-4.5 M4 17.5V19a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5")
     {
         _bases = bases ?? throw new ArgumentNullException(nameof(bases));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
+        _history = history ?? throw new ArgumentNullException(nameof(history));
         _injections = injections ?? throw new ArgumentNullException(nameof(injections));
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
@@ -156,6 +161,18 @@ public sealed partial class InjectViewModel : PageViewModel
     /// <summary>
     /// True while a later step exists.
     /// </summary>
+    /// <inheritdoc/>
+    public System.Windows.Input.ICommand NextCommand => NextStepCommand;
+
+    /// <inheritdoc/>
+    public string NextHint => "Next step";
+
+    /// <inheritdoc/>
+    public System.Windows.Input.ICommand PreviousCommand => PreviousStepCommand;
+
+    /// <inheritdoc/>
+    public string PreviousHint => "Previous step";
+
     public bool CanGoNext => Step < Steps.Count;
 
     /// <summary>
@@ -346,6 +363,10 @@ public sealed partial class InjectViewModel : PageViewModel
     /// <summary>
     /// True when the product ID is blank or exactly four characters.
     /// </summary>
+    private bool IsBlank =>
+        string.IsNullOrWhiteSpace(RomPath) && string.IsNullOrWhiteSpace(Name) && string.IsNullOrWhiteSpace(ShortName) && string.IsNullOrWhiteSpace(ProductId)
+        && !Icon.HasPath && !BootTv.HasPath && !BootDrc.HasPath && !BootLogo.HasPath && !BootSound.HasPath;
+
     private bool IsProductIdValid => ClearedProductId(ProductId) is null or { Length: 4 };
 
     /// <inheritdoc/>
@@ -356,10 +377,39 @@ public sealed partial class InjectViewModel : PageViewModel
     }
 
     /// <summary>
+    /// Fills every step from an earlier inject, keeps its IDs so the rebuild replaces it, and lands on Review.
+    /// </summary>
+    /// <param name="record">Inject to build again.</param>
+    public void Load(InjectionRecord record)
+    {
+        if (record is null)
+            throw new ArgumentNullException(nameof(record));
+
+        StartOver();
+        SelectedConsole = record.Console;
+        SelectedBase = Bases.FirstOrDefault(b => b.Base.TitleId.Equals(record.BaseTitleId)) ?? SelectedBase;
+        RomPath = record.RomPath;
+        Name = record.Name;
+        ShortName = record.ShortName;
+        ProductId = record.ProductId;
+        GamePad = record.GamePad;
+        Format = record.Format;
+        Icon.Path = record.Artwork.Icon;
+        BootTv.Path = record.Artwork.BootTv;
+        BootDrc.Path = record.Artwork.BootDrc;
+        BootLogo.Path = record.Artwork.BootLogo;
+        BootSound.Path = record.BootSoundPath;
+        CurrentOptions.Load(record.Options);
+        _identity = record.Identity;
+        Step = Steps.Count;
+    }
+
+    /// <summary>
     /// Clears every field and returns to the first step, ready for the next title.
     /// </summary>
     public void StartOver()
     {
+        _identity = null;
         RomPath = null;
         Name = null;
         ShortName = null;
@@ -429,7 +479,7 @@ public sealed partial class InjectViewModel : PageViewModel
     };
 
     private Injection BuildInjection() =>
-        new(SelectedBase!.Base, new Rom(RomPath!, SelectedConsole), GameFactory.Create(Name!, ShortName, ClearedProductId(ProductId), IsGamePadVisible && GamePad))
+        new(SelectedBase!.Base, new Rom(RomPath!, SelectedConsole), GameFactory.Create(Name!, ShortName, ClearedProductId(ProductId), IsGamePadVisible && GamePad, identity: _identity))
         {
             Artwork = new Artwork { Icon = Icon.Path, BootTv = BootTv.Path, BootDrc = BootDrc.Path, BootLogo = BootLogo.Path },
             BootSoundPath = BootSound.Path,
@@ -519,6 +569,7 @@ public sealed partial class InjectViewModel : PageViewModel
             var token = cancellation.Token;
             var result = await Task.Run(() => service.InjectAsync(injection, work, _settings.OutputPath, progress, token), token).ConfigureAwait(true);
             var copied = await CopyToCardAsync(result.OutputDirectory, copying, token).ConfigureAwait(true);
+            await RememberAsync(injection, result).ConfigureAwait(true);
             Status = "Done";
             await _dialogs.ShowInfoAsync(DialogTitle, $"Title written to {copied ?? result.OutputDirectory}").ConfigureAwait(true);
             succeeded = true;
@@ -575,6 +626,34 @@ public sealed partial class InjectViewModel : PageViewModel
     /// The artwork field a slot's image lands in.
     /// </summary>
     /// <param name="slot">Slot that was built.</param>
+    /// <summary>
+    /// Adds the finished inject to the history; a failure there is reported but does not fail the inject.
+    /// </summary>
+    /// <param name="injection">What was injected.</param>
+    /// <param name="result">What came out.</param>
+    private async Task RememberAsync(Injection injection, InjectedTitle result)
+    {
+        var record = new InjectionRecord(Guid.NewGuid().ToString("N"), DateTimeOffset.Now, injection.Console, injection.Base.TitleId, injection.Rom.Path, Name!.Trim(), TitleIdentity.Of(result.Game))
+        {
+            Artwork = injection.Artwork,
+            BootSoundPath = injection.BootSoundPath,
+            Format = injection.Format,
+            GamePad = IsGamePadVisible && GamePad,
+            Options = injection.Options,
+            OutputDirectory = result.OutputDirectory,
+            ProductId = ClearedProductId(ProductId),
+            ShortName = string.IsNullOrWhiteSpace(ShortName) ? null : ShortName!.Trim(),
+        };
+        try
+        {
+            _history.Add(record, result.IconTga);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            await _dialogs.ShowErrorAsync(DialogTitle, "The title was written, but it could not be added to the history: " + e.Message).ConfigureAwait(true);
+        }
+    }
+
     private PathFieldViewModel SlotFor(ImageSlot slot) =>
         slot == ImageSlot.Icon ? Icon
         : slot == ImageSlot.BootTv ? BootTv
@@ -616,6 +695,20 @@ public sealed partial class InjectViewModel : PageViewModel
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanGoNext))]
     private void NextStep() => Step++;
+
+    /// <summary>
+    /// Clears the wizard after asking, unless it is already blank.
+    /// </summary>
+    [RelayCommand]
+    private async Task StartOverAsync()
+    {
+        if (IsRunning)
+            return;
+        if (!IsBlank && !await _dialogs.ConfirmAsync(DialogTitle, "Clear every field and go back to the first step?").ConfigureAwait(true))
+            return;
+
+        StartOver();
+    }
 
     partial void OnSelectedBaseChanged(BaseChoice? value)
     {

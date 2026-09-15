@@ -1,4 +1,4 @@
-using WiiUSharp;
+﻿using WiiUSharp;
 
 namespace PD.WiiU.VirtualConsole;
 
@@ -22,6 +22,10 @@ public sealed class InjectedTitle
     /// Metadata the title was given.
     /// </summary>
     public Game Game { get; }
+    /// <summary>
+    /// The iconTex.tga the title shipped with, or null when the base had none.
+    /// </summary>
+    public byte[]? IconTga { get; init; }
     /// <summary>
     /// Folder holding the packed title.
     /// </summary>

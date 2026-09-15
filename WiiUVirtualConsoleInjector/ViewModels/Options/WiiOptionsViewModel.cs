@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Options;
 using WiiUVirtualConsoleInjector.Services;
@@ -83,4 +83,22 @@ public sealed partial class WiiOptionsViewModel : ConsoleOptionsViewModel
         TrimDisc = TrimDisc,
         VideoMode = VideoMode,
     };
+
+    /// <inheritdoc/>
+    public override void Load(IConsoleOptions? options)
+    {
+        var wii = options as WiiOptions ?? new WiiOptions();
+        CheatCodes.Path = wii.CheatCodesPath;
+        ControllerMode = wii.ControllerMode;
+        ForceFourByThree = wii.ForceFourByThree;
+        Forwarder.Path = wii.ForwarderPath;
+        HalfVerticalFilter = wii.HalfVerticalFilter;
+        LrPatch = wii.LrPatch;
+        Passthrough = wii.Passthrough;
+        RemoveDeflicker = wii.RemoveDeflicker;
+        RemoveDithering = wii.RemoveDithering;
+        TargetRegion = RegionChoice.All.FirstOrDefault(r => r.Region == wii.TargetRegion) ?? RegionChoice.All[0];
+        TrimDisc = wii.TrimDisc;
+        VideoMode = wii.VideoMode;
+    }
 }
