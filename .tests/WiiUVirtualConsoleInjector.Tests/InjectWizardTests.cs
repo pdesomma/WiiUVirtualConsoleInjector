@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole;
+﻿using PD.WiiU.VirtualConsole;
 using WiiUSharp;
 using WiiUVirtualConsoleInjector.Services;
 using WiiUVirtualConsoleInjector.ViewModels;
@@ -154,5 +154,5 @@ public class InjectWizardTests
         Assert.AreEqual("0005000010101900", vm.SelectedBase.TitleId);
     }
 
-    private InjectViewModel Create() => new(_bases, _dialogs, _factory, _settings, _navigation);
+    private InjectViewModel Create() => new(_bases, _dialogs, _factory, _settings, _navigation, new FakeSdCard());
 }

@@ -1,4 +1,4 @@
-namespace PD.WiiU.VirtualConsole;
+﻿namespace PD.WiiU.VirtualConsole;
 
 /// <summary>
 /// What the application remembers between runs. Keys live elsewhere; see <see cref="Ports.IKeyStore"/>.
@@ -12,9 +12,17 @@ public sealed record AppSettings
     /// </summary>
     public string? BasePath { get; init; }
     /// <summary>
+    /// Copy each finished title onto the SD card's install folder.
+    /// </summary>
+    public bool CopyToSdCard { get; init; }
+    /// <summary>
     /// Folder injected titles are written to; null until chosen.
     /// </summary>
     public string? OutputPath { get; init; }
+    /// <summary>
+    /// Root of the SD card; null to use whichever drive is detected.
+    /// </summary>
+    public string? SdPath { get; init; }
     /// <summary>
     /// Warnings the user has asked not to see again.
     /// </summary>

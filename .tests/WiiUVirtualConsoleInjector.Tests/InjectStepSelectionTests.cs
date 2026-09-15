@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using WiiUVirtualConsoleInjector.Services;
 using WiiUVirtualConsoleInjector.ViewModels;
 
@@ -53,5 +53,5 @@ public class InjectStepSelectionTests
     }
 
     private static InjectViewModel Create() =>
-        new(new InjectFakes.InjectBaseService(), new InjectFakes.InjectDialogService(), new InjectFakes.RecordingInjectionServiceFactory(), new InjectFakes.InjectSettingsService(), new NavigationService());
+        new(new InjectFakes.InjectBaseService(), new InjectFakes.InjectDialogService(), new InjectFakes.RecordingInjectionServiceFactory(), new InjectFakes.InjectSettingsService(), new NavigationService(), new FakeSdCard());
 }

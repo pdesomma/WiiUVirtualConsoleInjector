@@ -10,6 +10,7 @@ public class SettingsViewModelTests
 
     private FakeDialogService _dialogs = null!;
     private FakeLinkOpener _links = null!;
+    private FakeSdCard _sdCard = null!;
     private FakeSettingsService _settings = null!;
 
     [TestInitialize]
@@ -18,6 +19,7 @@ public class SettingsViewModelTests
         _dialogs = new FakeDialogService();
         _settings = new FakeSettingsService();
         _links = new FakeLinkOpener();
+        _sdCard = new FakeSdCard();
     }
 
     [TestMethod]
@@ -39,10 +41,11 @@ public class SettingsViewModelTests
     [TestMethod]
     public void Constructor_NullArguments_ThrowsArgumentNullException()
     {
-        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(null!, _dialogs, Paths, _links));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, null!, Paths, _links));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, _dialogs, null!, _links));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, _dialogs, Paths, null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(null!, _dialogs, Paths, _links, _sdCard));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, null!, Paths, _links, _sdCard));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, _dialogs, null!, _links, _sdCard));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, _dialogs, Paths, null!, _sdCard));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, _dialogs, Paths, _links, null!));
     }
 
     [TestMethod]
@@ -165,5 +168,5 @@ public class SettingsViewModelTests
         CollectionAssert.AreEqual(vm.Folders.Select(f => f.Folder).ToArray(), _links.Folders);
     }
 
-    private SettingsViewModel Create() => new(_settings, _dialogs, Paths, _links);
+    private SettingsViewModel Create() => new(_settings, _dialogs, Paths, _links, _sdCard);
 }

@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole;
+﻿using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Options;
 using WiiUSharp;
 using WiiUVirtualConsoleInjector.ViewModels;
@@ -15,6 +15,7 @@ public class InjectViewModelTests
     private InjectBaseService _bases = null!;
     private InjectDialogService _dialogs = null!;
     private RecordingInjectionServiceFactory _factory = null!;
+    private FakeSdCard _sdCard = null!;
     private InjectSettingsService _settings = null!;
     private readonly NavigationService _navigation = new();
 
@@ -26,6 +27,7 @@ public class InjectViewModelTests
         _dialogs = new InjectDialogService();
         _factory = new RecordingInjectionServiceFactory();
         _settings = new InjectSettingsService();
+        _sdCard = new FakeSdCard();
         foreach (var console in Enum.GetValues<SourceConsole>())
             _bases.Add(Base(console, 0x1000 + (uint)console, console + " Base"));
     }
@@ -33,11 +35,12 @@ public class InjectViewModelTests
     [TestMethod]
     public void Constructor_NullArguments_ThrowsArgumentNullException()
     {
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(null!, _dialogs, _factory, _settings, _navigation));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, null!, _factory, _settings, _navigation));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, null!, _settings, _navigation));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, null!, _navigation));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(null!, _dialogs, _factory, _settings, _navigation, _sdCard));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, null!, _factory, _settings, _navigation, _sdCard));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, null!, _settings, _navigation, _sdCard));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, null!, _navigation, _sdCard));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, null!, _sdCard));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, null!));
     }
 
     [TestMethod]
@@ -467,7 +470,50 @@ public class InjectViewModelTests
         Assert.AreEqual(0, _dialogs.FilePicks.Count);
     }
 
-    private InjectViewModel Create() => new(_bases, _dialogs, _factory, _settings, _navigation);
+    private InjectViewModel Create() => new(_bases, _dialogs, _factory, _settings, _navigation, _sdCard);
+
+    [TestMethod]
+    public async Task InjectCommand_CopyToSdCardOn_CopiesThePackedTitleAndReportsWhereItLanded()
+    {
+        var vm = Ready();
+        _settings.Current = _settings.Current with { CopyToSdCard = true, SdPath = @"E:\" };
+
+        await vm.InjectCommand.ExecuteAsync(null);
+
+        var copy = _sdCard.Copies.Single();
+        Assert.AreEqual(_factory.Service.OutputDirectory, copy.Title);
+        Assert.AreEqual(@"E:\", copy.Root);
+        StringAssert.Contains(_dialogs.Infos.Single().Message, _sdCard.CopyResult);
+        CollectionAssert.Contains(vm.Log, "Copying title.tmd");
+        Assert.AreEqual("Done", vm.Status);
+    }
+
+    [TestMethod]
+    public async Task InjectCommand_CopyOffOrNoCard_LeavesTheCardAlone()
+    {
+        var vm = Ready();
+        await vm.InjectCommand.ExecuteAsync(null);
+
+        _settings.Current = _settings.Current with { CopyToSdCard = true };
+        await vm.InjectCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(0, _sdCard.Copies.Count);
+        StringAssert.Contains(_dialogs.Infos[0].Message, _factory.Service.OutputDirectory!);
+    }
+
+    [TestMethod]
+    public async Task InjectCommand_CopyFails_KeepsTheInjectAndSaysTheCopyFailed()
+    {
+        var vm = Ready();
+        _settings.Current = _settings.Current with { CopyToSdCard = true, SdPath = @"E:\" };
+        _sdCard.Failure = new IOException("card full");
+
+        await vm.InjectCommand.ExecuteAsync(null);
+
+        StringAssert.Contains(_dialogs.Errors.Single().Message, "card full");
+        StringAssert.Contains(_dialogs.Infos.Single().Message, _factory.Service.OutputDirectory!);
+        Assert.AreEqual("Done", vm.Status);
+    }
 
     private InjectViewModel Ready(SourceConsole console = SourceConsole.Nes, string rom = @"C:\game.nes")
     {

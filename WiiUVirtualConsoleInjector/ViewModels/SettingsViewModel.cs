@@ -15,7 +15,8 @@ public sealed class SettingsViewModel : PageViewModel
     /// <param name="dialogs">Folder picker.</param>
     /// <param name="paths">Per-user folders.</param>
     /// <param name="links">Opens a folder in the file manager.</param>
-    public SettingsViewModel(ISettingsService settings, IDialogService dialogs, AppPaths paths, ILinkOpener links)
+    /// <param name="sdCard">Lists and detects removable drives.</param>
+    public SettingsViewModel(ISettingsService settings, IDialogService dialogs, AppPaths paths, ILinkOpener links, ISdCard sdCard)
         : base("Settings", "settings.png")
     {
         if (settings is null)
@@ -26,11 +27,14 @@ public sealed class SettingsViewModel : PageViewModel
             throw new ArgumentNullException(nameof(paths));
         if (links is null)
             throw new ArgumentNullException(nameof(links));
+        if (sdCard is null)
+            throw new ArgumentNullException(nameof(sdCard));
 
         BaseFolder = new FolderSettingViewModel("Base store folder", () => settings.BasePath, (s, v) => s with { BasePath = v }, settings, dialogs, links);
         OutputFolder = new FolderSettingViewModel("Output folder", () => settings.OutputPath, (s, v) => s with { OutputPath = v }, settings, dialogs, links);
         WorkFolder = new FolderSettingViewModel("Work folder", () => settings.WorkPath, (s, v) => s with { WorkPath = v }, settings, dialogs, links);
         Folders = new[] { BaseFolder, OutputFolder, WorkFolder };
+        SdCard = new SdCardSettingViewModel(sdCard, settings, links);
         Warnings = Enum.GetValues<InjectionWarning>().Select(w => new WarningSettingViewModel(w, settings)).ToArray();
         DataFolder = paths.DataFolder;
     }
@@ -39,6 +43,10 @@ public sealed class SettingsViewModel : PageViewModel
     /// Where bases are kept.
     /// </summary>
     public FolderSettingViewModel BaseFolder { get; }
+    /// <summary>
+    /// The SD card and whether finished titles are copied to it.
+    /// </summary>
+    public SdCardSettingViewModel SdCard { get; }
     /// <summary>
     /// Root for settings, keys and caches.
     /// </summary>

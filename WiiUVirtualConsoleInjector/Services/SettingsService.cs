@@ -14,6 +14,7 @@ public sealed class SettingsService : ISettingsService
     public const string SavedText = "Saved";
 
     private readonly AppPaths _paths;
+    private readonly ISdCard _sdCard;
     private readonly ISettingsStore _store;
     private readonly IToastService _toasts;
 
@@ -23,11 +24,13 @@ public sealed class SettingsService : ISettingsService
     /// <param name="store">Where settings persist.</param>
     /// <param name="paths">Defaults for unset paths.</param>
     /// <param name="toasts">Told after each save.</param>
-    public SettingsService(ISettingsStore store, AppPaths paths, IToastService toasts)
+    /// <param name="sdCard">Detects the card when no path is set.</param>
+    public SettingsService(ISettingsStore store, AppPaths paths, IToastService toasts, ISdCard sdCard)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _paths = paths ?? throw new ArgumentNullException(nameof(paths));
         _toasts = toasts ?? throw new ArgumentNullException(nameof(toasts));
+        _sdCard = sdCard ?? throw new ArgumentNullException(nameof(sdCard));
         Current = _store.Load();
     }
 
@@ -43,6 +46,8 @@ public sealed class SettingsService : ISettingsService
     /// <inheritdoc/>
     public string OutputPath => Current.OutputPath ?? _paths.DefaultOutputPath;
 
+    /// <inheritdoc/>
+    public string SdPath => Current.SdPath ?? _sdCard.Detect()?.RootPath ?? string.Empty;
     /// <inheritdoc/>
     public string WorkPath => Current.WorkPath ?? _paths.WorkFolder;
 

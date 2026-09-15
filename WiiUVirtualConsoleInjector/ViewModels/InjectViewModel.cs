@@ -42,6 +42,7 @@ public sealed partial class InjectViewModel : PageViewModel
     private readonly IDialogService _dialogs;
     private readonly IInjectionServiceFactory _injections;
     private readonly INavigationService _navigation;
+    private readonly ISdCard _sdCard;
     private readonly ISettingsService _settings;
     private CancellationTokenSource? _cancellation;
 
@@ -97,7 +98,8 @@ public sealed partial class InjectViewModel : PageViewModel
     /// <param name="injections">Builds the injection service and reports missing keys.</param>
     /// <param name="settings">Work and output folders, suppressed warnings.</param>
     /// <param name="navigation">Lets the page jump to Bases and Keys.</param>
-    public InjectViewModel(IBaseService bases, IDialogService dialogs, IInjectionServiceFactory injections, ISettingsService settings, INavigationService navigation)
+    /// <param name="sdCard">Copies the finished title to the card.</param>
+    public InjectViewModel(IBaseService bases, IDialogService dialogs, IInjectionServiceFactory injections, ISettingsService settings, INavigationService navigation, ISdCard sdCard)
         : base("Inject", "inject-icon.png", "M12 3v11 M7.5 10.5L12 15l4.5-4.5 M4 17.5V19a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5")
     {
         _bases = bases ?? throw new ArgumentNullException(nameof(bases));
@@ -105,6 +107,7 @@ public sealed partial class InjectViewModel : PageViewModel
         _injections = injections ?? throw new ArgumentNullException(nameof(injections));
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
+        _sdCard = sdCard ?? throw new ArgumentNullException(nameof(sdCard));
 
         Icon = new PathFieldViewModel(dialogs, "Icon", "128 × 128", ImageFilters) { Glyph = "camera.png" };
         BootTv = new PathFieldViewModel(dialogs, "TV boot screen", "1280 × 720", ImageFilters) { Glyph = "camera.png" };
@@ -443,10 +446,12 @@ public sealed partial class InjectViewModel : PageViewModel
         {
             var service = _injections.Create();
             var progress = new Progress<InjectionProgress>(Report);
+            var copying = new Progress<string>(file => Log.Add("Copying " + file));
             var token = cancellation.Token;
             var result = await Task.Run(() => service.InjectAsync(injection, work, _settings.OutputPath, progress, token), token).ConfigureAwait(true);
+            var copied = await CopyToCardAsync(result.OutputDirectory, copying, token).ConfigureAwait(true);
             Status = "Done";
-            await _dialogs.ShowInfoAsync(DialogTitle, $"Title written to {result.OutputDirectory}").ConfigureAwait(true);
+            await _dialogs.ShowInfoAsync(DialogTitle, $"Title written to {copied ?? result.OutputDirectory}").ConfigureAwait(true);
         }
         catch (OperationCanceledException)
         {
@@ -467,6 +472,29 @@ public sealed partial class InjectViewModel : PageViewModel
             _cancellation = null;
             IsRunning = false;
             DeleteWork(work);
+        }
+    }
+
+    /// <summary>
+    /// Copies the packed title onto the SD card when that setting is on; returns where it landed, or null.
+    /// </summary>
+    /// <param name="titleDirectory">Folder holding the packed title.</param>
+    /// <param name="progress">File names as they are copied.</param>
+    /// <param name="cancellationToken">Stops the copy.</param>
+    private async Task<string?> CopyToCardAsync(string titleDirectory, IProgress<string> progress, CancellationToken cancellationToken)
+    {
+        if (!_settings.Current.CopyToSdCard || string.IsNullOrWhiteSpace(_settings.SdPath))
+            return null;
+
+        CurrentStep = "Copying to the SD card";
+        try
+        {
+            return await _sdCard.CopyAsync(titleDirectory, _settings.SdPath, progress, cancellationToken).ConfigureAwait(true);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or DirectoryNotFoundException)
+        {
+            await _dialogs.ShowErrorAsync(DialogTitle, "The title was packed, but copying it to the SD card failed: " + e.Message).ConfigureAwait(true);
+            return null;
         }
     }
 

@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole;
+﻿using PD.WiiU.VirtualConsole;
 
 namespace WiiUVirtualConsoleInjector.Services;
 
@@ -24,6 +24,10 @@ public interface ISettingsService
     /// Output folder: the setting, or the default under the data folder.
     /// </summary>
     string OutputPath { get; }
+    /// <summary>
+    /// Root of the SD card: the setting, or the drive that was detected; blank when there is neither.
+    /// </summary>
+    string SdPath { get; }
     /// <summary>
     /// Scratch folder: the setting, or the default under the data folder.
     /// </summary>
