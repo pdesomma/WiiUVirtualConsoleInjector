@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels"
              xmlns:vc="using:PD.WiiU.VirtualConsole"
@@ -91,6 +91,9 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
+
+                    <!-- Filter -->
+                    <TextBox Text="{Binding Filter}" PlaceholderText="Filter by name, title ID or region" Margin="0,0,0,8" />
 
                     <!-- Rows -->
                     <ItemsControl ItemsSource="{Binding Bases}">

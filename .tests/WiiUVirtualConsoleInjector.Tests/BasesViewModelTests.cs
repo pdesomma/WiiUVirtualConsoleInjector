@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole;
+﻿using PD.WiiU.VirtualConsole;
 using WiiUSharp;
 using WiiUSharp.Nus;
 using WiiUVirtualConsoleInjector.ViewModels;
@@ -540,6 +540,63 @@ public class BasesViewModelTests
         vm.SelectedConsole = SourceConsole.Nes;
         Assert.AreEqual(2, vm.Bases.Count);
         Assert.IsTrue(vm.Bases[1].IsCustom);
+    }
+
+    [TestMethod]
+    public async Task Filter_ContainsMatchOnNameTitleIdOrRegion_CaseInsensitive()
+    {
+        var vm = Create();
+        vm.CustomTitleId = "0005000010199900";
+        vm.CustomName = "Homebrew NES";
+        vm.CustomRegion = Region.Japan;
+        await vm.AddCustomBaseCommand.ExecuteAsync(null);
+
+        vm.Filter = "mario";
+        CollectionAssert.AreEqual(new[] { "Dr. Mario" }, vm.Bases.Select(b => b.Name).ToArray());
+
+        vm.Filter = "  1999  ";
+        CollectionAssert.AreEqual(new[] { "Homebrew NES" }, vm.Bases.Select(b => b.Name).ToArray());
+
+        vm.Filter = "JAPAN";
+        CollectionAssert.AreEqual(new[] { "Homebrew NES" }, vm.Bases.Select(b => b.Name).ToArray());
+
+        vm.Filter = "zelda";
+        Assert.AreEqual(0, vm.Bases.Count);
+
+        vm.Filter = "";
+        Assert.AreEqual(2, vm.Bases.Count);
+    }
+
+    [TestMethod]
+    public async Task Filter_HidingARow_StillRefreshesItAndBlocksDuplicateCustomIds()
+    {
+        var vm = Create();
+        vm.Filter = "nothing matches";
+        Assert.AreEqual(0, vm.Bases.Count);
+
+        _keys.CommonKey = new WiiUSharp.Nus.CommonKey(new byte[16]);
+        await vm.ActivateAsync();
+        vm.CustomTitleId = NesId.ToString();
+        vm.CustomName = "Duplicate";
+        await vm.AddCustomBaseCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(1, _dialogs.Errors.Count);
+        vm.Filter = "";
+        Assert.AreEqual(1, vm.Bases.Count);
+        Assert.AreNotEqual(BaseStatus.NeedsCommonKey, vm.Bases[0].Status);
+    }
+
+    [TestMethod]
+    public void Filter_SwitchingConsole_KeepsTheFilter()
+    {
+        var vm = Create();
+        vm.Filter = "metroid";
+        Assert.AreEqual(0, vm.Bases.Count);
+
+        vm.SelectedConsole = SourceConsole.Snes;
+
+        Assert.AreEqual("metroid", vm.Filter);
+        CollectionAssert.AreEqual(new[] { "Super Metroid" }, vm.Bases.Select(b => b.Name).ToArray());
     }
 
     [TestMethod]
