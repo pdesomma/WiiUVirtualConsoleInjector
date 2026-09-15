@@ -11,8 +11,11 @@
     <AssemblyName>WiiUVirtualConsoleInjector</AssemblyName>
     <RootNamespace>WiiUVirtualConsoleInjector</RootNamespace>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <InternalsVisibleTo>WiiUVirtualConsoleInjector.Tests</InternalsVisibleTo>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="WiiUVirtualConsoleInjector.Tests" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.1.2" />

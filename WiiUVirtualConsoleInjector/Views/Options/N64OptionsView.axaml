@@ -1,0 +1,11 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels.Options"
+             x:Class="WiiUVirtualConsoleInjector.Views.Options.N64OptionsView"
+             x:DataType="vm:N64OptionsViewModel">
+    <StackPanel Spacing="8">
+        <ContentControl Content="{Binding Ini}" />
+        <CheckBox Content="Remove dark filter" IsChecked="{Binding RemoveDarkFilter}" />
+        <CheckBox Content="Widescreen" IsChecked="{Binding WideScreen}" />
+    </StackPanel>
+</UserControl>

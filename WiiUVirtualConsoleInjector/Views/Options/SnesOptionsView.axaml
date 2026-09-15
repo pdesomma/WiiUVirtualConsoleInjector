@@ -1,0 +1,9 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels.Options"
+             x:Class="WiiUVirtualConsoleInjector.Views.Options.SnesOptionsView"
+             x:DataType="vm:SnesOptionsViewModel">
+    <StackPanel Spacing="8">
+        <CheckBox Content="Pixel perfect (integer scaling)" IsChecked="{Binding PixelPerfect}" />
+    </StackPanel>
+</UserControl>

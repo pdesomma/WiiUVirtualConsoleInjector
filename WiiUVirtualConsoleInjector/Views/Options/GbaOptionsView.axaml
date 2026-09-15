@@ -1,0 +1,10 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels.Options"
+             x:Class="WiiUVirtualConsoleInjector.Views.Options.GbaOptionsView"
+             x:DataType="vm:GbaOptionsViewModel">
+    <StackPanel Spacing="8">
+        <CheckBox Content="Pokémon save patch" IsChecked="{Binding PokemonPatch}" />
+        <CheckBox Content="Remove dark filter" IsChecked="{Binding RemoveDarkFilter}" />
+    </StackPanel>
+</UserControl>

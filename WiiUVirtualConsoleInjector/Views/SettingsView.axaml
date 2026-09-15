@@ -3,5 +3,53 @@
              xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels"
              x:Class="WiiUVirtualConsoleInjector.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
-    <TextBlock Text="{Binding Title}" FontSize="24" />
+
+    <UserControl.DataTemplates>
+        <DataTemplate x:DataType="vm:FolderSettingViewModel">
+            <StackPanel Spacing="4">
+                <TextBlock Text="{Binding Label}" />
+                <Grid ColumnDefinitions="*,Auto,Auto">
+                    <TextBox Grid.Column="0" Text="{Binding Folder, Mode=OneWay}" IsReadOnly="True" />
+                    <Button Grid.Column="1" Content="Browse…" Command="{Binding BrowseCommand}" Margin="8,0,0,0" />
+                    <Button Grid.Column="2" Content="Reset to default" Command="{Binding ResetCommand}" Margin="8,0,0,0" />
+                </Grid>
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:DataType="vm:WarningSettingViewModel">
+            <CheckBox IsChecked="{Binding ShowAgain}" Content="{Binding Description}" />
+        </DataTemplate>
+    </UserControl.DataTemplates>
+
+    <StackPanel Spacing="20">
+        <TextBlock Text="{Binding Title}" FontSize="24" />
+
+        <StackPanel Spacing="12">
+            <TextBlock Text="Paths" FontSize="18" FontWeight="SemiBold" />
+            <ItemsControl ItemsSource="{Binding Folders}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Spacing="12" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+            <TextBlock Text="Warnings" FontSize="18" FontWeight="SemiBold" />
+            <TextBlock Text="Show these warnings again before injecting:" />
+            <ItemsControl ItemsSource="{Binding Warnings}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Spacing="4" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </StackPanel>
+
+        <StackPanel Spacing="4">
+            <TextBlock Text="Data folder" FontSize="18" FontWeight="SemiBold" />
+            <TextBlock Text="Settings, keys and caches live here." />
+            <SelectableTextBlock Text="{Binding DataFolder}" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+        </StackPanel>
+    </StackPanel>
 </UserControl>
