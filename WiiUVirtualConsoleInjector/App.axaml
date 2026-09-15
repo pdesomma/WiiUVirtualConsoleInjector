@@ -28,6 +28,10 @@
                     <SolidColorBrush x:Key="DividerBrush" Color="#59BEBEBC" />
                     <SolidColorBrush x:Key="SubtleBrush" Color="#05000000" />
                     <SolidColorBrush x:Key="TileFrameBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="TileEdgeBrush" Color="#8FBFBFBD" />
+                    <Color x:Key="TileGlassTop">#FFFFFFFF</Color>
+                    <Color x:Key="TileGlassMiddle">#F2F4F4F3</Color>
+                    <Color x:Key="TileGlassBottom">#FFDCDCDA</Color>
                     <SolidColorBrush x:Key="RailBrush" Color="#FDFDFC" />
                     <SolidColorBrush x:Key="RailBorderBrush" Color="#0F000000" />
                     <SolidColorBrush x:Key="RailInactiveBrush" Color="#AAAAAA" />
@@ -79,6 +83,10 @@
                     <SolidColorBrush x:Key="DividerBrush" Color="#24FFFFFF" />
                     <SolidColorBrush x:Key="SubtleBrush" Color="#0FFFFFFF" />
                     <SolidColorBrush x:Key="TileFrameBrush" Color="#35332F" />
+                    <SolidColorBrush x:Key="TileEdgeBrush" Color="#40FFFFFF" />
+                    <Color x:Key="TileGlassTop">#FF6A6862</Color>
+                    <Color x:Key="TileGlassMiddle">#FF4A4844</Color>
+                    <Color x:Key="TileGlassBottom">#FF35332F</Color>
                     <SolidColorBrush x:Key="RailBrush" Color="#252422" />
                     <SolidColorBrush x:Key="RailBorderBrush" Color="#0DFFFFFF" />
                     <SolidColorBrush x:Key="RailInactiveBrush" Color="#8CF5F5F3" />
