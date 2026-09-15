@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels"
         xmlns:conv="using:WiiUVirtualConsoleInjector.Converters"
@@ -29,6 +29,7 @@
         </Style>
     </Window.Styles>
 
+    <Panel>
     <DockPanel>
         <!-- Header -->
         <Border DockPanel.Dock="Top" Height="58" Background="{DynamicResource HeaderBrush}" BoxShadow="0 2 6 0 #40000000" ZIndex="1">
@@ -83,4 +84,28 @@
             </ScrollViewer>
         </Border>
     </DockPanel>
+
+    <!-- Toasts: newest at the bottom, anchored to the window's bottom-right corner -->
+    <ItemsControl ItemsSource="{Binding Toasts}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="18" ZIndex="2">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <StackPanel Spacing="10" />
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:ToastViewModel">
+                <Border Classes="toast" Classes.entering="{Binding IsEntering}" Classes.leaving="{Binding IsLeaving}">
+                    <DockPanel>
+                        <Border Classes="toast-stripe" DockPanel.Dock="Left" Background="{Binding Kind, Converter={x:Static conv:ToastConverters.Stripe}}" />
+                        <Button Classes="toast-close" DockPanel.Dock="Right" Content="&#xD7;" Margin="8,11,12,0" Command="{Binding DismissCommand}" ToolTip.Tip="Close" />
+                        <StackPanel Margin="14,13,0,13" Spacing="2">
+                            <TextBlock Text="{Binding Title}" FontSize="12.5" FontWeight="ExtraBold" LineHeight="17" />
+                            <TextBlock Text="{Binding Message}" IsVisible="{Binding HasMessage}" FontSize="12" LineHeight="18" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+    </Panel>
 </Window>

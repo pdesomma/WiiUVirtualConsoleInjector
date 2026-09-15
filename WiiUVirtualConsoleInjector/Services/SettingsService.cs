@@ -55,6 +55,6 @@ public sealed class SettingsService : ISettingsService
         Current = change(Current) ?? throw new InvalidOperationException("Settings change produced null.");
         _store.Save(Current);
         Changed?.Invoke(this, EventArgs.Empty);
-        _toasts.Show(SavedText);
+        _toasts.Show(ToastKind.Success, SavedText, "Settings updated.");
     }
 }

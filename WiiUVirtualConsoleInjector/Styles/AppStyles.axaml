@@ -1,4 +1,4 @@
-<Styles xmlns="https://github.com/avaloniaui"
+﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:conv="using:WiiUVirtualConsoleInjector.Converters">
 
@@ -492,5 +492,53 @@
         <Setter Property="Width" Value="22" />
         <Setter Property="Height" Value="22" />
         <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <!-- ===== Toasts ===== -->
+    <Style Selector="Border.toast">
+        <Setter Property="Width" Value="320" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="Background" Value="{DynamicResource ToastBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BoxShadow" Value="0 6 20 0 #47000000" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.14" Easing="CubicEaseOut" />
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.14" Easing="CubicEaseOut" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <!-- Cards start shifted right and transparent, then transition in -->
+    <Style Selector="Border.toast.entering">
+        <Setter Property="Opacity" Value="0" />
+        <Setter Property="RenderTransform" Value="translateX(12px)" />
+    </Style>
+    <Style Selector="Border.toast.leaving">
+        <Setter Property="Opacity" Value="0" />
+        <Setter Property="RenderTransform" Value="translateX(12px)" />
+    </Style>
+    <Style Selector="Border.toast-stripe">
+        <Setter Property="Width" Value="4" />
+    </Style>
+    <Style Selector="Button.toast-close">
+        <Setter Property="Width" Value="22" />
+        <Setter Property="Height" Value="22" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="PART_Shell" CornerRadius="9999" Background="Transparent">
+                    <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="Button.toast-close:pointerover /template/ Border#PART_Shell">
+        <Setter Property="Background" Value="{DynamicResource ToastHoverBrush}" />
     </Style>
 </Styles>

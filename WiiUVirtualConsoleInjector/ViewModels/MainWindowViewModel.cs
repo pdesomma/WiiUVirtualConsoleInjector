@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PD.WiiU.VirtualConsole;
 using WiiUVirtualConsoleInjector.Services;
@@ -27,10 +28,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <param name="settingsPage">The settings page.</param>
     /// <param name="credits">The acknowledgements page.</param>
     /// <param name="settings">Where the colour scheme is remembered.</param>
+    /// <param name="toasts">The notices shown in the corner.</param>
     /// <param name="navigation">Requests from pages to show another page.</param>
-    public MainWindowViewModel(InjectViewModel inject, BasesViewModel bases, SettingsViewModel settingsPage, AcknowledgementsViewModel credits, ISettingsService settings, INavigationService navigation)
+    public MainWindowViewModel(InjectViewModel inject, BasesViewModel bases, SettingsViewModel settingsPage, AcknowledgementsViewModel credits, ISettingsService settings, IToastService toasts, INavigationService navigation)
     {
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        Toasts = (toasts ?? throw new ArgumentNullException(nameof(toasts))).Toasts;
         if (navigation is null)
             throw new ArgumentNullException(nameof(navigation));
 
@@ -46,6 +49,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         navigation.Requested += (_, type) => CurrentPage = Pages.FirstOrDefault(p => p.GetType() == type) ?? CurrentPage;
     }
 
+    /// <summary>
+    /// Notices shown in the corner of the window.
+    /// </summary>
+    public ReadOnlyObservableCollection<ToastViewModel> Toasts { get; }
     /// <summary>
     /// True while the light scheme is on.
     /// </summary>

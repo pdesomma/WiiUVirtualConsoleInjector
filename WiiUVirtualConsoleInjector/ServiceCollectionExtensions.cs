@@ -30,7 +30,8 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton(paths);
         services.AddSingleton<ISettingsStore>(new JsonSettingsStore(paths.SettingsFile));
-        services.AddSingleton<IToastService>(new AvaloniaToastService(owner));
+        services.AddSingleton<IUiScheduler, AvaloniaUiScheduler>();
+        services.AddSingleton<IToastService, ToastService>();
         services.AddSingleton<IKeyStore>(p => new ToastingKeyStore(new JsonKeyStore(paths.KeysFile), p.GetRequiredService<IToastService>()));
         services.AddSingleton<ISettingsService, SettingsService>();
         services.AddSingleton(BaseCatalog.Bundled());

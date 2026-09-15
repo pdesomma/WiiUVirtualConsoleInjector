@@ -34,7 +34,7 @@ public class SettingsServiceTests
         Assert.AreEqual(@"C:\bases", service.BasePath);
         Assert.AreEqual(@"C:\bases", store.Saved!.BasePath);
         Assert.AreEqual(1, raised);
-        CollectionAssert.AreEqual(new[] { SettingsService.SavedText }, toasts.Shown);
+        Assert.AreEqual((ToastKind.Success, SettingsService.SavedText, "Settings updated."), toasts.Shown.Single());
         Assert.ThrowsExactly<ArgumentNullException>(() => service.Update(null!));
         Assert.ThrowsExactly<InvalidOperationException>(() => service.Update(_ => null!));
     }

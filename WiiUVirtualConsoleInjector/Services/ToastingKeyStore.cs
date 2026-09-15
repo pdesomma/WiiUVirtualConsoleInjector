@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole;
+﻿using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Ports;
 using WiiUSharp;
 using WiiUSharp.Nus;
@@ -11,7 +11,11 @@ namespace WiiUVirtualConsoleInjector.Services;
 public sealed class ToastingKeyStore : IKeyStore
 {
     /// <summary>
-    /// What every write toasts.
+    /// Title of a toast for a key that was forgotten.
+    /// </summary>
+    public const string ClearedText = "Cleared";
+    /// <summary>
+    /// Title of a toast for a key that was stored.
     /// </summary>
     public const string SavedText = "Saved";
 
@@ -36,7 +40,7 @@ public sealed class ToastingKeyStore : IKeyStore
         set
         {
             _inner.AncastKey = value;
-            _toasts.Show(SavedText);
+            Toast(value is not null, "Ancast key");
         }
     }
     /// <inheritdoc/>
@@ -46,7 +50,7 @@ public sealed class ToastingKeyStore : IKeyStore
         set
         {
             _inner.CommonKey = value;
-            _toasts.Show(SavedText);
+            Toast(value is not null, "Wii U common key");
         }
     }
     /// <inheritdoc/>
@@ -56,7 +60,7 @@ public sealed class ToastingKeyStore : IKeyStore
         set
         {
             _inner.WiiCommonKey = value;
-            _toasts.Show(SavedText);
+            Toast(value is not null, "Wii common key");
         }
     }
 
@@ -67,6 +71,14 @@ public sealed class ToastingKeyStore : IKeyStore
     public void SetTitleKey(TitleId titleId, EncryptedTitleKey? titleKey)
     {
         _inner.SetTitleKey(titleId, titleKey);
-        _toasts.Show(SavedText);
+        Toast(titleKey is not null, $"Title key for {titleId}");
     }
+
+    /// <summary>
+    /// Reports what was stored or forgotten.
+    /// </summary>
+    /// <param name="stored">True when a key was written, false when it was removed.</param>
+    /// <param name="what">Name of the key.</param>
+    private void Toast(bool stored, string what) =>
+        _toasts.Show(ToastKind.Success, stored ? SavedText : ClearedText, $"{what} {(stored ? "stored" : "forgotten")}.");
 }

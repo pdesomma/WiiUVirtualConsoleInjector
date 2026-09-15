@@ -1,8 +1,10 @@
-﻿using PD.WiiU.VirtualConsole;
+﻿using System.Collections.ObjectModel;
+using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Ports;
 using WiiUSharp;
 using WiiUSharp.Nus;
 using WiiUVirtualConsoleInjector.Services;
+using WiiUVirtualConsoleInjector.ViewModels;
 
 namespace WiiUVirtualConsoleInjector.Tests;
 
@@ -62,9 +64,68 @@ internal sealed class FakeSettingsService : ISettingsService
 
 internal sealed class FakeToastService : IToastService
 {
-    public List<string> Shown { get; } = new();
+    private readonly ObservableCollection<ToastViewModel> _toasts = new();
 
-    public void Show(string message) => Shown.Add(message);
+    public FakeToastService()
+    {
+        Toasts = new ReadOnlyObservableCollection<ToastViewModel>(_toasts);
+    }
+
+    public List<ToastViewModel> Dismissed { get; } = new();
+    public List<(ToastKind Kind, string Title, string? Message)> Shown { get; } = new();
+    public ReadOnlyObservableCollection<ToastViewModel> Toasts { get; }
+
+    public void Dismiss(ToastViewModel toast) => Dismissed.Add(toast);
+
+    public void Show(ToastKind kind, string title, string? message = null)
+    {
+        Shown.Add((kind, title, message));
+        _toasts.Add(new ToastViewModel(kind, title, message, this));
+    }
+}
+
+internal sealed class FakeUiScheduler : IUiScheduler
+{
+    private readonly List<(TimeSpan Delay, Action Action)> _pending = new();
+
+    public int Cancelled { get; private set; }
+    public int Posted { get; private set; }
+    public IReadOnlyList<(TimeSpan Delay, Action Action)> Pending => _pending;
+
+    public IDisposable Delay(TimeSpan delay, Action action)
+    {
+        var entry = (delay, action);
+        _pending.Add(entry);
+        return new Cancellation(() =>
+        {
+            if (_pending.Remove(entry))
+                Cancelled++;
+        });
+    }
+
+    public void Post(Action action)
+    {
+        Posted++;
+        action();
+    }
+
+    public void RunDue(TimeSpan delay)
+    {
+        foreach (var entry in _pending.Where(p => p.Delay == delay).ToArray())
+        {
+            _pending.Remove(entry);
+            entry.Action();
+        }
+    }
+
+    private sealed class Cancellation : IDisposable
+    {
+        private readonly Action _cancel;
+
+        public Cancellation(Action cancel) => _cancel = cancel;
+
+        public void Dispose() => _cancel();
+    }
 }
 
 internal sealed class FakeKeyStore : IKeyStore

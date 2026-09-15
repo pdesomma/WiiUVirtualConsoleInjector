@@ -35,7 +35,12 @@ public class ToastingKeyStoreTests
         Assert.IsNotNull(inner.AncastKey);
         Assert.AreEqual(1, inner.TitleKeyWrites);
         Assert.AreEqual(5, toasts.Shown.Count);
-        Assert.IsTrue(toasts.Shown.All(m => m == ToastingKeyStore.SavedText));
+        Assert.IsTrue(toasts.Shown.All(t => t.Kind == ToastKind.Success));
+        CollectionAssert.AreEqual(
+            new[] { ToastingKeyStore.SavedText, ToastingKeyStore.SavedText, ToastingKeyStore.SavedText, ToastingKeyStore.SavedText, ToastingKeyStore.ClearedText },
+            toasts.Shown.Select(t => t.Title).ToArray());
+        StringAssert.Contains(toasts.Shown[0].Message, "Wii U common key");
+        StringAssert.Contains(toasts.Shown[3].Message, Id.ToString());
     }
 
     [TestMethod]
