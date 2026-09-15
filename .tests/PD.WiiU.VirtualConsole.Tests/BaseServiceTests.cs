@@ -1,4 +1,4 @@
-using WiiUSharp.Nus;
+﻿using WiiUSharp.Nus;
 
 namespace PD.WiiU.VirtualConsole.Tests;
 
@@ -29,6 +29,21 @@ public class BaseServiceTests
     {
         if (Directory.Exists(_root))
             Directory.Delete(_root, recursive: true);
+    }
+
+    [TestMethod]
+    public void HasTitleKey_FollowsTheKeyStoreRegardlessOfPresence()
+    {
+        var @base = TestTitle.Base();
+
+        Assert.IsFalse(_service.HasTitleKey(@base));
+        _keys.SetTitleKey(@base.TitleId, Title);
+        Assert.IsTrue(_service.HasTitleKey(@base));
+        TestTitle.Populate(_store.Locate(@base).Root);
+        Assert.IsTrue(_service.HasTitleKey(@base));
+        _keys.SetTitleKey(@base.TitleId, null);
+        Assert.IsFalse(_service.HasTitleKey(@base), "a present base without its key still shows no key");
+        Assert.ThrowsExactly<ArgumentNullException>(() => _service.HasTitleKey(null!));
     }
 
     [TestMethod]

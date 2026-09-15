@@ -259,6 +259,8 @@ internal sealed class FakeBaseService : IBaseService
         return Download(@base, progress, cancellationToken);
     }
 
+    public bool HasTitleKey(BaseTitle @base) => Keys.GetTitleKey(@base.TitleId) is not null;
+
     public BaseStatus Status(BaseTitle @base)
     {
         if (Present.Contains(@base.TitleId))

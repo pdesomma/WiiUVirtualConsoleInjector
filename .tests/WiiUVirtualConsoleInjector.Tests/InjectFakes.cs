@@ -87,6 +87,7 @@ internal static class InjectFakes
     internal sealed class InjectBaseService : IBaseService
     {
         public List<BaseTitle> Bases { get; } = new();
+        public HashSet<TitleId> Keyed { get; } = new();
         public Dictionary<TitleId, BaseStatus> Statuses { get; } = new();
 
         public InjectBaseService Add(BaseTitle @base, BaseStatus status = BaseStatus.Present)
@@ -100,6 +101,8 @@ internal static class InjectFakes
 
         public Task<TitleDirectory> DownloadAsync(BaseTitle @base, IProgress<BaseDownloadProgress>? progress = null, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
+
+        public bool HasTitleKey(BaseTitle @base) => Keyed.Contains(@base.TitleId);
 
         public BaseStatus Status(BaseTitle @base) => Statuses.TryGetValue(@base.TitleId, out var status) ? status : BaseStatus.Downloadable;
     }

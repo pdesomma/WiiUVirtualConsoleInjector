@@ -1,4 +1,4 @@
-namespace PD.WiiU.VirtualConsole;
+﻿namespace PD.WiiU.VirtualConsole;
 
 /// <summary>
 /// Gets bases into the store: what each one needs, and downloading it with the user's keys.
@@ -20,6 +20,12 @@ public interface IBaseService
     /// <exception cref="InvalidOperationException">A key is missing; see <see cref="Status"/>.</exception>
     /// <exception cref="InvalidDataException">The keys do not unlock the title.</exception>
     Task<TitleDirectory> DownloadAsync(BaseTitle @base, IProgress<BaseDownloadProgress>? progress = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// True when the base's title key has been supplied.
+    /// </summary>
+    /// <param name="base">Base to check.</param>
+    bool HasTitleKey(BaseTitle @base);
 
     /// <summary>
     /// Whether the base is present, or which key it still needs.

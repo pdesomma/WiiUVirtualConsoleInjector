@@ -768,7 +768,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         var step = Step;
         Bases.Clear();
         foreach (var @base in _bases.Available(SelectedConsole))
-            Bases.Add(new BaseChoice(@base, _bases.Status(@base), MissingKeys.Count == 0));
+            Bases.Add(new BaseChoice(@base, _bases.Status(@base), MissingKeys.Count == 0, _bases.HasTitleKey(@base)));
 
         SelectedBase = Bases.FirstOrDefault(b => previous is { } id && b.Base.TitleId.Equals(id))
                        ?? Bases.FirstOrDefault(b => b.IsPresent)
