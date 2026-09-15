@@ -53,6 +53,9 @@ public sealed partial class InjectViewModel : PageViewModel
     [ObservableProperty]
     private string? _currentStep;
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ReviewOutput))]
+    private OutputFormat _format = OutputFormat.Wup;
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ReviewGame))]
     private bool _gamePad;
     [ObservableProperty]
@@ -135,6 +138,7 @@ public sealed partial class InjectViewModel : PageViewModel
 
         _selectedConsole = SourceConsole.Nes;
         _currentOptions = CreateOptions(_selectedConsole);
+        ArtworkBuilder.Refresh(_selectedConsole, Name, ShortName);
         Refresh();
     }
 
@@ -284,6 +288,16 @@ public sealed partial class InjectViewModel : PageViewModel
     public string ReviewBase => SelectedBase is { } b ? $"{b.Base.Name} ({b.Base.Region})" : "Not selected";
 
     /// <summary>
+    /// Output shapes to choose from.
+    /// </summary>
+    public IReadOnlyList<OutputFormat> Formats { get; } = new[] { OutputFormat.Wup, OutputFormat.Loadiine };
+    /// <summary>
+    /// Output line of the review summary.
+    /// </summary>
+    public string ReviewOutput => Format == OutputFormat.Loadiine
+        ? "Loadiine folder (code, content, meta) → SD:/wiiu/games"
+        : "WUP install package → SD:/install";
+    /// <summary>
     /// Game line of the review summary.
     /// </summary>
     public string ReviewGame
@@ -392,6 +406,7 @@ public sealed partial class InjectViewModel : PageViewModel
         {
             Artwork = new Artwork { Icon = Icon.Path, BootTv = BootTv.Path, BootDrc = BootDrc.Path, BootLogo = BootLogo.Path },
             BootSoundPath = BootSound.Path,
+            Format = Format,
             Options = CurrentOptions.Build(),
         };
 

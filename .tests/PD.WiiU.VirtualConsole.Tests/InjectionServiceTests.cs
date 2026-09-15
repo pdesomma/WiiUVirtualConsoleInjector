@@ -198,6 +198,23 @@ public class InjectionServiceTests
     }
 
     [TestMethod]
+    public async Task InjectAsync_Loadiine_CopiesThePlainFoldersInsteadOfPacking()
+    {
+        var packer = new FakeTitlePacker();
+        var service = Service(new FakeRomInjector(SourceConsole.N64), packer: packer);
+        var injection = new Injection(TestTitle.Base(), Rom(), TestTitle.Game()) { Format = OutputFormat.Loadiine };
+
+        var result = await service.InjectAsync(injection, Work(), Output());
+
+        Assert.AreEqual(Path.Combine(Output(), "[LOADIINE]Test"), result.OutputDirectory);
+        Assert.AreEqual(0, packer.Calls.Count, "nothing is packed");
+        Assert.IsTrue(File.Exists(Path.Combine(result.OutputDirectory, "code", "app.xml")));
+        Assert.IsTrue(File.Exists(Path.Combine(result.OutputDirectory, "meta", "meta.xml")));
+        Assert.IsTrue(File.Exists(Path.Combine(result.OutputDirectory, "content", "data.bin")));
+        Assert.AreEqual(0, Directory.GetDirectories(Work()).Length, "the staging copy is still cleaned up");
+    }
+
+    [TestMethod]
     public async Task InjectAsync_SameNameTwice_NumbersTheSecondFolder()
     {
         var service = Service(new FakeRomInjector(SourceConsole.N64));

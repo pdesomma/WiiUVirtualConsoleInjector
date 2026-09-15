@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole.Options;
+﻿using PD.WiiU.VirtualConsole.Options;
 using WiiUSharp;
 
 namespace PD.WiiU.VirtualConsole;
@@ -43,6 +43,10 @@ public sealed class Injection
     /// Console being emulated.
     /// </summary>
     public SourceConsole Console => Base.Console;
+    /// <summary>
+    /// How the finished title is written out.
+    /// </summary>
+    public OutputFormat Format { get; init; } = OutputFormat.Wup;
     /// <summary>
     /// Metadata for the produced title.
     /// </summary>

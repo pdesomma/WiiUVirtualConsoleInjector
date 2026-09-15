@@ -1,4 +1,4 @@
-namespace PD.WiiU.VirtualConsole;
+﻿namespace PD.WiiU.VirtualConsole;
 
 /// <summary>
 /// The SD card: which drive it is, and copying a packed title onto it.
@@ -16,7 +16,7 @@ public interface ISdCard
     RemovableDrive? Detect();
 
     /// <summary>
-    /// Copies a packed title into the card's install folder and returns where it landed.
+    /// Copies a finished title onto the card and returns where it landed: packed titles under install, Loadiine ones under wiiu/games.
     /// </summary>
     /// <param name="titleDirectory">Folder holding the packed title.</param>
     /// <param name="root">Card root to copy onto.</param>

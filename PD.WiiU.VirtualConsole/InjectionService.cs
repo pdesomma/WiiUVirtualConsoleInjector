@@ -9,6 +9,10 @@ namespace PD.WiiU.VirtualConsole;
 public sealed class InjectionService : IInjectionService
 {
     /// <summary>
+    /// What a Loadiine title's folder name starts with.
+    /// </summary>
+    public const string LoadiinePrefix = "[LOADIINE]";
+    /// <summary>
     /// What every packed title's folder name starts with.
     /// </summary>
     public const string TitlePrefix = "[WUP]";
@@ -87,10 +91,14 @@ public sealed class InjectionService : IInjectionService
                 await Run(InjectionStep.ConvertBootSound, $"Converting {Path.GetFileName(sound)}", progress,
                     () => _bootSounds.ConvertAsync(sound, Path.Combine(title.Meta, BootSound.FileName), cancellationToken)).ConfigureAwait(false);
 
-            var folder = TitleFolder(injection.Game, outputDirectory);
+            var folder = TitleFolder(injection.Game, outputDirectory, injection.Format);
             Directory.CreateDirectory(folder);
-            await Run(InjectionStep.Pack, "Packing", progress,
-                () => _packer.PackAsync(title, folder, Detail(InjectionStep.Pack, progress), cancellationToken)).ConfigureAwait(false);
+            if (injection.Format == OutputFormat.Loadiine)
+                await Run(InjectionStep.Pack, "Copying for Loadiine", progress,
+                    () => CopyTree(title.Root, folder, cancellationToken)).ConfigureAwait(false);
+            else
+                await Run(InjectionStep.Pack, "Packing", progress,
+                    () => _packer.PackAsync(title, folder, Detail(InjectionStep.Pack, progress), cancellationToken)).ConfigureAwait(false);
 
             return new InjectedTitle(injection.Game, folder);
         }
@@ -210,16 +218,35 @@ public sealed class InjectionService : IInjectionService
     }
 
     /// <summary>
+    /// Copies the unpacked title as it is, folder for folder.
+    /// </summary>
+    /// <param name="source">Unpacked title root.</param>
+    /// <param name="destination">Folder to fill.</param>
+    /// <param name="cancellationToken">Stops the copy.</param>
+    private static Task CopyTree(string source, string destination, CancellationToken cancellationToken)
+    {
+        foreach (var file in Directory.GetFiles(source, "*", SearchOption.AllDirectories))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var target = Path.Combine(destination, file.Substring(source.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+            File.Copy(file, target, overwrite: true);
+        }
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
     /// The title's own folder under the output root, numbered when one of that name already holds files.
     /// </summary>
-    /// <param name="game">Title being packed.</param>
+    /// <param name="game">Title being written.</param>
     /// <param name="outputDirectory">Output root.</param>
-    private static string TitleFolder(Game game, string outputDirectory)
+    /// <param name="format">Shape being written, which picks the prefix.</param>
+    private static string TitleFolder(Game game, string outputDirectory, OutputFormat format)
     {
         var name = game.NameIn(Language.English) is { } localized
             ? Sanitize(localized.ShortName) ?? Sanitize(localized.LongName)
             : null;
-        var stem = TitlePrefix + (name ?? game.TitleId.ToString());
+        var stem = (format == OutputFormat.Loadiine ? LoadiinePrefix : TitlePrefix) + (name ?? game.TitleId.ToString());
         var folder = Path.Combine(outputDirectory, stem);
         for (var n = 2; Directory.Exists(folder) && Directory.EnumerateFileSystemEntries(folder).Any(); n++)
             folder = Path.Combine(outputDirectory, $"{stem} ({n})");
