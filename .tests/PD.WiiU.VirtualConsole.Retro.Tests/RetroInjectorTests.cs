@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole.Options;
+﻿using PD.WiiU.VirtualConsole.Options;
 using WiiUSharp;
 using WiiUSharp.Rpx;
 
@@ -56,6 +56,24 @@ public class RetroInjectorTests
         CollectionAssert.AreEqual(new byte[] { 0x04, 0x38, 0x38, 0xE0, 0x08, 0xC0, 0x90 }, rpx.FindSection(".text")!.Data.Skip(0x100).Take(7).ToArray());
         var slot = RomSlot.Find(rpx);
         CollectionAssert.AreEqual(FakeVcRpx.SnesRom(0x10000), slot.Section.Data.Skip(slot.Offset).Take(0x10000).ToArray());
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_SnesRomWithCopierHeader_InjectsWithoutIt()
+    {
+        var title = StageBase(nes: false);
+        var bare = FakeVcRpx.SnesRom(0x10000);
+        var headered = new byte[SnesCopierHeader.Size + bare.Length];
+        System.Text.Encoding.ASCII.GetBytes("GAME DOCTOR SF 3").CopyTo(headered, 0);
+        bare.CopyTo(headered, SnesCopierHeader.Size);
+        var rom = WriteRom("game.smc", headered);
+        var reports = new List<string>();
+
+        await new SnesRomInjector().InjectAsync(Injection(SourceConsole.Snes, rom), title, new Progress<string>(reports.Add));
+        await Task.Yield();
+
+        var slot = RomSlot.Find(RpxFile.Load(Path.Combine(title.Code, "WUP-JAAE.rpx")));
+        CollectionAssert.AreEqual(bare, slot.Section.Data.Skip(slot.Offset).Take(bare.Length).ToArray(), "the 512 header bytes are gone");
     }
 
     [TestMethod]

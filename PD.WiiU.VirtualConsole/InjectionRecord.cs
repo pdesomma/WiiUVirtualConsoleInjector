@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole.Options;
+﻿using PD.WiiU.VirtualConsole.Options;
 using WiiUSharp;
 
 namespace PD.WiiU.VirtualConsole;
@@ -97,7 +97,7 @@ public sealed class InjectionRecord
     /// </summary>
     public string RomPath { get; }
     /// <summary>
-    /// Short name under the icon, or null when taken from the long name.
+    /// Short name for the HOME Menu, or null when taken from the long name.
     /// </summary>
     public string? ShortName { get; init; }
 

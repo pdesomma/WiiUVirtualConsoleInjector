@@ -1,4 +1,4 @@
-using WiiUSharp.Rpx;
+﻿using WiiUSharp.Rpx;
 
 namespace PD.WiiU.VirtualConsole.Retro;
 
@@ -41,7 +41,13 @@ internal static class RetroExecutable
             throw new InvalidDataException(nes ? "The base executable is not a NES title." : "The base executable is a NES title, not SNES.");
 
         progress?.Report($"Injecting {Path.GetFileName(injection.Rom.Path)}");
-        slot.Write(File.ReadAllBytes(injection.Rom.Path));
+        var rom = File.ReadAllBytes(injection.Rom.Path);
+        if (!nes && SnesCopierHeader.IsPresent(rom))
+        {
+            progress?.Report("Dropping the 512-byte copier header");
+            rom = SnesCopierHeader.Strip(rom);
+        }
+        slot.Write(rom);
 
         if (pixelPerfect)
         {

@@ -132,13 +132,12 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:HistoryEntryViewModel">
-                                <Button Classes="tile" Width="200" Height="176" Margin="2"
-                                        Command="{Binding $parent[ItemsControl].((vm:HistoryViewModel)DataContext).LoadCommand}" CommandParameter="{Binding}"
-                                        ToolTip.Tip="{Binding Tooltip}">
+                                <Button Classes="tile" Width="200" Height="176" Margin="2" Command="{Binding LoadCommand}" ToolTip.Tip="{Binding Tooltip}">
+                                    <!-- the popup is outside the tree, so the commands live on the entry -->
                                     <Button.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="Load into the wizard" Command="{Binding $parent[ItemsControl].((vm:HistoryViewModel)DataContext).LoadCommand}" CommandParameter="{Binding}" />
-                                            <MenuItem Header="Forget" Command="{Binding $parent[ItemsControl].((vm:HistoryViewModel)DataContext).ForgetCommand}" CommandParameter="{Binding}" />
+                                            <MenuItem Header="Load into the wizard" Command="{Binding LoadCommand}" />
+                                            <MenuItem Header="Forget" Command="{Binding ForgetCommand}" />
                                         </ContextMenu>
                                     </Button.ContextMenu>
                                     <StackPanel HorizontalAlignment="Center">

@@ -226,6 +226,34 @@ public class HistoryViewModelTests
     }
 
     [TestMethod]
+    public async Task EntryCommands_OnTheTile_LoadAndForgetThroughThePage()
+    {
+        _history.Records.Add(Record("r1", "Game 1"));
+        _dialogs.ConfirmResult = true;
+        var vm = Create();
+        var entry = vm.Current[0];
+
+        Assert.IsTrue(entry.LoadCommand.CanExecute(null));
+        Assert.IsTrue(entry.ForgetCommand.CanExecute(null));
+        await entry.LoadCommand.ExecuteAsync(null);
+        Assert.AreEqual("Game 1", _inject.Name);
+        CollectionAssert.Contains(_shown, typeof(InjectViewModel));
+
+        await entry.ForgetCommand.ExecuteAsync(null);
+        CollectionAssert.AreEqual(new[] { "r1" }, _history.Removed);
+        Assert.IsTrue(vm.IsEmpty);
+    }
+
+    [TestMethod]
+    public async Task EntryCommands_Standalone_DoNothing()
+    {
+        var entry = new HistoryEntryViewModel(Record("r1", "Game 1"));
+
+        await entry.LoadCommand.ExecuteAsync(null);
+        await entry.ForgetCommand.ExecuteAsync(null);
+    }
+
+    [TestMethod]
     public void ArrowNavigation_Grid_TurnsPages()
     {
         for (var i = 0; i < 13; i++)

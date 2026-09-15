@@ -17,7 +17,7 @@ public static class GameFactory
     /// A game with random IDs, or the given identity's. Commas in the long name break it into lines; a blank short name takes the first segment.
     /// </summary>
     /// <param name="name">Long name, commas as line breaks.</param>
-    /// <param name="shortName">Short name shown under the icon, or null to take it from the long name.</param>
+    /// <param name="shortName">Short name the HOME Menu and friend list use, or null to take it from the long name's first line.</param>
     /// <param name="productId">Four-character product ID, or null for a random one (the identity's when one is kept).</param>
     /// <param name="gamePad">Advertise GamePad-as-controller use; otherwise the base's drc_use is kept.</param>
     /// <param name="random">Source of IDs; null for a new one.</param>
