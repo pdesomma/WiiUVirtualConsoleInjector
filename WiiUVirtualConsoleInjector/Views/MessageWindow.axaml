@@ -1,0 +1,13 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="WiiUVirtualConsoleInjector.Views.MessageWindow"
+        Width="480" SizeToContent="Height" CanResize="False"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <StackPanel Margin="20" Spacing="16">
+        <TextBlock x:Name="MessageText" TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+            <Button x:Name="NoButton" Content="No" MinWidth="80" IsCancel="True" Click="OnNo" />
+            <Button x:Name="YesButton" Content="Yes" MinWidth="80" IsDefault="True" Click="OnYes" />
+        </StackPanel>
+    </StackPanel>
+</Window>

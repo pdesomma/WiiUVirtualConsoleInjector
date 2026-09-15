@@ -1,0 +1,27 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels"
+        x:Class="WiiUVirtualConsoleInjector.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="{Binding Title}"
+        Width="1100" Height="760" MinWidth="900" MinHeight="600">
+
+    <Grid ColumnDefinitions="200,*">
+        <Border Grid.Column="0" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="{Binding Title}" FontWeight="SemiBold" Margin="16,20,16,12" TextWrapping="Wrap" />
+                <ListBox ItemsSource="{Binding Pages}" SelectedItem="{Binding CurrentPage}" Background="Transparent">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:PageViewModel">
+                            <TextBlock Text="{Binding Title}" Margin="8,6" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <ScrollViewer Grid.Column="1" Padding="24">
+            <ContentControl Content="{Binding CurrentPage}" />
+        </ScrollViewer>
+    </Grid>
+</Window>
