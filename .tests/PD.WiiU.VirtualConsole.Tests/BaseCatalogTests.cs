@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using WiiUSharp;
 
 namespace PD.WiiU.VirtualConsole.Tests;
@@ -6,7 +6,7 @@ namespace PD.WiiU.VirtualConsole.Tests;
 [TestClass]
 public class BaseCatalogTests
 {
-    private const string Json = "[{\"titleId\":\"00050000101BAF00\",\"name\":\"Majora\",\"region\":\"UnitedStates\",\"console\":\"N64\"},{\"titleId\":\"000500001019D800\",\"name\":\"Xenoblade\",\"region\":\"UnitedStates\",\"console\":\"Wii\"}]";
+    private const string Json = "[{\"titleId\":\"00050000101BAF00\",\"name\":\"Majora\",\"region\":\"UnitedStates\",\"console\":\"N64\"},{\"titleId\":\"000500001019D800\",\"name\":\"Xenoblade\",\"region\":\"UnitedStates\",\"console\":\"Wii\",\"recommended\":true}]";
 
     [TestMethod]
     public void Bundled_Always_ListsEveryConsoleWithUniqueIds()
@@ -20,6 +20,27 @@ public class BaseCatalogTests
         Assert.IsTrue(catalog.Titles.All(t => t.TitleId.Type == TitleType.Game));
         Assert.IsTrue(catalog.Titles.All(t => t.Region is Region.Japan or Region.UnitedStates or Region.Europe));
         Assert.AreEqual("The Legend of Zelda: Majora's Mask", catalog.Find(TitleId.Parse("00050000101BAF00"))!.Name);
+    }
+
+    [TestMethod]
+    public void Bundled_Always_RecommendsTheCommunityPicks()
+    {
+        var catalog = BaseCatalog.Bundled();
+
+        CollectionAssert.AreEquivalent(new[] { "Metal Slader Glory" }, catalog.For(SourceConsole.Nes).Where(t => t.IsRecommended).Select(t => t.Name).ToArray());
+        CollectionAssert.AreEquivalent(new[] { "Kirby's Dream Land 3", "Kirby's Dream Land 3", "Kirby's Dream Land 3" }, catalog.For(SourceConsole.Snes).Where(t => t.IsRecommended).Select(t => t.Name).ToArray());
+        Assert.AreEqual(1, catalog.For(SourceConsole.Msx).Count(t => t.IsRecommended));
+        Assert.IsFalse(catalog.For(SourceConsole.Wii).Any(t => t.IsRecommended));
+    }
+
+    [TestMethod]
+    public void Parse_RecommendedFlag_ReadAndCarriedToGameCube()
+    {
+        var catalog = BaseCatalog.Parse(Stream(Json));
+
+        Assert.IsFalse(catalog.Find(TitleId.Parse("00050000101BAF00"))!.IsRecommended);
+        Assert.IsTrue(catalog.Find(TitleId.Parse("000500001019D800"))!.IsRecommended);
+        Assert.IsTrue(catalog.For(SourceConsole.GameCube).Single().IsRecommended);
     }
 
     [TestMethod]

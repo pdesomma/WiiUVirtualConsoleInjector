@@ -828,7 +828,9 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
             Bases.Add(new BaseChoice(@base, _bases.Status(@base), MissingKeys.Count == 0, _bases.HasTitleKey(@base)));
 
         SelectedBase = Bases.FirstOrDefault(b => previous is { } id && b.Base.TitleId.Equals(id))
+                       ?? Bases.FirstOrDefault(b => b.IsPresent && b.Base.IsRecommended)
                        ?? Bases.FirstOrDefault(b => b.IsPresent)
+                       ?? Bases.FirstOrDefault(b => b.Base.IsRecommended)
                        ?? Bases.FirstOrDefault();
         Step = step;
     }

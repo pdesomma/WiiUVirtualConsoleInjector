@@ -49,6 +49,7 @@
   },
   {
     "titleId": "00050000101A0700",
+    "recommended": true,
     "name": "Metal Slader Glory",
     "region": "Japan",
     "console": "Nes"
@@ -127,18 +128,21 @@
   },
   {
     "titleId": "0005000010115200",
+    "recommended": true,
     "name": "Kirby's Dream Land 3",
     "region": "Japan",
     "console": "Snes"
   },
   {
     "titleId": "0005000010115300",
+    "recommended": true,
     "name": "Kirby's Dream Land 3",
     "region": "UnitedStates",
     "console": "Snes"
   },
   {
     "titleId": "0005000010115400",
+    "recommended": true,
     "name": "Kirby's Dream Land 3",
     "region": "Europe",
     "console": "Snes"
@@ -685,6 +689,7 @@
   },
   {
     "titleId": "0005000010168A00",
+    "recommended": true,
     "name": "NEMESIS3 THE EVE OF DESTRUCTION",
     "region": "Japan",
     "console": "Msx"
