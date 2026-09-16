@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole.Infrastructure;
+﻿using PD.WiiU.VirtualConsole.Infrastructure;
 using WiiUSharp;
 using WiiUSharp.Nus;
 
@@ -153,32 +153,6 @@ public class JsonKeyStoreTests
         var reloaded = new JsonKeyStore(_path);
         Assert.AreEqual(EncryptedTitleKey.Parse(TitleKeyHex), reloaded.GetTitleKey(TitleId));
         Assert.AreEqual(EncryptedTitleKey.Parse(CommonKeyHex), reloaded.GetTitleKey(other));
-    }
-
-    [TestMethod]
-    public void AncastKey_SetThenReloaded_RoundTripsAndKeepsOtherKeys()
-    {
-        var store = new JsonKeyStore(_path);
-        store.CommonKey = CommonKey.Parse(CommonKeyHex);
-        store.AncastKey = AncastKey.Parse(TitleKeyHex);
-
-        var reloaded = new JsonKeyStore(_path);
-
-        Assert.AreEqual(AncastKey.Parse(TitleKeyHex), reloaded.AncastKey);
-        Assert.AreEqual(CommonKey.Parse(CommonKeyHex), reloaded.CommonKey);
-        StringAssert.Contains(File.ReadAllText(_path), "\"ancastKey\": \"" + TitleKeyHex + "\"");
-        reloaded.AncastKey = null;
-        Assert.IsNull(new JsonKeyStore(_path).AncastKey);
-        Assert.IsNull(new JsonKeyStore(Path.Combine(_root, "none.json")).AncastKey);
-    }
-
-    [TestMethod]
-    public void AncastKey_MalformedHex_ThrowsInvalidDataException()
-    {
-        Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
-        File.WriteAllText(_path, "{\"ancastKey\":\"nope\"}");
-
-        Assert.ThrowsExactly<InvalidDataException>(() => new JsonKeyStore(_path).AncastKey);
     }
 
     [TestMethod]

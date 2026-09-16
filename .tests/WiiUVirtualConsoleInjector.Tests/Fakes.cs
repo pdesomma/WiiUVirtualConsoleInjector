@@ -294,7 +294,6 @@ internal sealed class FakeKeyStore : IKeyStore
 {
     private readonly Dictionary<TitleId, EncryptedTitleKey> _titleKeys = new();
 
-    public AncastKey? AncastKey { get; set; }
     public CommonKey? CommonKey { get; set; }
     public int TitleKeyWrites { get; private set; }
     public WiiSharp.CommonKey? WiiCommonKey { get; set; }

@@ -1,4 +1,4 @@
-using WiiUSharp;
+﻿using WiiUSharp;
 using WiiUSharp.Nus;
 
 namespace PD.WiiU.VirtualConsole.Ports;
@@ -8,11 +8,6 @@ namespace PD.WiiU.VirtualConsole.Ports;
 /// </summary>
 public interface IKeyStore
 {
-    /// <summary>
-    /// The console's ancast key, once the user has supplied it; only Wii homebrew overclocking needs it.
-    /// </summary>
-    AncastKey? AncastKey { get; set; }
-
     /// <summary>
     /// The Wii U common key, once the user has supplied it.
     /// </summary>

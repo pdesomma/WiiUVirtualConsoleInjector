@@ -34,16 +34,6 @@ public sealed class ToastingKeyStore : IKeyStore
     }
 
     /// <inheritdoc/>
-    public AncastKey? AncastKey
-    {
-        get => _inner.AncastKey;
-        set
-        {
-            _inner.AncastKey = value;
-            Toast(value is not null, "Ancast key");
-        }
-    }
-    /// <inheritdoc/>
     public CommonKey? CommonKey
     {
         get => _inner.CommonKey;
