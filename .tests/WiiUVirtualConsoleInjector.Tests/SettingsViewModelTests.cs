@@ -10,6 +10,7 @@ public class SettingsViewModelTests
 
     private FakeDialogService _dialogs = null!;
     private FakeLinkOpener _links = null!;
+    private FakeNintendontSource _nintendont = null!;
     private FakeSdCard _sdCard = null!;
     private FakeSettingsService _settings = null!;
 
@@ -20,6 +21,7 @@ public class SettingsViewModelTests
         _settings = new FakeSettingsService();
         _links = new FakeLinkOpener();
         _sdCard = new FakeSdCard();
+        _nintendont = new FakeNintendontSource();
     }
 
     [TestMethod]
@@ -41,11 +43,12 @@ public class SettingsViewModelTests
     [TestMethod]
     public void Constructor_NullArguments_ThrowsArgumentNullException()
     {
-        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(null!, _dialogs, Paths, _links, _sdCard));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, null!, Paths, _links, _sdCard));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, _dialogs, null!, _links, _sdCard));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, _dialogs, Paths, null!, _sdCard));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, _dialogs, Paths, _links, null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(null!, _dialogs, Paths, _links, _sdCard, _nintendont));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, null!, Paths, _links, _sdCard, _nintendont));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, _dialogs, null!, _links, _sdCard, _nintendont));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, _dialogs, Paths, null!, _sdCard, _nintendont));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, _dialogs, Paths, _links, null!, _nintendont));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SettingsViewModel(_settings, _dialogs, Paths, _links, _sdCard, null!));
     }
 
     [TestMethod]
@@ -168,5 +171,5 @@ public class SettingsViewModelTests
         CollectionAssert.AreEqual(vm.Folders.Select(f => f.Folder).ToArray(), _links.Folders);
     }
 
-    private SettingsViewModel Create() => new(_settings, _dialogs, Paths, _links, _sdCard);
+    private SettingsViewModel Create() => new(_settings, _dialogs, Paths, _links, _sdCard, _nintendont);
 }

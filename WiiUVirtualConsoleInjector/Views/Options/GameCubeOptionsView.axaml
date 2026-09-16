@@ -9,6 +9,7 @@
             <CheckBox Content="Keep the full image" IsChecked="{Binding KeepFullImage}" />
             <TextBlock Classes="hint" Text="Off, a full ISO, GCM or GCZ is compacted to NKit inside the title, which Nintendont reads directly; the title shrinks to the game's real size. An NKit image is stored as it is either way." TextWrapping="Wrap" />
         </StackPanel>
+        <TextBlock Classes="hint" Text="The title boots through Nintendont on the SD card: apps/nintendont/boot.dol and nincfg.bin at the root. Settings puts both there and edits the video, controller and memory card options." TextWrapping="Wrap" />
         <ContentControl Content="{Binding Forwarder}" />
         <ContentControl Content="{Binding SecondDisc}" />
     </StackPanel>

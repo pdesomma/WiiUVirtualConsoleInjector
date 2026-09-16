@@ -138,6 +138,24 @@ internal sealed class FakeSdCard : ISdCard
     public IReadOnlyList<RemovableDrive> Drives() => Removable;
 }
 
+internal sealed class FakeNintendontSource : INintendontSource
+{
+    public Exception? Failure { get; set; }
+    public List<string> Installs { get; } = new();
+
+    public Task InstallAsync(string cardRoot, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
+    {
+        Installs.Add(cardRoot);
+        if (Failure is not null)
+            return Task.FromException(Failure);
+        var folder = Path.Combine(cardRoot, "apps", "nintendont");
+        Directory.CreateDirectory(folder);
+        File.WriteAllBytes(Path.Combine(folder, "boot.dol"), new byte[] { 1 });
+        progress?.Report("boot.dol");
+        return Task.CompletedTask;
+    }
+}
+
 internal sealed class FakeCommunityArtwork : ICommunityArtwork
 {
     public List<Uri> Downloaded { get; } = new();

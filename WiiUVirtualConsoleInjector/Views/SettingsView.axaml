@@ -1,5 +1,6 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="using:WiiUVirtualConsoleInjector.Converters"
              xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels"
              x:Class="WiiUVirtualConsoleInjector.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
@@ -107,6 +108,82 @@
                             <TextBlock Text="Copy each finished title to the card's install folder" FontSize="12.5" TextWrapping="Wrap" />
                         </CheckBox>
                     </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Nintendont -->
+            <Border Classes="card">
+                <StackPanel DataContext="{Binding Nintendont}" Spacing="10">
+                    <TextBlock Classes="section" Text="Nintendont" Margin="0,0,0,-6" />
+                    <TextBlock Classes="hint" FontSize="12" Text="GameCube injects boot through Nintendont on the SD card; it needs apps/nintendont/boot.dol and a nincfg.bin at the root. The settings here are what every GameCube inject runs with." TextWrapping="Wrap" />
+                    <StackPanel Spacing="2">
+                        <TextBlock FontSize="12.5" Text="{Binding LoaderStatus}" TextWrapping="Wrap" />
+                        <TextBlock Classes="hint" FontSize="12" Text="{Binding ConfigStatus}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Button Classes="primary sm" Content="Put Nintendont on the card" Command="{Binding InstallCommand}" />
+                        <TextBlock Classes="hint" FontSize="12" Text="{Binding Progress}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" IsEnabled="{Binding HasCard}">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Classes="label" Text="Video" />
+                            <ComboBox ItemsSource="{Binding Videos}" SelectedItem="{Binding Video}" HorizontalAlignment="Stretch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="x:Object">
+                                        <TextBlock Text="{Binding, Converter={x:Static conv:NintendontConverters.VideoLabel}}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4" IsEnabled="{Binding IsForcing}">
+                            <TextBlock Classes="label" Text="Forced mode" />
+                            <ComboBox ItemsSource="{Binding ForcedModes}" SelectedItem="{Binding ForcedMode}" HorizontalAlignment="Stretch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="x:Object">
+                                        <TextBlock Text="{Binding, Converter={x:Static conv:NintendontConverters.ForcedModeLabel}}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+                    <WrapPanel ItemSpacing="16" LineSpacing="6" IsEnabled="{Binding HasCard}">
+                        <CheckBox Content="Progressive" IsChecked="{Binding Progressive}" />
+                        <CheckBox Content="Force progressive" IsChecked="{Binding ForceProgressive}" />
+                        <CheckBox Content="Patch PAL50" IsChecked="{Binding PatchPal50}" />
+                        <CheckBox Content="Force widescreen" IsChecked="{Binding ForceWidescreen}" />
+                        <CheckBox Content="Wii U widescreen" IsChecked="{Binding WiiUWidescreen}" />
+                        <CheckBox Content="Remove 480p limit" IsChecked="{Binding RemoveLimit}" />
+                    </WrapPanel>
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10" IsEnabled="{Binding HasCard}">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Classes="label" Text="Language" />
+                            <ComboBox ItemsSource="{Binding Languages}" SelectedItem="{Binding Language}" HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Classes="label" Text="Controllers" />
+                            <NumericUpDown Value="{Binding Pads}" Minimum="0" Maximum="4" Increment="1" FormatString="0" HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="4" IsEnabled="{Binding MemoryCardEmulation}">
+                            <TextBlock Classes="label" Text="Memory card size" />
+                            <ComboBox ItemsSource="{Binding MemoryCardSizes}" SelectedItem="{Binding MemoryCardSize}" HorizontalAlignment="Stretch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="x:Object">
+                                        <TextBlock Text="{Binding, Converter={x:Static conv:NintendontConverters.MemoryCardLabel}}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+                    <WrapPanel ItemSpacing="16" LineSpacing="6" IsEnabled="{Binding HasCard}">
+                        <CheckBox Content="Emulate memory card" IsChecked="{Binding MemoryCardEmulation}" />
+                        <CheckBox Content="One card for every game" IsChecked="{Binding MemoryCardShared}" IsEnabled="{Binding MemoryCardEmulation}" />
+                        <CheckBox Content="Cheats (sd:/codes)" IsChecked="{Binding Cheats}" />
+                        <CheckBox Content="Skip boot animation" IsChecked="{Binding SkipIpl}" />
+                        <CheckBox Content="Classic Controller rumble" IsChecked="{Binding ClassicControllerRumble}" />
+                        <CheckBox Content="Arcade mode" IsChecked="{Binding ArcadeMode}" />
+                        <CheckBox Content="Broadband adapter" IsChecked="{Binding BroadbandEmulation}" />
+                    </WrapPanel>
+                    <Button Classes="sm" Content="Write nincfg.bin" Command="{Binding WriteConfigCommand}" HorizontalAlignment="Left" />
                 </StackPanel>
             </Border>
 
