@@ -311,6 +311,37 @@ public class InjectViewModelTests
     }
 
     [TestMethod]
+    public async Task RomFit_RomTooBigForBase_BlocksInjectAndSaysSo()
+    {
+        _factory.Fit = (b, r) => b.Console == SourceConsole.Nes ? $"{Path.GetFileName(r)} is 384 KB; this base holds 64 KB." : null;
+        var vm = Ready();
+        await vm.RomFitCheck;
+
+        Assert.IsFalse(vm.CanInject);
+        StringAssert.Contains(vm.BaseHint, "game.nes is 384 KB");
+
+        _factory.Fit = (_, _) => null;
+        vm.RomPath = @"C:\small.nes";
+        await vm.RomFitCheck;
+
+        Assert.IsNull(vm.BaseHint);
+        Assert.IsTrue(vm.CanInject);
+    }
+
+    [TestMethod]
+    public async Task RomFit_BaseNotDownloaded_IsNotAsked()
+    {
+        var asked = 0;
+        _factory.Fit = (_, _) => { asked++; return "no"; };
+        _bases.Statuses[_bases.Bases[0].TitleId] = BaseStatus.Downloadable;
+        var vm = Ready();
+        await vm.RomFitCheck;
+
+        Assert.AreEqual(0, asked);
+        StringAssert.Contains(vm.BaseHint, "not downloaded");
+    }
+
+    [TestMethod]
     public async Task Inject_WarningDeclined_Aborts()
     {
         _dialogs.ConfirmResult = false;

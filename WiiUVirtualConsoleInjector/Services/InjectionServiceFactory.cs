@@ -62,6 +62,34 @@ public sealed class InjectionServiceFactory : IInjectionServiceFactory
     }
 
     /// <inheritdoc/>
+    public string? RomFit(BaseTitle @base, string romPath)
+    {
+        if (@base is null)
+            throw new ArgumentNullException(nameof(@base));
+        if (string.IsNullOrWhiteSpace(romPath))
+            throw new ArgumentException("ROM path is required.", nameof(romPath));
+
+        IRomCapacity? bounded = @base.Console switch
+        {
+            SourceConsole.Nes => new NesRomInjector(),
+            SourceConsole.Snes => new SnesRomInjector(),
+            _ => null,
+        };
+        if (bounded is null || !File.Exists(romPath))
+            return null;
+        try
+        {
+            var capacity = bounded.Capacity(new DirectoryBaseStore(_settings.BasePath).Locate(@base));
+            var size = bounded.RomSize(romPath);
+            return size > capacity ? $"{Path.GetFileName(romPath)} is {RomSlot.Kilobytes(size)}; this base holds {RomSlot.Kilobytes(capacity)}. {RomSlot.BiggerBaseHint}" : null;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            return null;
+        }
+    }
+
+    /// <inheritdoc/>
     public IReadOnlyList<string> MissingKeys(SourceConsole console, string? romPath = null)
     {
         var missing = new List<string>();

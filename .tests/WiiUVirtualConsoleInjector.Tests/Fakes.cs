@@ -410,6 +410,10 @@ internal sealed class FakeInjectionService : IInjectionService
 
 internal sealed class FakeInjectionServiceFactory : IInjectionServiceFactory
 {
+    public string? Fit { get; set; }
+
+    public string? RomFit(BaseTitle @base, string romPath) => Fit;
+
     public Exception? CreateError { get; set; }
     public int Creates { get; private set; }
     public FakeInjectionService Service { get; } = new();

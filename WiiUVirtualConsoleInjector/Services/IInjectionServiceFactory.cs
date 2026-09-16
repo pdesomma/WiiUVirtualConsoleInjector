@@ -19,4 +19,12 @@ public interface IInjectionServiceFactory
     /// <param name="console">Console the ROM is for.</param>
     /// <param name="romPath">The ROM, when picked; a Wii image only needs the Wii common key when it is encrypted.</param>
     IReadOnlyList<string> MissingKeys(SourceConsole console, string? romPath = null);
+
+    /// <summary>
+    /// Whether the ROM fits the base, for consoles where the base bounds it; null when it does or the question does not arise.
+    /// </summary>
+    /// <param name="base">A downloaded base.</param>
+    /// <param name="romPath">The ROM.</param>
+    /// <returns>Why it does not fit, or null.</returns>
+    string? RomFit(BaseTitle @base, string romPath);
 }

@@ -82,7 +82,35 @@ public class RetroInjectorTests
         var title = StageBase(nes: false);
         var rom = WriteRom("game.sfc", FakeVcRpx.SnesRom(FakeVcRpx.SlotCapacity + 1));
 
-        await Assert.ThrowsExactlyAsync<ArgumentException>(() => new SnesRomInjector().InjectAsync(Injection(SourceConsole.Snes, rom), title));
+        var e = await Assert.ThrowsExactlyAsync<ArgumentException>(() => new SnesRomInjector().InjectAsync(Injection(SourceConsole.Snes, rom), title));
+        StringAssert.Contains(e.Message, "this base holds 128 KB");
+        StringAssert.Contains(e.Message, "Kirby's Dream Land 3");
+    }
+
+    [TestMethod]
+    public void Capacity_And_RomSize_MeasureSlotAndRom()
+    {
+        var snes = StageBase(nes: false);
+        var nes = StageBase(nes: true);
+        var headered = WriteRom("game.smc", new byte[0x20000 + 512]);
+        var plain = WriteRom("game.nes", FakeVcRpx.NesRom(0x8010));
+
+        Assert.AreEqual(FakeVcRpx.SlotCapacity, new SnesRomInjector().Capacity(snes));
+        Assert.AreEqual(FakeVcRpx.SlotCapacity + 16, new NesRomInjector().Capacity(nes));
+        Assert.AreEqual(0x20000, new SnesRomInjector().RomSize(headered), "copier header dropped");
+        Assert.AreEqual(0x8010, new NesRomInjector().RomSize(plain));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new NesRomInjector().Capacity(null!));
+        Assert.ThrowsExactly<ArgumentException>(() => new SnesRomInjector().RomSize(" "));
+    }
+
+    [TestMethod]
+    public void Kilobytes_RoundsToNearestAndPrefersWholeMegabytes()
+    {
+        Assert.AreEqual("64 KB", RomSlot.Kilobytes(0x10000));
+        Assert.AreEqual("64 KB", RomSlot.Kilobytes(0x10010));
+        Assert.AreEqual("384 KB", RomSlot.Kilobytes(393232));
+        Assert.AreEqual("1 MB", RomSlot.Kilobytes(0x100010));
+        Assert.AreEqual("4 MB", RomSlot.Kilobytes(0x400000));
     }
 
     [TestMethod]

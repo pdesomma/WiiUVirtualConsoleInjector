@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole.Options;
+﻿using PD.WiiU.VirtualConsole.Options;
 using PD.WiiU.VirtualConsole.Ports;
 
 namespace PD.WiiU.VirtualConsole.Retro;
@@ -6,10 +6,19 @@ namespace PD.WiiU.VirtualConsole.Retro;
 /// <summary>
 /// Injects a headerless SNES ROM into a SNES Virtual Console base.
 /// </summary>
-public sealed class SnesRomInjector : IRomInjector
+public sealed class SnesRomInjector : IRomInjector, IRomCapacity
 {
     /// <inheritdoc/>
     public SourceConsole Console => SourceConsole.Snes;
+
+    /// <inheritdoc/>
+    public long Capacity(TitleDirectory title)
+    {
+        if (title is null)
+            throw new ArgumentNullException(nameof(title));
+
+        return RetroExecutable.Capacity(title);
+    }
 
     /// <inheritdoc/>
     public IReadOnlyList<BaseIssue> Inspect(TitleDirectory title)
@@ -18,6 +27,15 @@ public sealed class SnesRomInjector : IRomInjector
             throw new ArgumentNullException(nameof(title));
 
         return RetroExecutable.Inspect(title, nes: false);
+    }
+
+    /// <inheritdoc/>
+    public long RomSize(string romPath)
+    {
+        if (string.IsNullOrWhiteSpace(romPath))
+            throw new ArgumentException("ROM path is required.", nameof(romPath));
+
+        return RetroExecutable.RomSize(romPath, nes: false);
     }
 
     /// <inheritdoc/>
