@@ -1,4 +1,4 @@
-using PD.WiiU.VirtualConsole;
+﻿using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Infrastructure;
 using PD.WiiU.VirtualConsole.Ports;
 
@@ -19,6 +19,10 @@ public sealed class CurrentBaseStore : IBaseStore
     {
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
     }
+
+    /// <inheritdoc/>
+    public Task<TitleDirectory> ImportAsync(BaseTitle @base, string sourceDirectory, WiiUSharp.Nus.CommonKey? commonKey, IProgress<string>? progress = null, CancellationToken cancellationToken = default) =>
+        Store().ImportAsync(@base, sourceDirectory, commonKey, progress, cancellationToken);
 
     /// <inheritdoc/>
     public TitleDirectory Locate(BaseTitle @base) => Store().Locate(@base);

@@ -104,6 +104,9 @@
                                             <TextBlock Classes="base-region" Text="{Binding Region}" />
                                             <TextBlock Classes="base-id mono" Text="{Binding TitleId}" />
                                             <TextBlock Classes="base-id" Text="(custom)" IsVisible="{Binding IsCustom}" />
+                                            <Button Classes="link" Command="{Binding $parent[ItemsControl].((vm:BasesViewModel)DataContext).RemoveCustomBaseCommand}" CommandParameter="{Binding}" IsVisible="{Binding IsCustom}" ToolTip.Tip="Forget this base; its files stay in the base store">
+                                                <TextBlock Text="Forget" FontSize="11" />
+                                            </Button>
                                         </StackPanel>
                                         <Grid ColumnDefinitions="64,*,Auto" ColumnSpacing="8">
                                             <TextBlock Grid.Column="0" Classes="hint" Text="Title key" VerticalAlignment="Center" />
@@ -129,7 +132,13 @@
                     <StackPanel Margin="0,16,0,0">
                         <TextBlock FontSize="13" FontWeight="Bold" Text="Custom base" Margin="0,0,0,4" />
                         <TextBlock Classes="hint" Margin="0,0,0,10"
-                                   Text="{Binding SelectedConsole, Converter={x:Static conv:ConsoleConverters.Name}, StringFormat='Adds a title the catalog does not list, for {0}, until the application closes.'}" />
+                                   Text="{Binding SelectedConsole, Converter={x:Static conv:ConsoleConverters.Name}, StringFormat='Adds a title the catalog does not list, for {0}. Pick its folder to bring the files in: an unpacked title (code, content, meta) or an installable package (title.tmd and .app files); the fields fill in from it. Without a folder the base is registered only, to download with its title key.'}" TextWrapping="Wrap" />
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" Margin="0,0,0,10">
+                            <TextBox Grid.Column="0" Text="{Binding CustomFolder}" IsReadOnly="True" PlaceholderText="No folder; register only" />
+                            <Button Grid.Column="1" Classes="sm" Content="Pick folder…" Command="{Binding PickCustomFolderCommand}" />
+                            <Button Grid.Column="2" Classes="sm ghost" Content="Clear" Command="{Binding ClearCustomFolderCommand}" IsVisible="{Binding HasCustomFolder}" />
+                        </Grid>
+                        <TextBlock Classes="hint" Margin="0,0,0,10" Text="{Binding CustomFolderHint}" IsVisible="{Binding HasCustomFolder}" />
                         <Grid ColumnDefinitions="*,*,Auto,Auto" ColumnSpacing="8">
                             <StackPanel Grid.Column="0" Spacing="4" MinWidth="180">
                                 <TextBlock Classes="label" Text="Title ID" />
@@ -145,6 +154,7 @@
                             </StackPanel>
                             <Button Grid.Column="3" Classes="sm" Content="Add" Command="{Binding AddCustomBaseCommand}" VerticalAlignment="Bottom" />
                         </Grid>
+                        <TextBlock Classes="hint" Margin="0,8,0,0" Text="{Binding CustomProgress}" IsVisible="{Binding CustomProgress, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
                     </StackPanel>
                 </StackPanel>
             </Border>

@@ -6,10 +6,33 @@
 public interface IBaseService
 {
     /// <summary>
-    /// The bases known for a console.
+    /// Remembers a base the catalog does not list; replaces one with the same title ID.
+    /// </summary>
+    /// <param name="base">The base.</param>
+    void AddCustom(BaseTitle @base);
+
+    /// <summary>
+    /// The bases known for a console: the catalog's, then the user's own.
     /// </summary>
     /// <param name="console">Console the ROM is for.</param>
     IReadOnlyList<BaseTitle> Available(SourceConsole console);
+
+    /// <summary>
+    /// Puts a base into the store from a folder: a title's code/content/meta as is, or an installable package unpacked with the common key.
+    /// </summary>
+    /// <param name="base">Base the folder holds.</param>
+    /// <param name="sourceDirectory">The folder.</param>
+    /// <param name="progress">One line per step.</param>
+    /// <param name="cancellationToken">Cancels between files.</param>
+    /// <exception cref="InvalidOperationException">A package with no common key in the store.</exception>
+    Task<TitleDirectory> ImportAsync(BaseTitle @base, string sourceDirectory, IProgress<string>? progress = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Forgets a custom base; the store keeps its files.
+    /// </summary>
+    /// <param name="titleId">Its title ID.</param>
+    /// <returns>False when nothing was remembered under it.</returns>
+    bool RemoveCustom(WiiUSharp.TitleId titleId);
 
     /// <summary>
     /// Downloads a base with the keys in the store.

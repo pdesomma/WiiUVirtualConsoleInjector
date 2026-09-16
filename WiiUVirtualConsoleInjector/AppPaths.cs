@@ -43,6 +43,10 @@ public sealed class AppPaths
     /// </summary>
     public string KeysFile => Path.Combine(DataFolder, "keys.json");
     /// <summary>
+    /// The custom base list.
+    /// </summary>
+    public string CustomBasesFile => Path.Combine(DataFolder, "custom-bases.json");
+    /// <summary>
     /// Downloaded packages waiting to be unpacked.
     /// </summary>
     public string PackageCache => Path.Combine(DataFolder, "packages");

@@ -17,14 +17,20 @@ public sealed partial class BasesViewModel : PageViewModel
     private const int KeySize = 16;
 
     private readonly IBaseService _bases;
-    private readonly List<BaseTitle> _customBases = new();
     private readonly IDialogService _dialogs;
     private readonly IInjectionServiceFactory _injections;
     private readonly IKeyStore _keys;
     private readonly List<BaseRowViewModel> _rows = new();
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CustomFolderHint), nameof(HasCustomFolder))]
+    private string? _customFolder;
+    [ObservableProperty]
+    private BaseFolderKind? _customFolderKind;
+    [ObservableProperty]
     private string _customName = string.Empty;
+    [ObservableProperty]
+    private string? _customProgress;
     [ObservableProperty]
     private Region _customRegion = Region.UnitedStates;
     [ObservableProperty]
@@ -112,7 +118,21 @@ public sealed partial class BasesViewModel : PageViewModel
     }
 
     /// <summary>
-    /// Adds a base the catalog does not list, for this session.
+    /// What the picked folder turned out to be, for the form.
+    /// </summary>
+    public string? CustomFolderHint => CustomFolder is null ? null : CustomFolderKind switch
+    {
+        BaseFolderKind.Package => "An installable package; it will be unpacked with the Wii U common key.",
+        BaseFolderKind.Title => "A title folder (code, content, meta); it will be copied into the base store.",
+        _ => "Not a base: neither code/content/meta nor a title.tmd inside.",
+    };
+    /// <summary>
+    /// True once a folder is picked.
+    /// </summary>
+    public bool HasCustomFolder => CustomFolder is not null;
+
+    /// <summary>
+    /// Remembers a base the catalog does not list; imports its folder first when one was picked.
     /// </summary>
     [RelayCommand]
     private async Task AddCustomBaseAsync()
@@ -127,18 +147,85 @@ public sealed partial class BasesViewModel : PageViewModel
             await _dialogs.ShowErrorAsync("Custom base", "Name is required.");
             return;
         }
-        if (_rows.Any(b => b.Base.TitleId.Equals(titleId)))
+        if (_rows.Any(b => b.Base.TitleId.Equals(titleId) && !b.IsCustom))
         {
-            await _dialogs.ShowErrorAsync("Custom base", $"Title {titleId} is already listed.");
+            await _dialogs.ShowErrorAsync("Custom base", $"Title {titleId} is already in the catalog.");
+            return;
+        }
+        if (CustomFolder is not null && CustomFolderKind is null)
+        {
+            await _dialogs.ShowErrorAsync("Custom base", "The picked folder is not a base.");
             return;
         }
 
-        var title = new BaseTitle(titleId, CustomName.Trim(), CustomRegion, SelectedConsole);
-        _customBases.Add(title);
-        _rows.Add(NewRow(title, isCustom: true));
-        ApplyFilter();
+        var title = new BaseTitle(titleId, CustomName.Trim(), CustomRegion, SelectedConsole) { IsCustom = true };
+        if (CustomFolder is not null)
+        {
+            try
+            {
+                await _bases.ImportAsync(title, CustomFolder, new Progress<string>(m => CustomProgress = m));
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidDataException or InvalidOperationException)
+            {
+                CustomProgress = null;
+                await _dialogs.ShowErrorAsync("Custom base", e.Message);
+                return;
+            }
+        }
+        _bases.AddCustom(title);
+        CustomProgress = null;
         CustomTitleId = string.Empty;
         CustomName = string.Empty;
+        CustomFolder = null;
+        CustomFolderKind = null;
+        LoadBases();
+    }
+
+    /// <summary>
+    /// Picks the folder a custom base comes from and fills the form from what is inside it.
+    /// </summary>
+    [RelayCommand]
+    private async Task PickCustomFolderAsync()
+    {
+        var folder = await _dialogs.PickFolderAsync("Base folder");
+        if (folder is null)
+            return;
+
+        CustomFolder = folder;
+        var info = BaseFolder.Inspect(folder);
+        CustomFolderKind = info?.Kind;
+        if (info?.TitleId is { } id)
+            CustomTitleId = id.ToString();
+        if (info?.Name is { } name)
+            CustomName = name;
+        if (info?.Region is { } region)
+            CustomRegion = region;
+    }
+
+    /// <summary>
+    /// Drops the picked folder; the base will be registered only.
+    /// </summary>
+    [RelayCommand]
+    private void ClearCustomFolder()
+    {
+        CustomFolder = null;
+        CustomFolderKind = null;
+    }
+
+    /// <summary>
+    /// Forgets a custom base after confirming; its files stay in the store.
+    /// </summary>
+    /// <param name="row">The row to forget.</param>
+    [RelayCommand]
+    private async Task RemoveCustomBaseAsync(BaseRowViewModel? row)
+    {
+        if (row is null || !row.IsCustom)
+            return;
+        if (!await _dialogs.ConfirmAsync("Forget base", $"Forget {row.Name} [{row.Region}]? Its files stay in the base store."))
+            return;
+
+        _bases.RemoveCustom(row.Base.TitleId);
+        LoadBases();
     }
 
     /// <summary>
@@ -183,9 +270,7 @@ public sealed partial class BasesViewModel : PageViewModel
     {
         _rows.Clear();
         foreach (var title in _bases.Available(SelectedConsole))
-            _rows.Add(NewRow(title, isCustom: false));
-        foreach (var title in _customBases.Where(t => t.Console == SelectedConsole))
-            _rows.Add(NewRow(title, isCustom: true));
+            _rows.Add(NewRow(title, title.IsCustom));
         ApplyFilter();
     }
 

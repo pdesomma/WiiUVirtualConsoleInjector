@@ -1,4 +1,5 @@
-﻿using WiiUSharp.Nus;
+﻿using WiiUSharp;
+using WiiUSharp.Nus;
 
 namespace PD.WiiU.VirtualConsole.Tests;
 
@@ -12,6 +13,7 @@ public class BaseServiceTests
     private FakeBaseStore _store = null!;
     private FakeKeyStore _keys = null!;
     private FakeBaseDownloader _downloader = null!;
+    private FakeCustomBases _custom = null!;
     private BaseService _service = null!;
 
     [TestInitialize]
@@ -21,7 +23,8 @@ public class BaseServiceTests
         _store = new FakeBaseStore { Root = _root };
         _keys = new FakeKeyStore();
         _downloader = new FakeBaseDownloader { Root = _root };
-        _service = new BaseService(new BaseCatalog(new[] { TestTitle.Base() }), _store, _keys, _downloader);
+        _custom = new FakeCustomBases();
+        _service = new BaseService(new BaseCatalog(new[] { TestTitle.Base() }), _store, _keys, _downloader, _custom);
     }
 
     [TestCleanup]
@@ -29,6 +32,61 @@ public class BaseServiceTests
     {
         if (Directory.Exists(_root))
             Directory.Delete(_root, recursive: true);
+    }
+
+    [TestMethod]
+    public void Available_CustomBases_FollowTheCatalogAndServeGameCubeFromWii()
+    {
+        var wii = new BaseTitle(new TitleId(TitleType.Game, 0x10199900), "My Wii Base", Region.Europe, SourceConsole.Wii);
+        var n64 = new BaseTitle(new TitleId(TitleType.Game, 0x10199901), "My N64 Base", Region.Japan, SourceConsole.N64);
+        _service.AddCustom(wii);
+        _service.AddCustom(n64);
+
+        var forN64 = _service.Available(SourceConsole.N64);
+        var forCube = _service.Available(SourceConsole.GameCube);
+
+        Assert.AreEqual(2, forN64.Count);
+        Assert.IsFalse(forN64[0].IsCustom, "catalog first");
+        Assert.IsTrue(forN64[1].IsCustom);
+        Assert.AreEqual("My N64 Base", forN64[1].Name);
+        Assert.AreEqual(1, forCube.Count);
+        Assert.AreEqual(SourceConsole.GameCube, forCube[0].Console, "retagged like the catalog's Wii bases");
+        Assert.IsTrue(forCube[0].IsCustom);
+        Assert.AreEqual(0, _service.Available(SourceConsole.Nes).Count);
+
+        Assert.IsTrue(_service.RemoveCustom(n64.TitleId));
+        Assert.IsFalse(_service.RemoveCustom(n64.TitleId));
+        Assert.AreEqual(1, _service.Available(SourceConsole.N64).Count);
+        Assert.ThrowsExactly<ArgumentNullException>(() => _service.AddCustom(null!));
+    }
+
+    [TestMethod]
+    public void Available_CustomWithACatalogTitleId_YieldsToTheCatalog()
+    {
+        var clash = new BaseTitle(TestTitle.Base().TitleId, "Impostor", Region.Japan, SourceConsole.N64);
+        _service.AddCustom(clash);
+
+        var titles = _service.Available(SourceConsole.N64);
+
+        Assert.AreEqual(1, titles.Count);
+        Assert.IsFalse(titles[0].IsCustom);
+    }
+
+    [TestMethod]
+    public async Task ImportAsync_HandsTheFolderAndCommonKeyToTheStore()
+    {
+        var @base = new BaseTitle(new TitleId(TitleType.Game, 0x10199900), "Imported", Region.Europe, SourceConsole.Wii) { IsCustom = true };
+        _keys.CommonKey = Common;
+        var messages = new List<string>();
+
+        var title = await _service.ImportAsync(@base, Path.Combine(_root, "source"), new StringProgress(messages.Add));
+
+        Assert.IsTrue(title.Exists);
+        Assert.AreEqual(1, _store.Imports.Count);
+        Assert.AreEqual(Common, _store.Imports[0].Key);
+        CollectionAssert.AreEqual(new[] { "Imported" }, messages);
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(() => _service.ImportAsync(null!, "x"));
+        await Assert.ThrowsExactlyAsync<ArgumentException>(() => _service.ImportAsync(@base, " "));
     }
 
     [TestMethod]
@@ -105,10 +163,23 @@ public class BaseServiceTests
     {
         var catalog = new BaseCatalog(Array.Empty<BaseTitle>());
 
-        Assert.ThrowsExactly<ArgumentNullException>(() => new BaseService(null!, _store, _keys, _downloader));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new BaseService(catalog, null!, _keys, _downloader));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new BaseService(catalog, _store, null!, _downloader));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new BaseService(catalog, _store, _keys, null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new BaseService(null!, _store, _keys, _downloader, _custom));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new BaseService(catalog, null!, _keys, _downloader, _custom));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new BaseService(catalog, _store, null!, _downloader, _custom));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new BaseService(catalog, _store, _keys, null!, _custom));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new BaseService(catalog, _store, _keys, _downloader, null!));
+    }
+
+    private sealed class StringProgress : IProgress<string>
+    {
+        private readonly Action<string> _handler;
+
+        public StringProgress(Action<string> handler)
+        {
+            _handler = handler;
+        }
+
+        public void Report(string value) => _handler(value);
     }
 
     private sealed class SyncProgress : IProgress<BaseDownloadProgress>
