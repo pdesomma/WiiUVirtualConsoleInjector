@@ -33,11 +33,10 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     public static readonly IReadOnlyList<WizardStep> Steps = new[]
     {
         new WizardStep(1, "Console"),
-        new WizardStep(2, "Base"),
-        new WizardStep(3, "Game"),
-        new WizardStep(4, "Artwork"),
-        new WizardStep(5, "Options"),
-        new WizardStep(6, "Review & Inject"),
+        new WizardStep(2, "Game"),
+        new WizardStep(3, "Artwork"),
+        new WizardStep(4, "Options"),
+        new WizardStep(5, "Review & Inject"),
     };
 
     private readonly IBaseService _bases;
@@ -105,7 +104,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     [ObservableProperty]
     private string? _status;
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CurrentWizardStep), nameof(SelectedStep), nameof(CanGoNext), nameof(CanGoPrevious), nameof(IsConsoleStep), nameof(IsBaseStep), nameof(IsGameStep), nameof(IsArtworkStep), nameof(IsOptionsStep), nameof(IsReviewStep))]
+    [NotifyPropertyChangedFor(nameof(CurrentWizardStep), nameof(SelectedStep), nameof(CanGoNext), nameof(CanGoPrevious), nameof(IsConsoleStep), nameof(IsGameStep), nameof(IsArtworkStep), nameof(IsOptionsStep), nameof(IsReviewStep))]
     [NotifyCanExecuteChangedFor(nameof(NextStepCommand), nameof(PreviousStepCommand))]
     private int _step = 1;
 
@@ -273,12 +272,8 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     /// <summary>
     /// True on the artwork step.
     /// </summary>
-    public bool IsArtworkStep => Step == 4;
+    public bool IsArtworkStep => Step == 3;
 
-    /// <summary>
-    /// True on the base step.
-    /// </summary>
-    public bool IsBaseStep => Step == 2;
 
     /// <summary>
     /// True on the console step.
@@ -293,17 +288,17 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     /// <summary>
     /// True on the game step.
     /// </summary>
-    public bool IsGameStep => Step == 3;
+    public bool IsGameStep => Step == 2;
 
     /// <summary>
     /// True on the options step.
     /// </summary>
-    public bool IsOptionsStep => Step == 5;
+    public bool IsOptionsStep => Step == 4;
 
     /// <summary>
     /// True on the review step.
     /// </summary>
-    public bool IsReviewStep => Step == 6;
+    public bool IsReviewStep => Step == 5;
 
     /// <summary>
     /// True when the console also accepts a TurboCD folder as the ROM.
@@ -752,12 +747,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     /// </summary>
     public Task RomFitCheck { get; private set; } = Task.CompletedTask;
 
-    partial void OnSelectedBaseChanged(BaseChoice? value)
-    {
-        if (value is { IsUsable: true } && Step == 2)
-            Step = 3;
-        RomFitCheck = CheckRomFitAsync();
-    }
+    partial void OnSelectedBaseChanged(BaseChoice? value) => RomFitCheck = CheckRomFitAsync();
 
     /// <summary>
     /// A click on an artwork tile: the picture full size when the slot has one, otherwise the picker.
@@ -777,12 +767,6 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     /// <param name="path">The file.</param>
     [RelayCommand]
     private Task ShowImageAsync(string? path) => string.IsNullOrWhiteSpace(path) ? Task.CompletedTask : _dialogs.ShowImageAsync("Community artwork", path!);
-
-    /// <summary>
-    /// Back to the base step, to pick a bigger one.
-    /// </summary>
-    [RelayCommand]
-    private void ChangeBase() => Step = 2;
 
     /// <summary>
     /// Asks whether the ROM fits the base off the UI thread and shows why when it does not.

@@ -122,9 +122,10 @@
                         </ListBox>
                     </StackPanel>
 
-                    <!-- 2. Base -->
-                    <StackPanel IsVisible="{Binding IsBaseStep}">
-                        <TextBlock Classes="section" Text="{Binding SelectedConsoleName, StringFormat='Base for {0}'}" Margin="0,0,0,4" />
+                    <!-- 2. Game: base, then the ROM and its names -->
+                    <StackPanel IsVisible="{Binding IsGameStep}">
+                        <TextBlock Classes="section" Text="{Binding SelectedConsoleName, StringFormat='{}{0} game'}" Margin="0,0,0,4" />
+                        <TextBlock Classes="label" Text="Base" Margin="0,8,0,2" />
                         <WrapPanel ItemSpacing="6" Margin="0,0,0,14">
                             <TextBlock Classes="hint" FontSize="12" Text="The base holds the Virtual Console emulator; your ROM gets patched into it. Which games work on which base is community-tested:" VerticalAlignment="Center" />
                             <Button Classes="link" Command="{Binding OpenCompatibilityListCommand}" ToolTip.Tip="Opens the UWUVCI compatibility page for this console in your browser">
@@ -171,11 +172,7 @@
                                 <TextBlock Text="Manage bases &amp; keys →" />
                             </Button>
                         </WrapPanel>
-                    </StackPanel>
-
-                    <!-- 3. Game -->
-                    <StackPanel IsVisible="{Binding IsGameStep}">
-                        <TextBlock Classes="section" Text="Game" />
+                        <Border Classes="divider" Margin="0,18,0,18" />
                         <StackPanel Spacing="16" Width="560" HorizontalAlignment="Left">
                             <StackPanel Spacing="4">
                                 <TextBlock Classes="label" Text="ROM" />
@@ -189,9 +186,6 @@
                                 <Border Classes="banner-warning" Margin="0,8,0,0" IsVisible="{Binding HasRomFitHint}">
                                     <StackPanel Spacing="6">
                                         <TextBlock Text="{Binding RomFitHint}" />
-                                        <Button Classes="link" Command="{Binding ChangeBaseCommand}" HorizontalAlignment="Left">
-                                            <TextBlock Text="Change the base →" />
-                                        </Button>
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
@@ -214,7 +208,7 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <!-- 4. Artwork -->
+                    <!-- 3. Artwork -->
                     <StackPanel IsVisible="{Binding IsArtworkStep}">
                         <TextBlock Classes="section" Text="Artwork" />
 
@@ -597,13 +591,13 @@
                         <TextBlock Classes="fine" Text="{Binding BootSound.Hint}" Margin="0,6,0,0" />
                     </StackPanel>
 
-                    <!-- 5. Options -->
+                    <!-- 4. Options -->
                     <StackPanel IsVisible="{Binding IsOptionsStep}">
                         <TextBlock Classes="section" Text="{Binding SelectedConsoleName, StringFormat='Options · {0}'}" />
                         <ContentControl Content="{Binding CurrentOptions}" IsEnabled="{Binding !IsRunning}" />
                     </StackPanel>
 
-                    <!-- 6. Review & Inject -->
+                    <!-- 5. Review & Inject -->
                     <StackPanel IsVisible="{Binding IsReviewStep}">
                         <TextBlock Classes="section" Text="Review &amp; Inject" />
                         <StackPanel Spacing="10" Margin="0,0,0,16">
