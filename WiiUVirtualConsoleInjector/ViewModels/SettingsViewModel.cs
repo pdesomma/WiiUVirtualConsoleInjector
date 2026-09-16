@@ -18,7 +18,8 @@ public sealed class SettingsViewModel : PageViewModel
     /// <param name="links">Opens a folder in the file manager.</param>
     /// <param name="sdCard">Lists and detects removable drives.</param>
     /// <param name="nintendont">Where Nintendont is downloaded from.</param>
-    public SettingsViewModel(ISettingsService settings, IDialogService dialogs, AppPaths paths, ILinkOpener links, ISdCard sdCard, INintendontSource nintendont)
+    /// <param name="update">Whether a newer release is out.</param>
+    public SettingsViewModel(ISettingsService settings, IDialogService dialogs, AppPaths paths, ILinkOpener links, ISdCard sdCard, INintendontSource nintendont, UpdateNoticeViewModel update)
         : base("Settings", "settings.png")
     {
         if (settings is null)
@@ -33,6 +34,7 @@ public sealed class SettingsViewModel : PageViewModel
             throw new ArgumentNullException(nameof(sdCard));
         if (nintendont is null)
             throw new ArgumentNullException(nameof(nintendont));
+        Update = update ?? throw new ArgumentNullException(nameof(update));
 
         BaseFolder = new FolderSettingViewModel("Base store folder", () => settings.BasePath, (s, v) => s with { BasePath = v }, settings, dialogs, links);
         OutputFolder = new FolderSettingViewModel("Output folder", () => settings.OutputPath, (s, v) => s with { OutputPath = v }, settings, dialogs, links);
@@ -78,6 +80,10 @@ public sealed class SettingsViewModel : PageViewModel
     /// Where injected titles go.
     /// </summary>
     public FolderSettingViewModel OutputFolder { get; }
+    /// <summary>
+    /// Whether a newer release is out, and the startup check switch.
+    /// </summary>
+    public UpdateNoticeViewModel Update { get; }
     /// <summary>
     /// Every warning, in display order.
     /// </summary>

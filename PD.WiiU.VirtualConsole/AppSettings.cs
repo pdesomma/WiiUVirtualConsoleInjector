@@ -16,9 +16,17 @@ public sealed record AppSettings
     /// </summary>
     public string? CaptionFontPath { get; init; }
     /// <summary>
+    /// Look for a newer release when the application starts.
+    /// </summary>
+    public bool CheckForUpdates { get; init; } = true;
+    /// <summary>
     /// Copy each finished title onto the SD card's install folder.
     /// </summary>
     public bool CopyToSdCard { get; init; }
+    /// <summary>
+    /// When a release was last looked for; null when never.
+    /// </summary>
+    public DateTimeOffset? LastUpdateCheck { get; init; }
     /// <summary>
     /// Folder injected titles are written to; null until chosen.
     /// </summary>

@@ -52,6 +52,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICompatibilityLists, UwuvciCompatibilityLists>();
         services.AddSingleton<ICommunityArtwork>(p => new GitHubCommunityArtwork(p.GetRequiredService<HttpClient>()));
         services.AddSingleton<INintendontSource>(p => new GitHubNintendontSource(p.GetRequiredService<HttpClient>()));
+        services.AddSingleton<IUpdateCheck>(p => new GitHubReleases(p.GetRequiredService<HttpClient>()));
+        services.AddSingleton(p => new UpdateNoticeViewModel(p.GetRequiredService<IUpdateCheck>(), p.GetRequiredService<ISettingsService>(), p.GetRequiredService<ILinkOpener>(), typeof(App).Assembly.GetName().Version ?? new Version(0, 0)));
         services.AddSingleton<INavigationService, NavigationService>();
 
         services.AddSingleton<MainWindowViewModel>();

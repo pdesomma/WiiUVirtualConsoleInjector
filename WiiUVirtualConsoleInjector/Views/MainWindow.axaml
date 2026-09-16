@@ -37,6 +37,14 @@
                 <Image DockPanel.Dock="Left" Source="/Assets/wiiu.png" Width="26" Height="26" VerticalAlignment="Center" />
                 <TextBlock DockPanel.Dock="Left" Text="{Binding Title}" Foreground="{DynamicResource HeaderTextBrush}" FontSize="16" FontWeight="ExtraBold" VerticalAlignment="Center" Margin="12,0,0,0" />
 
+                <!-- New release -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" Margin="14,0,0,0" IsVisible="{Binding Update.IsAvailable}">
+                    <Button Classes="link" Command="{Binding Update.OpenCommand}" ToolTip.Tip="Open the release page">
+                        <TextBlock Text="{Binding Update.Text}" Foreground="{DynamicResource HeaderTextBrush}" FontSize="12.5" FontWeight="Bold" />
+                    </Button>
+                    <Button Classes="toast-close" Content="&#xD7;" Command="{Binding Update.DismissCommand}" Foreground="{DynamicResource HeaderTextBrush}" ToolTip.Tip="Not now" />
+                </StackPanel>
+
                 <!-- Light / dark toggle -->
                 <Border DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center" CornerRadius="9999" Background="#1AFFFFFF" Padding="3">
                     <StackPanel Orientation="Horizontal" Spacing="2">

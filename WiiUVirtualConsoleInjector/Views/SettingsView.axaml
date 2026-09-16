@@ -187,6 +187,24 @@
                 </StackPanel>
             </Border>
 
+            <!-- Updates -->
+            <Border Classes="card">
+                <StackPanel DataContext="{Binding Update}" Spacing="10">
+                    <TextBlock Classes="section" Text="Updates" Margin="0,0,0,-6" />
+                    <TextBlock Classes="hint" FontSize="12" Text="{Binding CurrentText}" />
+                    <CheckBox IsChecked="{Binding CheckAtStartup}">
+                        <TextBlock Text="Look for a newer release on GitHub when the application starts" FontSize="12.5" TextWrapping="Wrap" />
+                    </CheckBox>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Button Classes="sm" Content="Check now" Command="{Binding CheckNowCommand}" />
+                        <Button Classes="link" Command="{Binding OpenCommand}" IsVisible="{Binding IsAvailable}">
+                            <TextBlock Text="Open the release page" />
+                        </Button>
+                        <TextBlock Classes="hint" FontSize="12" Text="{Binding Status}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
             <!-- Warnings -->
             <Border Classes="card">
                 <StackPanel>

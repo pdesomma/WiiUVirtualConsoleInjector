@@ -58,7 +58,9 @@ public sealed class JsonSettingsStore : ISettingsStore
         {
             BasePath = Blank(document.BasePath),
             CaptionFontPath = Blank(document.CaptionFontPath),
+            CheckForUpdates = document.CheckForUpdates ?? true,
             CopyToSdCard = document.CopyToSdCard ?? false,
+            LastUpdateCheck = document.LastUpdateCheck,
             OutputPath = Blank(document.OutputPath),
             SdPath = Blank(document.SdPath),
             WorkPath = Blank(document.WorkPath),
@@ -77,7 +79,9 @@ public sealed class JsonSettingsStore : ISettingsStore
         {
             BasePath = settings.BasePath,
             CaptionFontPath = settings.CaptionFontPath,
+            CheckForUpdates = settings.CheckForUpdates,
             CopyToSdCard = settings.CopyToSdCard,
+            LastUpdateCheck = settings.LastUpdateCheck,
             OutputPath = settings.OutputPath,
             SdPath = settings.SdPath,
             WorkPath = settings.WorkPath,
@@ -98,7 +102,9 @@ public sealed class JsonSettingsStore : ISettingsStore
     {
         public string? BasePath { get; set; }
         public string? CaptionFontPath { get; set; }
+        public bool? CheckForUpdates { get; set; }
         public bool? CopyToSdCard { get; set; }
+        public DateTimeOffset? LastUpdateCheck { get; set; }
         public string? OutputPath { get; set; }
         public string? SdPath { get; set; }
         public InjectionWarning[]? SuppressedWarnings { get; set; }
