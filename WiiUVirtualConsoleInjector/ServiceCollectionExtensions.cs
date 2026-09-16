@@ -49,6 +49,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDialogService>(new AvaloniaDialogService(owner));
         services.AddSingleton<ILinkOpener>(new AvaloniaLinkOpener(owner));
         services.AddSingleton<ICompatibilityLists, UwuvciCompatibilityLists>();
+        services.AddSingleton<ICommunityArtwork>(p => new GitHubCommunityArtwork(p.GetRequiredService<HttpClient>()));
         services.AddSingleton<INavigationService, NavigationService>();
 
         services.AddSingleton<MainWindowViewModel>();

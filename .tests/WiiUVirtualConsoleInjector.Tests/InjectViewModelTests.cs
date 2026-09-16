@@ -19,6 +19,7 @@ public class InjectViewModelTests
     private FakeSoundPlayer _sounds = null!;
     private FakeInjectionHistory _history = null!;
     private FakeCompatibilityLists _compatibility = null!;
+    private FakeCommunityArtwork _community = null!;
     private InjectSettingsService _settings = null!;
     private readonly NavigationService _navigation = new();
 
@@ -34,6 +35,7 @@ public class InjectViewModelTests
         _sounds = new FakeSoundPlayer();
         _history = new FakeInjectionHistory();
         _compatibility = new FakeCompatibilityLists();
+        _community = new FakeCommunityArtwork();
         foreach (var console in Enum.GetValues<SourceConsole>())
             _bases.Add(Base(console, 0x1000 + (uint)console, console + " Base"));
     }
@@ -41,16 +43,17 @@ public class InjectViewModelTests
     [TestMethod]
     public void Constructor_NullArguments_ThrowsArgumentNullException()
     {
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(null!, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, null!, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, null!, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, null!, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, null!, _sdCard, Builder(), _sounds, _history, _compatibility));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, null!, Builder(), _sounds, _history, _compatibility));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, null!, _sounds, _history, _compatibility));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), null!, _history, _compatibility));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, null!, _compatibility));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(null!, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, null!, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, null!, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, null!, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, null!, _sdCard, Builder(), _sounds, _history, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, null!, Builder(), _sounds, _history, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, null!, _sounds, _history, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), null!, _history, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, null!, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, null!, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, null!));
     }
 
     [TestMethod]
@@ -501,7 +504,98 @@ public class InjectViewModelTests
         Assert.AreEqual(0, _dialogs.FilePicks.Count);
     }
 
-    private InjectViewModel Create() => new(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility);
+    private InjectViewModel Create() => new(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, _community);
+
+    [TestMethod]
+    public async Task CommunityArtwork_HitApplied_FillsTheSlotsAndTheN64Ini()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "WiiUVirtualConsoleInjector.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var rom = Path.Combine(root, "game.z64");
+            var bytes = new byte[0x100];
+            System.Text.Encoding.ASCII.GetBytes("NGEE").CopyTo(bytes, 0x3B);
+            File.WriteAllBytes(rom, bytes);
+            _community.Hit = new CommunityArtworkHit("n64/NGEE", new Uri("https://r.test/n64/NGEE/iconTex.png"), new Uri("https://r.test/n64/NGEE/bootTvTex.png"), null, new Uri("https://r.test/n64/NGEE/game.ini"), new Uri("https://r.test/n64/NGEE/BootSound.btsnd"));
+            var vm = Ready(SourceConsole.N64, rom);
+            Assert.IsTrue(vm.CommunityArtwork.LookUpCommand.CanExecute(null));
+
+            await vm.CommunityArtwork.LookUpCommand.ExecuteAsync(null);
+
+            CollectionAssert.AreEqual(new[] { "n64/NGEE", "n64/NEGE" }, _community.Lookups.Single().ToArray());
+            Assert.IsTrue(vm.CommunityArtwork.HasHit);
+            StringAssert.Contains(vm.CommunityArtwork.Status, "n64/NGEE");
+            StringAssert.Contains(vm.CommunityArtwork.Status, "emulator INI");
+            Assert.AreEqual(4, _community.Downloaded.Count);
+            Assert.IsTrue(File.Exists(vm.CommunityArtwork.Files!.Icon));
+            StringAssert.Contains(vm.CommunityArtwork.Files.Icon, Path.Combine("community-artwork", "n64_NGEE"));
+
+            vm.CommunityArtwork.ApplyCommand.Execute(null);
+
+            Assert.IsFalse(vm.CommunityArtwork.HasHit);
+            StringAssert.EndsWith(vm.Icon.Path, "iconTex.png");
+            StringAssert.EndsWith(vm.BootTv.Path, "bootTvTex.png");
+            Assert.IsNull(vm.BootDrc.Path, "no GamePad screen in that folder");
+            StringAssert.EndsWith(vm.BootSound.Path, "BootSound.btsnd");
+            StringAssert.EndsWith(((N64OptionsViewModel)vm.CurrentOptions).Ini.Path, "game.ini");
+
+            vm.RomPath = null;
+            Assert.IsNull(vm.CommunityArtwork.Status, "a new ROM forgets the last lookup");
+            Assert.IsFalse(vm.CommunityArtwork.LookUpCommand.CanExecute(null));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task CommunityArtwork_MissOrNoCodeOrOffline_ExplainsItself()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "WiiUVirtualConsoleInjector.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var nds = Path.Combine(root, "game.nds");
+            var bytes = new byte[0x200];
+            System.Text.Encoding.ASCII.GetBytes("ARPE").CopyTo(bytes, 0xC);
+            File.WriteAllBytes(nds, bytes);
+            var vm = Ready(SourceConsole.Nds, nds);
+
+            await vm.CommunityArtwork.LookUpCommand.ExecuteAsync(null);
+            StringAssert.Contains(vm.CommunityArtwork.Status, "Nothing in the community repository under nds/ARPE");
+            Assert.IsFalse(vm.CommunityArtwork.HasHit);
+
+            _community.Failure = new System.Net.Http.HttpRequestException("offline");
+            await vm.CommunityArtwork.LookUpCommand.ExecuteAsync(null);
+            StringAssert.Contains(vm.CommunityArtwork.Status, "could not be reached");
+
+            var gb = Path.Combine(root, "game.gb");
+            File.WriteAllBytes(gb, new byte[0x200]);
+            vm.SelectedConsole = SourceConsole.Gba;
+            vm.RomPath = gb;
+            await vm.CommunityArtwork.LookUpCommand.ExecuteAsync(null);
+            StringAssert.Contains(vm.CommunityArtwork.Status, "no code");
+            Assert.AreEqual(2, _community.Lookups.Count, "nothing to ask with");
+
+            vm.CommunityArtwork.DismissCommand.Execute(null);
+            Assert.IsFalse(vm.CommunityArtwork.HasHit);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void CommunityArtworkViewModel_NullArguments_Throw()
+    {
+        Assert.ThrowsExactly<ArgumentNullException>(() => new CommunityArtworkViewModel(null!, () => SourceConsole.Nes, () => null, () => "w"));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new CommunityArtworkViewModel(_community, null!, () => null, () => "w"));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new CommunityArtworkViewModel(_community, () => SourceConsole.Nes, null!, () => "w"));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new CommunityArtworkViewModel(_community, () => SourceConsole.Nes, () => null, null!));
+    }
 
     [TestMethod]
     public async Task OpenCompatibilityList_OpensThePageForTheSelectedConsole()

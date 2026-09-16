@@ -25,7 +25,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     private const string SnesWarning = "You can only inject SNES ROMs that are not using any Co-Processors (example for not working: Star Fox).\n\nIf attempting to inject a ROM in need of a Co-Processor, we will not give you any support with fixing said injection.\n\nContinue?";
 
     private static readonly FileFilter[] ImageFilters = { new("Images", "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.webp", "*.tga") };
-    private static readonly FileFilter[] SoundFilters = { new("Audio", "*.wav", "*.mp3", "*.aiff", "*.aif") };
+    private static readonly FileFilter[] SoundFilters = { new("Audio", "*.wav", "*.mp3", "*.aiff", "*.aif", "*.btsnd") };
 
     /// <summary>
     /// Pages of the wizard in order.
@@ -43,6 +43,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     private readonly IBaseService _bases;
     private readonly IDialogService _dialogs;
     private readonly ICompatibilityLists _compatibility;
+    private readonly ICommunityArtwork _communityArtwork;
     private readonly IInjectionHistory _history;
     private readonly IInjectionServiceFactory _injections;
     private readonly INavigationService _navigation;
@@ -114,13 +115,15 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     /// <param name="sounds">Plays the boot sound back.</param>
     /// <param name="history">Remembers finished injects.</param>
     /// <param name="compatibility">Community compatibility pages per console.</param>
-    public InjectViewModel(IBaseService bases, IDialogService dialogs, IInjectionServiceFactory injections, ISettingsService settings, INavigationService navigation, ISdCard sdCard, ArtworkBuilderViewModel artwork, ISoundPlayer sounds, IInjectionHistory history, ICompatibilityLists compatibility)
+    /// <param name="communityArtwork">The community artwork repository.</param>
+    public InjectViewModel(IBaseService bases, IDialogService dialogs, IInjectionServiceFactory injections, ISettingsService settings, INavigationService navigation, ISdCard sdCard, ArtworkBuilderViewModel artwork, ISoundPlayer sounds, IInjectionHistory history, ICompatibilityLists compatibility, ICommunityArtwork communityArtwork)
         : base("Inject", "inject-icon.png", "M12 3v11 M7.5 10.5L12 15l4.5-4.5 M4 17.5V19a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5")
     {
         _bases = bases ?? throw new ArgumentNullException(nameof(bases));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _history = history ?? throw new ArgumentNullException(nameof(history));
         _compatibility = compatibility ?? throw new ArgumentNullException(nameof(compatibility));
+        _communityArtwork = communityArtwork ?? throw new ArgumentNullException(nameof(communityArtwork));
         _injections = injections ?? throw new ArgumentNullException(nameof(injections));
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
@@ -133,8 +136,10 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         BootTv = new PathFieldViewModel(dialogs, "TV boot screen", "1280 × 720", ImageFilters) { Glyph = "camera.png" };
         BootDrc = new PathFieldViewModel(dialogs, "GamePad boot screen", "854 × 480", ImageFilters) { Glyph = "camera.png" };
         BootLogo = new PathFieldViewModel(dialogs, "Boot logo", "170 × 42", ImageFilters) { Glyph = "camera.png" };
-        BootSound = new PathFieldViewModel(dialogs, "Boot sound", "wav, mp3, aiff", SoundFilters) { Glyph = "speaker.png" };
+        BootSound = new PathFieldViewModel(dialogs, "Boot sound", "wav, mp3, aiff or a ready btsnd", SoundFilters) { Glyph = "speaker.png" };
         ArtworkBuilder.Built += (_, built) => SlotFor(built.Slot).Path = built.Path;
+        CommunityArtwork = new CommunityArtworkViewModel(_communityArtwork, () => SelectedConsole, () => RomPath, () => _settings.WorkPath);
+        CommunityArtwork.Applied += (_, files) => TakeCommunityArtwork(files);
         BootSound.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(PathFieldViewModel.Path))
@@ -197,6 +202,11 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     /// Builds icons and boot screens from a screenshot.
     /// </summary>
     public ArtworkBuilderViewModel ArtworkBuilder { get; }
+
+    /// <summary>
+    /// Looks the ROM up in the community artwork repository.
+    /// </summary>
+    public CommunityArtworkViewModel CommunityArtwork { get; }
     /// <summary>
     /// GamePad boot screen.
     /// </summary>
@@ -727,7 +737,26 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
 
     partial void OnNameChanged(string? value) => ArtworkBuilder.Refresh(SelectedConsole, value, ShortName);
 
-    partial void OnRomPathChanged(string? value) => MissingKeys = _injections.MissingKeys(SelectedConsole, value);
+    partial void OnRomPathChanged(string? value)
+    {
+        MissingKeys = _injections.MissingKeys(SelectedConsole, value);
+        CommunityArtwork.Reset();
+    }
+
+    /// <summary>
+    /// Fills the artwork slots, the boot sound and the N64 INI from a community folder; the GamePad screen only when the folder had one.
+    /// </summary>
+    private void TakeCommunityArtwork(CommunityArtworkFiles files)
+    {
+        Icon.Path = files.Icon;
+        BootTv.Path = files.BootTv;
+        if (files.BootDrc is not null)
+            BootDrc.Path = files.BootDrc;
+        if (files.BootSound is not null)
+            BootSound.Path = files.BootSound;
+        if (files.GameIni is not null && CurrentOptions is N64OptionsViewModel n64)
+            n64.Ini.Path = files.GameIni;
+    }
 
     partial void OnShortNameChanged(string? value) => ArtworkBuilder.Refresh(SelectedConsole, Name, value);
 

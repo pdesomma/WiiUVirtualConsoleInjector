@@ -138,6 +138,30 @@ internal sealed class FakeSdCard : ISdCard
     public IReadOnlyList<RemovableDrive> Drives() => Removable;
 }
 
+internal sealed class FakeCommunityArtwork : ICommunityArtwork
+{
+    public List<Uri> Downloaded { get; } = new();
+    public Exception? Failure { get; set; }
+    public CommunityArtworkHit? Hit { get; set; }
+    public List<IReadOnlyList<string>> Lookups { get; } = new();
+
+    public Task DownloadAsync(Uri source, string destinationPath, CancellationToken cancellationToken = default)
+    {
+        Downloaded.Add(source);
+        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+        File.WriteAllBytes(destinationPath, new byte[] { 1, 2, 3 });
+        return Task.CompletedTask;
+    }
+
+    public Task<CommunityArtworkHit?> FindAsync(IReadOnlyList<string> ids, CancellationToken cancellationToken = default)
+    {
+        Lookups.Add(ids);
+        if (Failure is not null)
+            throw Failure;
+        return Task.FromResult(Hit);
+    }
+}
+
 internal sealed class FakeCompatibilityLists : ICompatibilityLists
 {
     public List<SourceConsole> Opened { get; } = new();
