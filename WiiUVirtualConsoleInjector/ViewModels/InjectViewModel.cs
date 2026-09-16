@@ -86,7 +86,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     [NotifyCanExecuteChangedFor(nameof(InjectCommand), nameof(ClearRomCommand))]
     private string? _romPath;
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanInject), nameof(BaseHint))]
+    [NotifyPropertyChangedFor(nameof(CanInject), nameof(HasRomFitHint))]
     [NotifyCanExecuteChangedFor(nameof(InjectCommand))]
     private string? _romFitHint;
     [ObservableProperty]
@@ -167,7 +167,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         null => "No base is selected for this console.",
         { IsPresent: false } => "This base is not downloaded; get it on Bases & Keys.",
         { KeysOk: false } => "A key this base needs is missing; add it on Bases & Keys.",
-        _ => RomFitHint,
+        _ => null,
     };
 
     /// <summary>
@@ -735,6 +735,10 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     }
 
     /// <summary>
+    /// True when the ROM will not fit the base.
+    /// </summary>
+    public bool HasRomFitHint => RomFitHint is not null;
+    /// <summary>
     /// The check that the ROM fits the base, for awaiting; a finished task when none is running.
     /// </summary>
     public Task RomFitCheck { get; private set; } = Task.CompletedTask;
@@ -745,6 +749,12 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
             Step = 3;
         RomFitCheck = CheckRomFitAsync();
     }
+
+    /// <summary>
+    /// Back to the base step, to pick a bigger one.
+    /// </summary>
+    [RelayCommand]
+    private void ChangeBase() => Step = 2;
 
     /// <summary>
     /// Asks whether the ROM fits the base off the UI thread and shows why when it does not.

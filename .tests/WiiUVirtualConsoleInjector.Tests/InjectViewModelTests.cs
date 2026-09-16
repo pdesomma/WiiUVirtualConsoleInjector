@@ -318,13 +318,18 @@ public class InjectViewModelTests
         await vm.RomFitCheck;
 
         Assert.IsFalse(vm.CanInject);
-        StringAssert.Contains(vm.BaseHint, "game.nes is 384 KB");
+        Assert.IsTrue(vm.HasRomFitHint);
+        StringAssert.Contains(vm.RomFitHint, "game.nes is 384 KB");
+        Assert.IsNull(vm.BaseHint, "the base itself is fine");
+
+        vm.ChangeBaseCommand.Execute(null);
+        Assert.AreEqual(2, vm.Step);
 
         _factory.Fit = (_, _) => null;
         vm.RomPath = @"C:\small.nes";
         await vm.RomFitCheck;
 
-        Assert.IsNull(vm.BaseHint);
+        Assert.IsFalse(vm.HasRomFitHint);
         Assert.IsTrue(vm.CanInject);
     }
 
