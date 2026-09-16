@@ -188,14 +188,14 @@
             </Border>
 
             <!-- Previous application -->
-            <Border Classes="card" IsVisible="{Binding Legacy.HasInstall}">
+            <Border Classes="card">
                 <StackPanel DataContext="{Binding Legacy}" Spacing="10">
                     <TextBlock Classes="section" Text="UWUVCI AIO" Margin="0,0,0,-6" />
-                    <TextBlock Classes="hint" FontSize="12" Text="The previous application is on this machine. Its keys and downloaded bases can be taken over; nothing already here is replaced, and nothing of its own is touched." TextWrapping="Wrap" />
-                    <TextBlock FontSize="12.5" Text="{Binding Summary}" TextWrapping="Wrap" />
-                    <TextBlock Classes="hint mono" FontSize="11.5" Text="{Binding Location}" TextWrapping="Wrap" />
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Button Classes="primary sm" Content="Take it over" Command="{Binding ImportCommand}" />
+                    <TextBlock Classes="hint" FontSize="12" Text="{Binding Heading}" TextWrapping="Wrap" />
+                    <TextBlock FontSize="12.5" Text="{Binding Summary}" TextWrapping="Wrap" IsVisible="{Binding HasInstall}" />
+                    <TextBlock Classes="hint mono" FontSize="11.5" Text="{Binding Location}" TextWrapping="Wrap" IsVisible="{Binding HasInstall}" />
+                    <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding HasInstall}">
+                        <Button Classes="primary sm" Content="Import" Command="{Binding ImportCommand}" />
                         <TextBlock Classes="hint" FontSize="12" Text="{Binding Progress}" VerticalAlignment="Center" />
                     </StackPanel>
                     <TextBlock FontSize="12.5" Text="{Binding Status}" TextWrapping="Wrap" IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />

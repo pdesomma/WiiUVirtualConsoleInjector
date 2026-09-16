@@ -43,6 +43,7 @@ public class LegacyImportViewModelTests
 
         Assert.IsFalse(vm.HasInstall);
         Assert.AreEqual("", vm.Summary);
+        Assert.AreEqual("UWUVCI AIO was not found on this machine.", vm.Heading);
         Assert.IsFalse(vm.ImportCommand.CanExecute(null));
     }
 
@@ -55,6 +56,7 @@ public class LegacyImportViewModelTests
         vm.Refresh();
 
         Assert.IsTrue(vm.HasInstall);
+        Assert.AreEqual("UWUVCI AIO was found on this machine. Keys and downloaded bases can be imported.", vm.Heading);
         Assert.AreEqual("Found the Wii U common key, 2 title keys, 1 downloaded base, its output folder, which warnings were turned off.", vm.Summary);
         Assert.AreEqual(@"C:\legacy\settings.json", vm.Location);
         Assert.IsTrue(vm.ImportCommand.CanExecute(null));
@@ -97,7 +99,7 @@ public class LegacyImportViewModelTests
         await vm.ImportCommand.ExecuteAsync(null);
 
         Assert.AreEqual(1, _import.Imported.Count);
-        Assert.AreEqual("Took the Wii U common key, 2 title keys, 1 base, output folder.", vm.Status);
+        Assert.AreEqual("Imported the Wii U common key, 2 title keys, 1 base, output folder.", vm.Status);
         Assert.AreEqual(@"D:\old-out", _settings.Current.OutputPath);
         Assert.IsTrue(_settings.Current.IsSuppressed(InjectionWarning.SnesCoProcessor));
         Assert.IsTrue(_settings.Current.LegacyImportOffered);
@@ -117,7 +119,7 @@ public class LegacyImportViewModelTests
         await vm.ImportCommand.ExecuteAsync(null);
 
         Assert.AreEqual(@"D:\mine", _settings.Current.OutputPath);
-        Assert.AreEqual("Everything was already here.", vm.Status);
+        Assert.AreEqual("Nothing to import; everything was already here.", vm.Status);
     }
 
     [TestMethod]
