@@ -538,7 +538,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     {
         SourceConsole.Nes => new NesOptionsViewModel(),
         SourceConsole.Snes => new SnesOptionsViewModel(),
-        SourceConsole.N64 => new N64OptionsViewModel(_dialogs),
+        SourceConsole.N64 => new N64OptionsViewModel(_dialogs, () => _settings.WorkPath),
         SourceConsole.Gba => new GbaOptionsViewModel(),
         SourceConsole.Nds => new NdsOptionsViewModel(_dialogs),
         SourceConsole.Wii => new WiiOptionsViewModel(_dialogs),

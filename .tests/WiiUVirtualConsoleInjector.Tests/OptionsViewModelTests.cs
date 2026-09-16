@@ -293,5 +293,64 @@ public class OptionsViewModelTests
         new NoOptionsViewModel(SourceConsole.Msx).Load(new NesOptions());
     }
 
+    [TestMethod]
+    public async Task N64IniBuilder_WriteAndUse_WritesTheFileAndPicksIt()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "WiiUVirtualConsoleInjector.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var vm = new N64OptionsViewModel(_dialogs, () => root);
+            Assert.IsFalse(vm.HasIni);
+            Assert.IsFalse(vm.EditIniCommand.CanExecute(null));
+            vm.IniBuilder.Comment = "GoldenEye";
+            vm.IniBuilder.BackupType = N64BackupType.Eeprom;
+            vm.IniBuilder.BackupSize = "512";
+            vm.IniBuilder.ExpansionPak = false;
+            vm.IniBuilder.RspMultiCore = true;
+            vm.IniBuilder.Extra = "[Render]\r\nCopyDepthBuffer = 1";
+
+            await vm.IniBuilder.WriteCommand.ExecuteAsync(null);
+
+            Assert.IsTrue(vm.HasIni);
+            StringAssert.StartsWith(vm.Ini.Path, Path.Combine(root, "n64-ini"));
+            var text = File.ReadAllText(vm.Ini.Path!);
+            StringAssert.StartsWith(text, ";GoldenEye");
+            StringAssert.Contains(text, "BackupType = 3");
+            StringAssert.Contains(text, "BackupSize = 512");
+            StringAssert.Contains(text, "Rumble = 1");
+            StringAssert.Contains(text, "UseTimer = 1");
+            StringAssert.Contains(text, "RetraceByVsync = 1");
+            StringAssert.Contains(text, "RSPMultiCore = 1");
+            StringAssert.Contains(text, "RamSize = 0x400000");
+            StringAssert.Contains(text, "CopyDepthBuffer = 1");
+            StringAssert.Contains(vm.IniBuilder.Status, "Written");
+            Assert.AreEqual(vm.Ini.Path, ((N64Options)vm.Build()!).IniPath);
+
+            var fresh = new N64OptionsViewModel(_dialogs, () => root);
+            fresh.Ini.Path = vm.Ini.Path;
+            Assert.IsTrue(fresh.EditIniCommand.CanExecute(null));
+            await fresh.EditIniCommand.ExecuteAsync(null);
+            Assert.IsTrue(fresh.IniBuilder.IsOpen);
+            Assert.AreEqual("GoldenEye", fresh.IniBuilder.Comment);
+            Assert.AreEqual(N64BackupType.Eeprom, fresh.IniBuilder.BackupType);
+            Assert.AreEqual("512", fresh.IniBuilder.BackupSize);
+            Assert.IsFalse(fresh.IniBuilder.ExpansionPak);
+            Assert.IsTrue(fresh.IniBuilder.RspMultiCore);
+            StringAssert.Contains(fresh.IniBuilder.Extra, "CopyDepthBuffer = 1");
+
+            fresh.Ini.Path = Path.Combine(root, "missing.ini");
+            Assert.IsFalse(await fresh.IniBuilder.LoadFileAsync(fresh.Ini.Path));
+            Assert.AreEqual(1, _dialogs.Errors.Count);
+            Assert.ThrowsExactly<ArgumentNullException>(() => new N64IniBuilderViewModel(null!, () => root));
+            Assert.ThrowsExactly<ArgumentNullException>(() => new N64IniBuilderViewModel(_dialogs, null!));
+            Assert.ThrowsExactly<ArgumentNullException>(() => vm.IniBuilder.Load(null!));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     private static RegionChoice Choice(string label) => RegionChoice.All.Single(r => r.Label == label);
 }
