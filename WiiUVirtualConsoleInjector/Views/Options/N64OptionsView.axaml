@@ -1,10 +1,58 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels.Options"
+             xmlns:vc="using:PD.WiiU.VirtualConsole"
+             xmlns:conv="using:WiiUVirtualConsoleInjector.Converters"
              x:Class="WiiUVirtualConsoleInjector.Views.Options.N64OptionsView"
              x:DataType="vm:N64OptionsViewModel">
     <StackPanel Spacing="16" Width="560" HorizontalAlignment="Left">
         <ContentControl Content="{Binding Ini}" />
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <ToggleButton Classes="sm" Content="Write an INI here" IsChecked="{Binding IniBuilder.IsOpen}" />
+            <Button Classes="link" Command="{Binding EditIniCommand}" ToolTip.Tip="Read the picked INI into the fields below">
+                <TextBlock Text="Edit the picked one" />
+            </Button>
+        </StackPanel>
+        <Border Classes="card" IsVisible="{Binding IniBuilder.IsOpen}">
+            <StackPanel Spacing="12">
+                <TextBlock Classes="hint" FontSize="12" Text="The N64 Virtual Console reads a per-game INI for its save memory and timing. Most games run with the defaults; the community compatibility list says when a game wants something else." TextWrapping="Wrap" />
+                <StackPanel Spacing="4">
+                    <TextBlock Classes="label" Text="Comment" />
+                    <TextBox Text="{Binding IniBuilder.Comment}" PlaceholderText="Usually the game's name; the first line of the file" />
+                </StackPanel>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Classes="label" Text="Save memory" />
+                        <ComboBox ItemsSource="{Binding IniBuilder.BackupTypes}" SelectedItem="{Binding IniBuilder.BackupType}" HorizontalAlignment="Stretch" PlaceholderText="Not set">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="x:Object">
+                                    <TextBlock Text="{Binding, Converter={x:Static conv:N64IniConverters.BackupTypeLabel}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="4">
+                        <TextBlock Classes="label" Text="Save size (bytes)" />
+                        <ComboBox ItemsSource="{Binding IniBuilder.BackupSizes}" SelectedItem="{Binding IniBuilder.BackupSize}" HorizontalAlignment="Stretch" />
+                    </StackPanel>
+                </Grid>
+                <WrapPanel ItemSpacing="16" LineSpacing="6">
+                    <CheckBox Content="Expansion Pak (8 MB)" IsChecked="{Binding IniBuilder.ExpansionPak}" />
+                    <CheckBox Content="Rumble" IsChecked="{Binding IniBuilder.Rumble}" />
+                    <CheckBox Content="Use timer" IsChecked="{Binding IniBuilder.UseTimer}" />
+                    <CheckBox Content="Retrace by VSync" IsChecked="{Binding IniBuilder.RetraceByVsync}" />
+                    <CheckBox Content="RSP multi-core" IsChecked="{Binding IniBuilder.RspMultiCore}" />
+                </WrapPanel>
+                <StackPanel Spacing="4">
+                    <TextBlock Classes="label" Text="Further sections" />
+                    <TextBox Classes="mono" Text="{Binding IniBuilder.Extra}" AcceptsReturn="True" TextWrapping="NoWrap" MinHeight="90" MaxHeight="240" FontSize="12" PlaceholderText="[Idle], [Render], [Cheat]... pasted as is" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Button Classes="primary sm" Content="Write and use" Command="{Binding IniBuilder.WriteCommand}" />
+                    <TextBlock Classes="hint" FontSize="12" Text="{Binding IniBuilder.Status}" VerticalAlignment="Center" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
         <CheckBox Content="Remove dark filter" IsChecked="{Binding RemoveDarkFilter}" />
         <CheckBox Content="Widescreen" IsChecked="{Binding WideScreen}" />
     </StackPanel>
