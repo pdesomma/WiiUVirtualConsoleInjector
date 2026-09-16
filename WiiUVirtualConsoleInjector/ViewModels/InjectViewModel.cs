@@ -741,6 +741,23 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     {
         MissingKeys = _injections.MissingKeys(SelectedConsole, value);
         CommunityArtwork.Reset();
+        if (value is not null && string.IsNullOrWhiteSpace(Name) && SuggestedName(value) is { } suggested)
+            Name = suggested;
+    }
+
+    /// <summary>
+    /// The ROM's own header name, when it has one and can be read.
+    /// </summary>
+    private string? SuggestedName(string romPath)
+    {
+        try
+        {
+            return RomNames.Suggest(SelectedConsole, romPath);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
     }
 
     /// <summary>
