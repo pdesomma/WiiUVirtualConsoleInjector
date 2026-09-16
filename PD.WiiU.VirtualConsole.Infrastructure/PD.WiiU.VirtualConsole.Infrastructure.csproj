@@ -9,10 +9,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="WiiUSharp.Audio" Version="0.7.2" />
+    <PackageReference Include="WiiUSharp.Audio" Version="0.8.0" />
     <PackageReference Include="SkiaSharp" Version="3.119.0" />
-    <PackageReference Include="WiiUSharp.Imaging" Version="0.7.2" />
-    <PackageReference Include="WiiUSharp.Nus" Version="0.7.2" />
+    <PackageReference Include="WiiUSharp.Imaging" Version="0.8.0" />
   </ItemGroup>
 
 </Project>
