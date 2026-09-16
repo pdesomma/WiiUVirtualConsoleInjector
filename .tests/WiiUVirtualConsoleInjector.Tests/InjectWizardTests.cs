@@ -28,11 +28,11 @@ public class InjectWizardTests
     }
 
     [TestMethod]
-    public void Steps_Default_StartsOnConsoleWithSixSteps()
+    public void Steps_Default_StartsOnConsoleWithFiveSteps()
     {
         var vm = Create();
 
-        Assert.AreEqual(6, InjectViewModel.Steps.Count);
+        Assert.AreEqual(5, InjectViewModel.Steps.Count);
         Assert.AreEqual(1, vm.Step);
         Assert.IsTrue(vm.IsConsoleStep);
         Assert.AreEqual("Console", vm.CurrentWizardStep.Label);
@@ -42,20 +42,20 @@ public class InjectWizardTests
     }
 
     [TestMethod]
-    public void SelectedConsole_OnConsoleStep_AdvancesToBase()
+    public void SelectedConsole_OnConsoleStep_AdvancesToGame()
     {
         var vm = Create();
 
         vm.SelectedConsole = SourceConsole.Snes;
 
         Assert.AreEqual(2, vm.Step);
-        Assert.IsTrue(vm.IsBaseStep);
+        Assert.IsTrue(vm.IsGameStep);
         Assert.AreEqual("SNES", vm.SelectedConsoleName);
         Assert.AreEqual(".sfc, .smc", vm.RomExtensions);
     }
 
     [TestMethod]
-    public void SelectedBase_UsableOnBaseStep_AdvancesToGame()
+    public void SelectedBase_UsableOnGameStep_StaysThereForTheRom()
     {
         var vm = Create();
         vm.Step = 2;
@@ -63,12 +63,12 @@ public class InjectWizardTests
 
         vm.SelectedBase = vm.Bases.Single();
 
-        Assert.AreEqual(3, vm.Step);
+        Assert.AreEqual(2, vm.Step);
         Assert.IsTrue(vm.IsGameStep);
     }
 
     [TestMethod]
-    public void SelectedBase_NotDownloaded_StaysOnBaseStepWithHint()
+    public void SelectedBase_NotDownloaded_ShowsHint()
     {
         var vm = Create();
         vm.SelectedConsole = SourceConsole.Snes;
@@ -89,15 +89,15 @@ public class InjectWizardTests
         for (var i = 0; i < 10; i++)
             if (vm.NextStepCommand.CanExecute(null))
                 vm.NextStepCommand.Execute(null);
-        Assert.AreEqual(6, vm.Step);
+        Assert.AreEqual(5, vm.Step);
         Assert.IsTrue(vm.IsReviewStep);
         Assert.IsFalse(vm.CanGoNext);
 
         vm.PreviousStepCommand.Execute(null);
-        Assert.AreEqual(5, vm.Step);
+        Assert.AreEqual(4, vm.Step);
         Assert.IsTrue(vm.IsOptionsStep);
 
-        vm.GoToStepCommand.Execute(InjectViewModel.Steps[3]);
+        vm.GoToStepCommand.Execute(InjectViewModel.Steps[2]);
         Assert.IsTrue(vm.IsArtworkStep);
         vm.GoToStepCommand.Execute(null);
         Assert.IsTrue(vm.IsArtworkStep);
@@ -148,7 +148,6 @@ public class InjectWizardTests
         Assert.IsTrue(vm.SelectedBase!.IsPresent);
         Assert.IsFalse(vm.SelectedBase.KeysOk);
         Assert.IsFalse(vm.SelectedBase.IsUsable);
-        Assert.AreEqual(2, vm.Step, "a locked base does not advance");
         StringAssert.Contains(vm.BaseHint, "key");
         Assert.AreEqual("UnitedStates", vm.SelectedBase.Region);
         Assert.AreEqual("0005000010101900", vm.SelectedBase.TitleId);

@@ -21,11 +21,11 @@ public class InjectStepSelectionTests
     {
         var vm = Create();
 
-        vm.SelectedStep = InjectViewModel.Steps[3];
+        vm.SelectedStep = InjectViewModel.Steps[2];
 
-        Assert.AreEqual(4, vm.Step);
+        Assert.AreEqual(3, vm.Step);
         Assert.IsTrue(vm.IsArtworkStep);
-        Assert.AreSame(InjectViewModel.Steps[3], vm.SelectedStep);
+        Assert.AreSame(InjectViewModel.Steps[2], vm.SelectedStep);
     }
 
     [TestMethod]

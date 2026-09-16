@@ -322,9 +322,6 @@ public class InjectViewModelTests
         StringAssert.Contains(vm.RomFitHint, "game.nes is 384 KB");
         Assert.IsNull(vm.BaseHint, "the base itself is fine");
 
-        vm.ChangeBaseCommand.Execute(null);
-        Assert.AreEqual(2, vm.Step);
-
         _factory.Fit = (_, _) => null;
         vm.RomPath = @"C:\small.nes";
         await vm.RomFitCheck;
@@ -826,7 +823,7 @@ public class InjectViewModelTests
     public async Task Artwork_BuiltForOneSlot_FillsOnlyThatSlot()
     {
         var vm = Ready();
-        vm.Step = 4;
+        vm.Step = 3;
         vm.ArtworkBuilder.Tv.SourcePath = @"C:\shot.png";
 
         await vm.ArtworkBuilder.Tv.BuildCommand.ExecuteAsync(null);
@@ -1041,12 +1038,12 @@ public class InjectViewModelTests
     public async Task StartOverCommand_Declined_KeepsEverything()
     {
         var vm = Ready(SourceConsole.Snes, @"C:\game.sfc");
-        vm.Step = 4;
+        vm.Step = 3;
         _dialogs.ConfirmResult = false;
 
         await vm.StartOverCommand.ExecuteAsync(null);
 
-        Assert.AreEqual(4, vm.Step);
+        Assert.AreEqual(3, vm.Step);
         Assert.AreEqual(@"C:\game.sfc", vm.RomPath);
         Assert.AreEqual("Game", vm.Name);
     }
@@ -1071,7 +1068,7 @@ public class InjectViewModelTests
     public async Task InjectCommand_Succeeds_ClearsEveryFieldAndReturnsToTheFirstStep()
     {
         var vm = Ready(SourceConsole.Snes, @"C:\game.sfc");
-        vm.Step = 6;
+        vm.Step = 5;
         vm.ShortName = "Short";
         vm.ProductId = "ABCD";
         vm.GamePad = true;
@@ -1114,13 +1111,13 @@ public class InjectViewModelTests
     public async Task InjectCommand_Fails_KeepsEverythingSoItCanBeRetried()
     {
         var vm = Ready(SourceConsole.Snes, @"C:\game.sfc");
-        vm.Step = 6;
+        vm.Step = 5;
         vm.Icon.Path = @"C:\icon.png";
         _factory.Service.Throws = new InvalidOperationException("boom");
 
         await vm.InjectCommand.ExecuteAsync(null);
 
-        Assert.AreEqual(6, vm.Step);
+        Assert.AreEqual(5, vm.Step);
         Assert.AreEqual(SourceConsole.Snes, vm.SelectedConsole);
         Assert.AreEqual(@"C:\game.sfc", vm.RomPath);
         Assert.AreEqual(@"C:\icon.png", vm.Icon.Path);
