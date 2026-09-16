@@ -28,6 +28,10 @@ public sealed record AppSettings
     /// </summary>
     public DateTimeOffset? LastUpdateCheck { get; init; }
     /// <summary>
+    /// The previous application's data has been pointed out once; the offer is not repeated.
+    /// </summary>
+    public bool LegacyImportOffered { get; init; }
+    /// <summary>
     /// Folder injected titles are written to; null until chosen.
     /// </summary>
     public string? OutputPath { get; init; }

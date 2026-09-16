@@ -19,7 +19,8 @@ public sealed class SettingsViewModel : PageViewModel
     /// <param name="sdCard">Lists and detects removable drives.</param>
     /// <param name="nintendont">Where Nintendont is downloaded from.</param>
     /// <param name="update">Whether a newer release is out.</param>
-    public SettingsViewModel(ISettingsService settings, IDialogService dialogs, AppPaths paths, ILinkOpener links, ISdCard sdCard, INintendontSource nintendont, UpdateNoticeViewModel update)
+    /// <param name="legacy">The previous application's data.</param>
+    public SettingsViewModel(ISettingsService settings, IDialogService dialogs, AppPaths paths, ILinkOpener links, ISdCard sdCard, INintendontSource nintendont, UpdateNoticeViewModel update, LegacyImportViewModel legacy)
         : base("Settings", "settings.png")
     {
         if (settings is null)
@@ -35,6 +36,7 @@ public sealed class SettingsViewModel : PageViewModel
         if (nintendont is null)
             throw new ArgumentNullException(nameof(nintendont));
         Update = update ?? throw new ArgumentNullException(nameof(update));
+        Legacy = legacy ?? throw new ArgumentNullException(nameof(legacy));
 
         BaseFolder = new FolderSettingViewModel("Base store folder", () => settings.BasePath, (s, v) => s with { BasePath = v }, settings, dialogs, links);
         OutputFolder = new FolderSettingViewModel("Output folder", () => settings.OutputPath, (s, v) => s with { OutputPath = v }, settings, dialogs, links);
@@ -50,6 +52,13 @@ public sealed class SettingsViewModel : PageViewModel
         CaptionFont = new CaptionFontSettingViewModel(settings, dialogs);
         Warnings = Enum.GetValues<InjectionWarning>().Select(w => new WarningSettingViewModel(w, settings)).ToArray();
         DataFolder = paths.DataFolder;
+        Legacy.Imported += (_, _) =>
+        {
+            foreach (var folder in Folders)
+                folder.Refresh();
+            foreach (var warning in Warnings)
+                warning.Refresh();
+        };
     }
 
     /// <summary>
@@ -72,6 +81,10 @@ public sealed class SettingsViewModel : PageViewModel
     /// Every folder setting, in display order.
     /// </summary>
     public IReadOnlyList<FolderSettingViewModel> Folders { get; }
+    /// <summary>
+    /// The previous application's keys, bases and settings.
+    /// </summary>
+    public LegacyImportViewModel Legacy { get; }
     /// <summary>
     /// Nintendont on the card and its settings file.
     /// </summary>
@@ -101,6 +114,7 @@ public sealed class SettingsViewModel : PageViewModel
         foreach (var warning in Warnings)
             warning.Refresh();
         Nintendont.Refresh();
+        Legacy.Refresh();
         return Task.CompletedTask;
     }
 }

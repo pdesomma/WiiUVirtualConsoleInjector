@@ -53,6 +53,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICommunityArtwork>(p => new GitHubCommunityArtwork(p.GetRequiredService<HttpClient>()));
         services.AddSingleton<INintendontSource>(p => new GitHubNintendontSource(p.GetRequiredService<HttpClient>()));
         services.AddSingleton<IUpdateCheck>(p => new GitHubReleases(p.GetRequiredService<HttpClient>()));
+        services.AddSingleton<ILegacyImport>(p => new UwuvciLegacyImport(p.GetRequiredService<BaseCatalog>(), p.GetRequiredService<IKeyStore>(), p.GetRequiredService<IBaseStore>()));
+        services.AddSingleton<LegacyImportViewModel>();
         services.AddSingleton(p => new UpdateNoticeViewModel(p.GetRequiredService<IUpdateCheck>(), p.GetRequiredService<ISettingsService>(), p.GetRequiredService<ILinkOpener>(), typeof(App).Assembly.GetName().Version ?? new Version(0, 0)));
         services.AddSingleton<INavigationService, NavigationService>();
 
@@ -63,7 +65,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IInjectionHistory>(new JsonInjectionHistory(paths.HistoryFolder));
         services.AddSingleton<InjectViewModel>();
         services.AddSingleton<HistoryViewModel>();
-        services.AddSingleton<BasesViewModel>();
+        services.AddSingleton(p =>
+        {
+            var bases = new BasesViewModel(p.GetRequiredService<IBaseService>(), p.GetRequiredService<IKeyStore>(), p.GetRequiredService<IInjectionServiceFactory>(), p.GetRequiredService<IDialogService>());
+            bases.FollowImports(p.GetRequiredService<LegacyImportViewModel>());
+            return bases;
+        });
         services.AddSingleton<SettingsViewModel>();
         services.AddSingleton<AcknowledgementsViewModel>();
         return services;

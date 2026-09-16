@@ -38,6 +38,7 @@ public partial class App : Application
             window.DataContext = shell;
             desktop.MainWindow = window;
             _ = shell.Update.CheckAtStartupAsync();
+            Services.GetRequiredService<LegacyImportViewModel>().OfferAtStartup();
         }
 
         base.OnFrameworkInitializationCompleted();
