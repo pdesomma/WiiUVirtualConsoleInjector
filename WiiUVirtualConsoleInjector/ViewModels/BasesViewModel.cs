@@ -48,7 +48,7 @@ public sealed partial class BasesViewModel : PageViewModel
     /// <param name="injections">Builds the service that inspects.</param>
     /// <param name="dialogs">Pickers and messages.</param>
     public BasesViewModel(IBaseService bases, IKeyStore keys, IInjectionServiceFactory injections, IDialogService dialogs)
-        : base("Bases & Keys", "wiiu.png")
+        : base("Bases & Keys", "wiiu.png", "M12 8 A4 4 0 1 1 4 8 A4 4 0 1 1 12 8 M10.8 10.8L20 20 M15.5 15.5l2.2 -2.2 M18 18l2.2 -2.2")
     {
         _bases = bases ?? throw new ArgumentNullException(nameof(bases));
         _keys = keys ?? throw new ArgumentNullException(nameof(keys));

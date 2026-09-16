@@ -13,8 +13,6 @@ namespace WiiUVirtualConsoleInjector.ViewModels;
 /// </summary>
 public sealed partial class BackupsViewModel : PageViewModel
 {
-    private const string Glyph = "M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5Z M4 12h16 M9 4v16";
-
     private readonly IDialogService _dialogs;
     private readonly IDiscBackup _discs;
     private readonly IKeyStore _keys;
@@ -48,7 +46,7 @@ public sealed partial class BackupsViewModel : PageViewModel
     /// <param name="keys">The Wii U common key a dump needs.</param>
     /// <param name="discs">Unpacks dumps.</param>
     public BackupsViewModel(IDialogService dialogs, ISettingsService settings, ISdCard sdCard, IKeyStore keys, IDiscBackup discs)
-        : base("Backups", "wiiu.png", Glyph)
+        : base("Backups", "wiiu.png")
     {
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
