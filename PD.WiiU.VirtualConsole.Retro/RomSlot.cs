@@ -81,7 +81,7 @@ public sealed class RomSlot
         if (rom is null)
             throw new ArgumentNullException(nameof(rom));
         if (rom.Length > Capacity)
-            throw new ArgumentException($"The ROM is {Kilobytes(rom.Length)}; this base holds {Kilobytes(Capacity)}. {BiggerBaseHint}", nameof(rom));
+            throw new ArgumentException($"The ROM is {new ByteSize(rom.Length)}; this base holds {new ByteSize(Capacity)}. {BiggerBaseHint}", nameof(rom));
         if (IsNesRom(rom) != IsNes)
             throw new ArgumentException(IsNes ? "The base is NES but the ROM is not." : "The base is SNES but the ROM is a NES file.", nameof(rom));
         if (Offset + rom.Length > Section.Data.Length)
@@ -96,12 +96,6 @@ public sealed class RomSlot
     /// Which bases hold the most; the ROM overwrites the base game's own in place.
     /// </summary>
     public const string BiggerBaseHint = "Pick a base whose own game is at least as big: Metal Slader Glory (NES) holds 1 MB, Kirby's Dream Land 3 (SNES) holds 4 MB.";
-
-    /// <summary>
-    /// A byte count to the nearest KB, or whole MB; a sixteen-byte header does not show.
-    /// </summary>
-    /// <param name="bytes">Count.</param>
-    public static string Kilobytes(long bytes) => bytes >= 1048576 && bytes % 1048576 < 1024 ? bytes / 1048576 + " MB" : (bytes + 512) / 1024 + " KB";
 
     private static int CapacityFor(byte key) => key switch
     {

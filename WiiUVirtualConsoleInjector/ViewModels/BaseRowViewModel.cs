@@ -24,6 +24,9 @@ public sealed partial class BaseRowViewModel : ViewModelBase
     [ObservableProperty]
     private string _progressText = string.Empty;
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSize))]
+    private ByteSize? _size;
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanDownload), nameof(CanInspect), nameof(DownloadHint), nameof(InspectHint), nameof(IsPresent), nameof(IsTitleKeyVerified), nameof(NeedsKey), nameof(StatusText), nameof(TitleKeyHint))]
     [NotifyCanExecuteChangedFor(nameof(DownloadCommand), nameof(InspectCommand))]
     private BaseStatus _status;
@@ -83,6 +86,10 @@ public sealed partial class BaseRowViewModel : ViewModelBase
     /// </summary>
     public string InspectHint => IsPresent ? "Checks the stored base for missing files." : "Download this base first.";
     /// <summary>
+    /// True when the stored base has been measured.
+    /// </summary>
+    public bool HasSize => Size is not null;
+    /// <summary>
     /// True when the base is in the store.
     /// </summary>
     public bool IsPresent => Status == BaseStatus.Present;
@@ -137,6 +144,7 @@ public sealed partial class BaseRowViewModel : ViewModelBase
         try
         {
             Status = _bases.Status(Base);
+            Size = Status == BaseStatus.Present ? _bases.SizeOnDisk(Base) : null;
             TitleKey = _keys.GetTitleKey(Base.TitleId)?.ToString() ?? string.Empty;
         }
         finally

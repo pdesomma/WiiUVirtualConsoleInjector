@@ -140,6 +140,10 @@
             <SolidColorBrush x:Key="WarningBorderBrush" Color="#66F5A623" />
             <SolidColorBrush x:Key="WarningTextBrush" Color="#8A5A10" />
             <SolidColorBrush x:Key="ErrorBrush" Color="#E53935" />
+            <!-- sizes, coloured as the console's data management does -->
+            <SolidColorBrush x:Key="SizeKbBrush" Color="#2F80ED" />
+            <SolidColorBrush x:Key="SizeMbBrush" Color="#F2994A" />
+            <SolidColorBrush x:Key="SizeGbBrush" Color="#E53935" />
             <SolidColorBrush x:Key="DotInactiveBrush" Color="#AAAAAA" />
             <SolidColorBrush x:Key="HeaderTextBrush" Color="#FFFFFF" />
             <LinearGradientBrush x:Key="HeaderBrush" StartPoint="0%,0%" EndPoint="0%,100%">

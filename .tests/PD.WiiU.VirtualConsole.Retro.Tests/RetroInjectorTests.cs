@@ -104,16 +104,6 @@ public class RetroInjectorTests
     }
 
     [TestMethod]
-    public void Kilobytes_RoundsToNearestAndPrefersWholeMegabytes()
-    {
-        Assert.AreEqual("64 KB", RomSlot.Kilobytes(0x10000));
-        Assert.AreEqual("64 KB", RomSlot.Kilobytes(0x10010));
-        Assert.AreEqual("384 KB", RomSlot.Kilobytes(393232));
-        Assert.AreEqual("1 MB", RomSlot.Kilobytes(0x100010));
-        Assert.AreEqual("4 MB", RomSlot.Kilobytes(0x400000));
-    }
-
-    [TestMethod]
     public async Task InjectAsync_NesInjectorOnSnesBase_ThrowsInvalidDataException()
     {
         var title = StageBase(nes: false);

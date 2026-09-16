@@ -86,6 +86,16 @@ public sealed class BaseService : IBaseService
     }
 
     /// <inheritdoc/>
+    public ByteSize? SizeOnDisk(BaseTitle @base)
+    {
+        if (@base is null)
+            throw new ArgumentNullException(nameof(@base));
+
+        var title = _store.Locate(@base);
+        return title.Exists ? ByteSize.OfDirectory(title.Root) : null;
+    }
+
+    /// <inheritdoc/>
     public BaseStatus Status(BaseTitle @base)
     {
         if (@base is null)
