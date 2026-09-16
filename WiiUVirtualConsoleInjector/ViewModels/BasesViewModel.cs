@@ -76,6 +76,17 @@ public sealed partial class BasesViewModel : PageViewModel
     }
 
     /// <summary>
+    /// Re-reads keys and base statuses after the previous application's data was taken.
+    /// </summary>
+    /// <param name="legacy">Raises the import event.</param>
+    public void FollowImports(LegacyImportViewModel legacy)
+    {
+        if (legacy is null)
+            throw new ArgumentNullException(nameof(legacy));
+        legacy.Imported += (_, _) => RefreshStatuses();
+    }
+
+    /// <summary>
     /// Rows for the selected console that match <see cref="Filter"/>, custom ones last.
     /// </summary>
     public ObservableCollection<BaseRowViewModel> Bases { get; }

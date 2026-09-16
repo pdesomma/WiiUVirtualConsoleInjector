@@ -61,6 +61,7 @@ public sealed class JsonSettingsStore : ISettingsStore
             CheckForUpdates = document.CheckForUpdates ?? true,
             CopyToSdCard = document.CopyToSdCard ?? false,
             LastUpdateCheck = document.LastUpdateCheck,
+            LegacyImportOffered = document.LegacyImportOffered ?? false,
             OutputPath = Blank(document.OutputPath),
             SdPath = Blank(document.SdPath),
             WorkPath = Blank(document.WorkPath),
@@ -82,6 +83,7 @@ public sealed class JsonSettingsStore : ISettingsStore
             CheckForUpdates = settings.CheckForUpdates,
             CopyToSdCard = settings.CopyToSdCard,
             LastUpdateCheck = settings.LastUpdateCheck,
+            LegacyImportOffered = settings.LegacyImportOffered,
             OutputPath = settings.OutputPath,
             SdPath = settings.SdPath,
             WorkPath = settings.WorkPath,
@@ -105,6 +107,7 @@ public sealed class JsonSettingsStore : ISettingsStore
         public bool? CheckForUpdates { get; set; }
         public bool? CopyToSdCard { get; set; }
         public DateTimeOffset? LastUpdateCheck { get; set; }
+        public bool? LegacyImportOffered { get; set; }
         public string? OutputPath { get; set; }
         public string? SdPath { get; set; }
         public InjectionWarning[]? SuppressedWarnings { get; set; }

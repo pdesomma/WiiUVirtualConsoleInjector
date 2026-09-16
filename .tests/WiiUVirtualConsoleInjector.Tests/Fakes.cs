@@ -176,6 +176,25 @@ internal sealed class FakeDiscBackup : IDiscBackup
     }
 }
 
+internal sealed class FakeLegacyImport : ILegacyImport
+{
+    public Exception? Failure { get; set; }
+    public LegacyInstall? Found { get; set; }
+    public List<LegacyInstall> Imported { get; } = new();
+    public LegacyImportReport Report { get; set; } = new(false, 0, 0, Array.Empty<string>());
+
+    public LegacyInstall? Find() => Found;
+
+    public Task<LegacyImportReport> ImportAsync(LegacyInstall install, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
+    {
+        Imported.Add(install);
+        if (Failure is not null)
+            return Task.FromException<LegacyImportReport>(Failure);
+        progress?.Report("Copying");
+        return Task.FromResult(Report);
+    }
+}
+
 internal sealed class FakeUpdateCheck : IUpdateCheck
 {
     public int Calls { get; private set; }

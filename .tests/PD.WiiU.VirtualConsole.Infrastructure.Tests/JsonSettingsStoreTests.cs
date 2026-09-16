@@ -36,7 +36,7 @@ public class JsonSettingsStoreTests
     public void Save_ThenLoad_RoundTripsEveryField()
     {
         var store = new JsonSettingsStore(_path);
-        var settings = new AppSettings { BasePath = @"C:\bases", OutputPath = @"D:\out", WorkPath = @"E:\tmp", SdPath = @"F:\", CopyToSdCard = true, CheckForUpdates = false, LastUpdateCheck = new DateTimeOffset(2026, 9, 16, 1, 2, 3, TimeSpan.Zero) }
+        var settings = new AppSettings { BasePath = @"C:\bases", OutputPath = @"D:\out", WorkPath = @"E:\tmp", SdPath = @"F:\", CopyToSdCard = true, CheckForUpdates = false, LastUpdateCheck = new DateTimeOffset(2026, 9, 16, 1, 2, 3, TimeSpan.Zero), LegacyImportOffered = true }
             .Suppress(InjectionWarning.GameCubeGcz)
             .Suppress(InjectionWarning.NdsDsiEnhanced);
 
@@ -50,6 +50,7 @@ public class JsonSettingsStoreTests
         Assert.IsTrue(loaded.CopyToSdCard);
         Assert.IsFalse(loaded.CheckForUpdates);
         Assert.AreEqual(new DateTimeOffset(2026, 9, 16, 1, 2, 3, TimeSpan.Zero), loaded.LastUpdateCheck);
+        Assert.IsTrue(loaded.LegacyImportOffered);
         CollectionAssert.AreEquivalent(new[] { InjectionWarning.GameCubeGcz, InjectionWarning.NdsDsiEnhanced }, loaded.SuppressedWarnings.ToArray());
         var json = File.ReadAllText(_path);
         StringAssert.Contains(json, "\"basePath\"");
@@ -93,6 +94,7 @@ public class JsonSettingsStoreTests
         Assert.AreEqual(AppTheme.Light, partial.Theme);
         Assert.IsTrue(partial.CheckForUpdates);
         Assert.IsNull(partial.LastUpdateCheck);
+        Assert.IsFalse(partial.LegacyImportOffered);
     }
 
     [TestMethod]
