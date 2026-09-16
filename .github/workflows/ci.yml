@@ -76,3 +76,4 @@ jobs:
         with:
           files: WiiUVirtualConsoleInjector-${{ steps.version.outputs.number }}-${{ matrix.rid }}.zip
           generate_release_notes: true
+          prerelease: true
