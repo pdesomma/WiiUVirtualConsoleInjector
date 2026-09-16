@@ -1,4 +1,4 @@
-using NAudio.Wave;
+﻿using NAudio.Wave;
 using PD.WiiU.VirtualConsole.Infrastructure;
 using SkiaSharp;
 using TargaSharp;
@@ -34,6 +34,22 @@ public class ConverterTests
         var sound = BootSound.Load(btsnd);
         Assert.AreEqual(BootSoundTarget.Tv, sound.Target);
         Assert.AreEqual(48000, sound.FrameCount);
+    }
+
+    [TestMethod]
+    public async Task NAudioBootSoundConverter_ReadyBtsnd_IsCopiedUntouched()
+    {
+        var ready = Path.Combine(_root, "BootSound.btsnd");
+        var bytes = Enumerable.Range(0, 64).Select(i => (byte)(i * 3)).ToArray();
+        File.WriteAllBytes(ready, bytes);
+        var destination = Path.Combine(_root, "meta", "bootSound.btsnd");
+        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+
+        await new NAudioBootSoundConverter().ConvertAsync(ready, destination);
+
+        CollectionAssert.AreEqual(bytes, File.ReadAllBytes(destination));
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(() => new NAudioBootSoundConverter().ConvertAsync(null!, destination));
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(() => new NAudioBootSoundConverter().ConvertAsync(ready, null!));
     }
 
     [TestMethod]

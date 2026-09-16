@@ -208,6 +208,30 @@
                         <TextBlock Classes="section" Text="Artwork" />
 
                         <StackPanel Spacing="16">
+                            <!-- Community repository -->
+                            <Border Classes="card">
+                                <StackPanel Spacing="10">
+                                    <TextBlock FontSize="12.5" FontWeight="Bold" Text="Community artwork" />
+                                    <TextBlock Classes="hint" FontSize="12" Text="The UWUVCI community keeps icons and boot screens for many games, filed under the game's own code. One click checks whether yours is there." TextWrapping="Wrap" MaxWidth="680" HorizontalAlignment="Left" />
+                                    <WrapPanel ItemSpacing="10" VerticalAlignment="Center">
+                                        <Button Classes="primary sm" Content="Look up this game" Command="{Binding CommunityArtwork.LookUpCommand}" IsEnabled="{Binding !IsRunning}" />
+                                        <TextBlock Classes="hint" FontSize="12" Text="{Binding CommunityArtwork.Status}" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="560" />
+                                    </WrapPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="16" IsVisible="{Binding CommunityArtwork.HasHit}">
+                                        <Border Width="96" Height="96" CornerRadius="12" ClipToBounds="True" Background="{DynamicResource SubtleBrush}">
+                                            <Image Source="{Binding CommunityArtwork.Files.Icon, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="UniformToFill" />
+                                        </Border>
+                                        <Border Width="256" Height="144" CornerRadius="8" ClipToBounds="True" Background="{DynamicResource SubtleBrush}">
+                                            <Image Source="{Binding CommunityArtwork.Files.BootTv, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="UniformToFill" />
+                                        </Border>
+                                        <StackPanel Spacing="8" VerticalAlignment="Center">
+                                            <Button Classes="primary sm" Content="Use these" Command="{Binding CommunityArtwork.ApplyCommand}" />
+                                            <Button Classes="ghost sm" Content="No thanks" Command="{Binding CommunityArtwork.DismissCommand}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
                             <!-- Icon -->
                             <Border Classes="card">
                                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="22">

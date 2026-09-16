@@ -154,5 +154,5 @@ public class InjectWizardTests
         Assert.AreEqual("0005000010101900", vm.SelectedBase.TitleId);
     }
 
-    private InjectViewModel Create() => new(_bases, _dialogs, _factory, _settings, _navigation, new FakeSdCard(), new ArtworkBuilderViewModel(new FakeArtworkComposer(), _dialogs, () => _settings.WorkPath), new FakeSoundPlayer(), new FakeInjectionHistory(), new FakeCompatibilityLists());
+    private InjectViewModel Create() => new(_bases, _dialogs, _factory, _settings, _navigation, new FakeSdCard(), new ArtworkBuilderViewModel(new FakeArtworkComposer(), _dialogs, () => _settings.WorkPath), new FakeSoundPlayer(), new FakeInjectionHistory(), new FakeCompatibilityLists(), new FakeCommunityArtwork());
 }
