@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using WiiUVirtualConsoleInjector.Assets;
 using WiiUVirtualConsoleInjector.Services;
 
@@ -39,4 +39,12 @@ public sealed partial class AcknowledgementsViewModel : PageViewModel
     [RelayCommand]
     private Task OpenAsync(Acknowledgement? entry) =>
         entry?.Url is { } url ? _links.OpenAsync(url) : Task.CompletedTask;
+
+    /// <summary>
+    /// Opens where a tip to the entry's author goes.
+    /// </summary>
+    /// <param name="entry">Which credit.</param>
+    [RelayCommand]
+    private Task DonateAsync(Acknowledgement? entry) =>
+        entry?.Donate is { } url ? _links.OpenAsync(url) : Task.CompletedTask;
 }

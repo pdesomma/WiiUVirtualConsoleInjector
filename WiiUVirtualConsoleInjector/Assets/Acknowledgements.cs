@@ -8,12 +8,12 @@ namespace WiiUVirtualConsoleInjector.Assets;
 public static class Acknowledgements
 {
     /// <summary>
-    /// Projects whose logic was studied and reimplemented here.
+    /// Projects whose logic was studied and reimplemented here. Tip links are the authors' own Ko-fi pages, checked September 2026.
     /// </summary>
     public static readonly IReadOnlyList<Acknowledgement> Borrowed = new Acknowledgement[]
     {
-        new("UWUVCI AIO", "NicoAICP, Morilli, ZestyTS", "The application this one is rewritten from: its workflow, base catalogue and every injection recipe.", new Uri("https://github.com/stuff-by-3-random-dudes/UWUVCI-AIO-WPF")),
-        new("CNUS_Packer", "NicoAICP, Morilli", "Title packing: TMD, ticket, FST layout and content encryption.", new Uri("https://github.com/Morilli/CNUS_Packer")),
+        new("UWUVCI AIO", "NicoAICP, Morilli, ZestyTS", "The application this one is rewritten from: its workflow, base catalogue and every injection recipe.", new Uri("https://github.com/stuff-by-3-random-dudes/UWUVCI-AIO-WPF")) { Donate = new Uri("https://ko-fi.com/uwuvci") },
+        new("CNUS_Packer", "NicoAICP, Morilli", "Title packing: TMD, ticket, FST layout and content encryption.", new Uri("https://github.com/Morilli/CNUS_Packer")) { Donate = new Uri("https://ko-fi.com/nicoaicp") },
         new("Cdecrypt", "crediar", "Title decryption and the hash tree checks.", new Uri("https://github.com/VitaSmith/cdecrypt")),
         new("WiiUDownloader", "Morilli", "Fetching bases from the update servers.", new Uri("https://github.com/Morilli/WiiUDownloader")),
         new("RetroInject_C", "Morilli", "NES and SNES ROM replacement inside the emulator executable.", new Uri("https://github.com/Morilli/RetroInject_C")),
@@ -27,10 +27,10 @@ public static class Acknowledgements
         new("Wii-VMC", "wanikoko", "Rewriting main.dol video modes to another TV standard."),
         new("WiiGameLanguage Patcher", "ReturnerS", "Region and language patching of Wii disc images."),
         new("ChangeAspectRatio", "andot", "The NES/SNES display-size instruction patches."),
-        new("DarkFilter Removal N64", "MelonSpeedruns, ZestyTS", "Editing FrameLayout.arc to drop the N64 dark filter."),
+        new("DarkFilter Removal N64", "MelonSpeedruns, ZestyTS", "Editing FrameLayout.arc to drop the N64 dark filter.") { Donate = new Uri("https://ko-fi.com/zestyts") },
         new("wav2btsnd", "its original author", "Boot sound conversion."),
         new("png2tga / tga_verify", "Easy2Convert, Morilli", "The icon and boot image formats the console expects."),
-        new("Icon and TV boot images", "Flump, ZestyTS", "The per-console artwork."),
+        new("Icon and TV boot images", "Flump, ZestyTS", "The per-console artwork.") { Donate = new Uri("https://ko-fi.com/zestyts") },
         new("Image Creation Base", "Phacox", "The template approach to generating icons and boot images."),
     };
 
@@ -41,8 +41,8 @@ public static class Acknowledgements
     {
         new("Goomba Color", "Dwedit, built on Goomba by FluBBa", "Game Boy and Game Boy Color emulator prepended to ROMs for the GBA Virtual Console.", new Uri("https://www.dwedit.org/gba/goombacolor.php"), "GPL"),
         new("DS layout screens", "MikaDubbz", "Extra TV and GamePad screen layouts for DS Virtual Console titles, offered on the DS options step.", new Uri("https://gbatemp.net/threads/add-many-more-screen-layout-options-in-ds-virtual-console-games.574254/"), "Community art"),
-        new("Gecko code handler", "Nuke, brkirch and the USB Loader GX team", "Runs Gecko cheat codes inside an injected Wii game; baked into main.dol next to the code list.", new Uri("https://github.com/wiidev/usbloadergx"), "GPL"),
-        new("Nintendont", "FIX94, GaryOderNichts and the Nintendont contributors", "The GameCube loader itself; Settings downloads the Wii U GamePad build onto the SD card and edits its nincfg.bin.", new Uri("https://github.com/GaryOderNichts/Nintendont"), "GPL"),
+        new("Gecko code handler", "Nuke, brkirch and the USB Loader GX team", "Runs Gecko cheat codes inside an injected Wii game; baked into main.dol next to the code list.", new Uri("https://github.com/wiidev/usbloadergx"), "GPL") { Donate = new Uri("https://ko-fi.com/blackb0x") },
+        new("Nintendont", "FIX94, GaryOderNichts and the Nintendont contributors", "The GameCube loader itself; Settings downloads the Wii U GamePad build onto the SD card and edits its nincfg.bin.", new Uri("https://github.com/GaryOderNichts/Nintendont"), "GPL") { Donate = new Uri("https://ko-fi.com/garyodernichts") },
         new("Nintendont autoboot forwarder", "FIX94", "main.dol of the carrier disc for GameCube injects; loads Nintendont from the SD card.", new Uri("https://github.com/FIX94/nintendont-autoboot-forwarder"), "MIT"),
         new("wiivc_chan_booter", "FIX94", "main.dol of the carrier disc for Wii channel forwarders.", new Uri("https://github.com/FIX94/wiivc_chan_booter"), "MIT"),
         new("Nunito", "The Nunito Project Authors", "The interface font.", new Uri("https://github.com/googlefonts/nunito"), "SIL Open Font License 1.1"),

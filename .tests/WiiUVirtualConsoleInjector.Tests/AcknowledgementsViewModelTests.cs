@@ -71,6 +71,24 @@ public class AcknowledgementsViewModelTests
     }
 
     [TestMethod]
+    public async Task DonateCommand_EntryWithTipLink_OpensItAndOthersDoNot()
+    {
+        var opener = new FakeLinkOpener();
+        var vm = new AcknowledgementsViewModel(opener);
+        var tipped = Acknowledgements.Borrowed.First(a => a.HasDonate);
+        var plain = Acknowledgements.Borrowed.First(a => !a.HasDonate);
+
+        await vm.DonateCommand.ExecuteAsync(tipped);
+        await vm.DonateCommand.ExecuteAsync(plain);
+        await vm.DonateCommand.ExecuteAsync(null);
+
+        CollectionAssert.AreEqual(new[] { tipped.Donate }, opener.Opened);
+        Assert.AreEqual("UWUVCI AIO", tipped.Name);
+        Assert.IsTrue(Acknowledgements.Shipped.Any(a => a.HasDonate));
+        Assert.IsTrue(Acknowledgements.Borrowed.Concat(Acknowledgements.Shipped).Where(a => a.HasDonate).All(a => a.Donate!.Host == "ko-fi.com"));
+    }
+
+    [TestMethod]
     public async Task OpenCommand_EntryWithoutUrlOrNull_OpensNothing()
     {
         var opener = new FakeLinkOpener();
