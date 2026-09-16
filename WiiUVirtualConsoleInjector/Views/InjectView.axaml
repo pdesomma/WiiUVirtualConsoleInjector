@@ -186,6 +186,14 @@
                                     <Button Grid.Column="3" Classes="ghost sm" Content="Clear" Command="{Binding ClearRomCommand}" IsVisible="{Binding HasRom}" IsEnabled="{Binding !IsRunning}" />
                                 </Grid>
                                 <TextBlock Classes="hint" Text="{Binding RomExtensions, StringFormat='Accepts {0}'}" Margin="0,1,0,0" />
+                                <Border Classes="banner-warning" Margin="0,8,0,0" IsVisible="{Binding HasRomFitHint}">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="{Binding RomFitHint}" />
+                                        <Button Classes="link" Command="{Binding ChangeBaseCommand}" HorizontalAlignment="Left">
+                                            <TextBlock Text="Change the base →" />
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
                             <StackPanel Spacing="4">
                                 <TextBlock Classes="label" Text="Long name" />
@@ -622,6 +630,9 @@
 
                         <Border Classes="banner-warning" Margin="0,0,0,14" IsVisible="{Binding HasMissingKeys}">
                             <TextBlock Text="{Binding MissingKeysHint}" />
+                        </Border>
+                        <Border Classes="banner-warning" Margin="0,0,0,14" IsVisible="{Binding HasRomFitHint}">
+                            <TextBlock Text="{Binding RomFitHint}" />
                         </Border>
 
                         <Border Classes="divider" Padding="0,16,0,0" Margin="0,4,0,0">
