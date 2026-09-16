@@ -138,6 +138,19 @@ internal sealed class FakeSdCard : ISdCard
     public IReadOnlyList<RemovableDrive> Drives() => Removable;
 }
 
+internal sealed class FakeUpdateCheck : IUpdateCheck
+{
+    public int Calls { get; private set; }
+    public Exception? Failure { get; set; }
+    public AppRelease? Latest { get; set; }
+
+    public Task<AppRelease?> LatestAsync(CancellationToken cancellationToken = default)
+    {
+        Calls++;
+        return Failure is null ? Task.FromResult(Latest) : Task.FromException<AppRelease?>(Failure);
+    }
+}
+
 internal sealed class FakeNintendontSource : INintendontSource
 {
     public Exception? Failure { get; set; }

@@ -32,8 +32,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <param name="settings">Where the colour scheme is remembered.</param>
     /// <param name="toasts">The notices shown in the corner.</param>
     /// <param name="navigation">Requests from pages to show another page.</param>
-    public MainWindowViewModel(InjectViewModel inject, HistoryViewModel history, BasesViewModel bases, SettingsViewModel settingsPage, AcknowledgementsViewModel credits, ISettingsService settings, IToastService toasts, INavigationService navigation)
+    /// <param name="update">Whether a newer release is out.</param>
+    public MainWindowViewModel(InjectViewModel inject, HistoryViewModel history, BasesViewModel bases, SettingsViewModel settingsPage, AcknowledgementsViewModel credits, ISettingsService settings, IToastService toasts, INavigationService navigation, UpdateNoticeViewModel update)
     {
+        Update = update ?? throw new ArgumentNullException(nameof(update));
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         Toasts = (toasts ?? throw new ArgumentNullException(nameof(toasts))).Toasts;
         if (navigation is null)
@@ -56,6 +58,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// The current page's side arrows, or null when it has none.
     /// </summary>
     public IArrowNavigation? Arrows => CurrentPage as IArrowNavigation;
+    /// <summary>
+    /// Whether a newer release is out.
+    /// </summary>
+    public UpdateNoticeViewModel Update { get; }
 
     /// <summary>
     /// True when the current page is turned with the side arrows.
