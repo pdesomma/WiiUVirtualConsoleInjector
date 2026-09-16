@@ -40,6 +40,7 @@ public static class Acknowledgements
     public static readonly IReadOnlyList<Acknowledgement> Shipped = new Acknowledgement[]
     {
         new("Goomba Color", "Dwedit, built on Goomba by FluBBa", "Game Boy and Game Boy Color emulator prepended to ROMs for the GBA Virtual Console.", new Uri("https://www.dwedit.org/gba/goombacolor.php"), "GPL"),
+        new("DS layout screens", "MikaDubbz", "Extra TV and GamePad screen layouts for DS Virtual Console titles, offered on the DS options step.", new Uri("https://gbatemp.net/threads/add-many-more-screen-layout-options-in-ds-virtual-console-games.574254/"), "Community art"),
         new("Gecko code handler", "Nuke, brkirch and the USB Loader GX team", "Runs Gecko cheat codes inside an injected Wii game; baked into main.dol next to the code list.", new Uri("https://github.com/wiidev/usbloadergx"), "GPL"),
         new("Nintendont autoboot forwarder", "FIX94", "main.dol of the carrier disc for GameCube injects; loads Nintendont from the SD card.", new Uri("https://github.com/FIX94/nintendont-autoboot-forwarder"), "MIT"),
         new("wiivc_chan_booter", "FIX94", "main.dol of the carrier disc for Wii channel forwarders.", new Uri("https://github.com/FIX94/wiivc_chan_booter"), "MIT"),
