@@ -86,6 +86,10 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     [NotifyCanExecuteChangedFor(nameof(InjectCommand), nameof(ClearRomCommand))]
     private string? _romPath;
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanInject), nameof(BaseHint))]
+    [NotifyCanExecuteChangedFor(nameof(InjectCommand))]
+    private string? _romFitHint;
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanInject), nameof(BaseHint), nameof(ReviewBase))]
     [NotifyCanExecuteChangedFor(nameof(InjectCommand))]
     private BaseChoice? _selectedBase;
@@ -163,7 +167,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         null => "No base is selected for this console.",
         { IsPresent: false } => "This base is not downloaded; get it on Bases & Keys.",
         { KeysOk: false } => "A key this base needs is missing; add it on Bases & Keys.",
-        _ => null,
+        _ => RomFitHint,
     };
 
     /// <summary>
@@ -236,7 +240,8 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         && !string.IsNullOrWhiteSpace(RomPath)
         && !string.IsNullOrWhiteSpace(Name)
         && IsProductIdValid
-        && MissingKeys.Count == 0;
+        && MissingKeys.Count == 0
+        && RomFitHint is null;
 
     /// <summary>
     /// Every console an injection can target.
@@ -729,10 +734,34 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         StartOver();
     }
 
+    /// <summary>
+    /// The check that the ROM fits the base, for awaiting; a finished task when none is running.
+    /// </summary>
+    public Task RomFitCheck { get; private set; } = Task.CompletedTask;
+
     partial void OnSelectedBaseChanged(BaseChoice? value)
     {
         if (value is { IsUsable: true } && Step == 2)
             Step = 3;
+        RomFitCheck = CheckRomFitAsync();
+    }
+
+    /// <summary>
+    /// Asks whether the ROM fits the base off the UI thread and shows why when it does not.
+    /// </summary>
+    private async Task CheckRomFitAsync()
+    {
+        var @base = SelectedBase;
+        var rom = RomPath;
+        if (@base is not { IsPresent: true } || string.IsNullOrWhiteSpace(rom))
+        {
+            RomFitHint = null;
+            return;
+        }
+        var hint = await Task.Run(() => _injections.RomFit(@base.Base, rom!)).ConfigureAwait(true);
+        // a later change wins
+        if (ReferenceEquals(SelectedBase, @base) && RomPath == rom)
+            RomFitHint = hint;
     }
 
     partial void OnNameChanged(string? value) => ArtworkBuilder.Refresh(SelectedConsole, value, ShortName);
@@ -740,6 +769,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     partial void OnRomPathChanged(string? value)
     {
         MissingKeys = _injections.MissingKeys(SelectedConsole, value);
+        RomFitCheck = CheckRomFitAsync();
         CommunityArtwork.Reset();
         if (value is not null && string.IsNullOrWhiteSpace(Name) && SuggestedName(value) is { } suggested)
             Name = suggested;

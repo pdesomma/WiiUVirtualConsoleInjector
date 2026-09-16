@@ -155,5 +155,9 @@ internal static class InjectFakes
         }
 
         public IReadOnlyList<string> MissingKeys(SourceConsole console, string? romPath = null) => Missing(console, romPath);
+
+        public Func<BaseTitle, string, string?> Fit { get; set; } = (_, _) => null;
+
+        public string? RomFit(BaseTitle @base, string romPath) => Fit(@base, romPath);
     }
 }

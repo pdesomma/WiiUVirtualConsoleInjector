@@ -29,6 +29,24 @@ internal static class RetroExecutable
         return inspection.Issues;
     }
 
+    /// <summary>
+    /// Bytes the base's ROM slot holds.
+    /// </summary>
+    /// <param name="title">The base, unpacked.</param>
+    public static long Capacity(TitleDirectory title) => RomSlot.Find(RpxFile.Load(Locate(title))).Capacity;
+
+    /// <summary>
+    /// Bytes of the ROM the slot receives; a SNES copier header is dropped first.
+    /// </summary>
+    /// <param name="romPath">The ROM file.</param>
+    /// <param name="nes">True for NES.</param>
+    public static long RomSize(string romPath, bool nes)
+    {
+        var length = new FileInfo(romPath).Length;
+        // a copier header is 512 bytes on top of a power-of-two-ish image
+        return !nes && length % 1024 == 512 ? length - 512 : length;
+    }
+
     public static void Inject(Injection injection, TitleDirectory title, bool nes, bool pixelPerfect, IProgress<string>? progress, CancellationToken cancellationToken)
     {
         var path = Locate(title);
