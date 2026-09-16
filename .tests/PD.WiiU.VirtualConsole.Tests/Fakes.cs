@@ -109,7 +109,6 @@ internal sealed class FakeKeyStore : IKeyStore
 {
     private readonly Dictionary<TitleId, WiiUSharp.Nus.EncryptedTitleKey> _titleKeys = new();
 
-    public AncastKey? AncastKey { get; set; }
     public WiiUSharp.Nus.CommonKey? CommonKey { get; set; }
     public WiiSharp.CommonKey? WiiCommonKey { get; set; }
 

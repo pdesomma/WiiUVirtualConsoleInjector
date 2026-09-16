@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using PD.WiiU.VirtualConsole.Ports;
 using WiiUSharp;
 using WiiUSharp.Nus;
@@ -17,7 +17,6 @@ public sealed class JsonKeyStore : IKeyStore
         WriteIndented = true,
     };
 
-    private AncastKey? _ancastKey;
     private CommonKey? _commonKey;
     private Dictionary<TitleId, EncryptedTitleKey>? _titleKeys;
     private WiiSharp.CommonKey? _wiiCommonKey;
@@ -32,22 +31,6 @@ public sealed class JsonKeyStore : IKeyStore
             throw new ArgumentException("Path is required.", nameof(path));
 
         FilePath = Path.GetFullPath(path);
-    }
-
-    /// <inheritdoc/>
-    public AncastKey? AncastKey
-    {
-        get
-        {
-            Load();
-            return _ancastKey;
-        }
-        set
-        {
-            Load();
-            _ancastKey = value;
-            Save();
-        }
     }
 
     /// <inheritdoc/>
@@ -121,7 +104,6 @@ public sealed class JsonKeyStore : IKeyStore
             foreach (var pair in document.TitleKeys ?? new Dictionary<string, string?>())
                 titleKeys[TitleId.Parse(pair.Key)] = EncryptedTitleKey.Parse(pair.Value!);
             _commonKey = document.CommonKey is null ? null : WiiUSharp.Nus.CommonKey.Parse(document.CommonKey);
-            _ancastKey = document.AncastKey is null ? null : VirtualConsole.AncastKey.Parse(document.AncastKey);
             _wiiCommonKey = document.WiiCommonKey is null ? null : new WiiSharp.CommonKey(KeyHex.Parse(document.WiiCommonKey, NusFormat.KeySize));
         }
         catch (Exception e) when (e is FormatException or ArgumentNullException or OverflowException)
@@ -155,7 +137,6 @@ public sealed class JsonKeyStore : IKeyStore
     {
         var document = new Document
         {
-            AncastKey = _ancastKey?.ToString(),
             CommonKey = _commonKey?.ToString(),
             WiiCommonKey = _wiiCommonKey is null ? null : KeyHex.Format(_wiiCommonKey.Value.ToArray()),
             TitleKeys = _titleKeys!.ToDictionary(p => p.Key.ToString(), p => (string?)p.Value.ToString()),
@@ -166,7 +147,6 @@ public sealed class JsonKeyStore : IKeyStore
 
     private sealed class Document
     {
-        public string? AncastKey { get; set; }
         public string? CommonKey { get; set; }
         public Dictionary<string, string?>? TitleKeys { get; set; }
         public string? WiiCommonKey { get; set; }

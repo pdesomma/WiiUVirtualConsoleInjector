@@ -65,7 +65,6 @@
                     <StackPanel Spacing="16">
                         <ContentControl Content="{Binding WiiUCommonKeyEntry}" />
                         <ContentControl Content="{Binding WiiCommonKeyEntry}" />
-                        <ContentControl Content="{Binding AncastKeyEntry}" />
                         <Border Classes="divider" Padding="0,6,0,0">
                             <StackPanel Orientation="Horizontal" Spacing="12">
                                 <Button Classes="sm" Content="Read from otp.bin…" Command="{Binding ImportOtpCommand}" />

@@ -70,22 +70,11 @@ public sealed partial class BasesViewModel : PageViewModel
             () => _keys.WiiCommonKey = null,
             _dialogs,
             RefreshStatuses);
-        AncastKeyEntry = new KeyEntryViewModel(
-            "Ancast key",
-            () => _keys.AncastKey?.ToString(),
-            hex => _keys.AncastKey = AncastKey.Parse(hex),
-            () => _keys.AncastKey = null,
-            _dialogs,
-            RefreshStatuses);
         Consoles = Enum.GetValues<SourceConsole>();
         Regions = Enum.GetValues<Region>();
         LoadBases();
     }
 
-    /// <summary>
-    /// The console's ancast key.
-    /// </summary>
-    public KeyEntryViewModel AncastKeyEntry { get; }
     /// <summary>
     /// Rows for the selected console that match <see cref="Filter"/>, custom ones last.
     /// </summary>
@@ -112,7 +101,6 @@ public sealed partial class BasesViewModel : PageViewModel
     {
         WiiUCommonKeyEntry.Refresh();
         WiiCommonKeyEntry.Refresh();
-        AncastKeyEntry.Refresh();
         RefreshStatuses();
         return Task.CompletedTask;
     }

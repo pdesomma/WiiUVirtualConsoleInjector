@@ -43,7 +43,6 @@ public class BasesViewModelTests
         Assert.AreEqual("Needs common key", vm.Bases[0].StatusText);
         Assert.AreEqual(KeyEntryViewModel.NotSetText, vm.WiiUCommonKeyEntry.Status);
         Assert.AreEqual(KeyEntryViewModel.NotSetText, vm.WiiCommonKeyEntry.Status);
-        Assert.AreEqual(KeyEntryViewModel.NotSetText, vm.AncastKeyEntry.Status);
     }
 
     [TestMethod]
@@ -202,18 +201,6 @@ public class BasesViewModelTests
 
         Assert.AreEqual(KeyHexText, KeyHex.Format(_keys.WiiCommonKey!.Value.ToArray()));
         Assert.AreEqual(KeyEntryViewModel.SetText, vm.WiiCommonKeyEntry.Status);
-    }
-
-    [TestMethod]
-    public async Task AncastKey_SaveValidHex_StoresKey()
-    {
-        var vm = Create();
-        vm.AncastKeyEntry.Text = KeyHexText;
-
-        await vm.AncastKeyEntry.SaveCommand.ExecuteAsync(null);
-
-        Assert.AreEqual(AncastKey.Parse(KeyHexText), _keys.AncastKey);
-        Assert.AreEqual(KeyEntryViewModel.SetText, vm.AncastKeyEntry.Status);
     }
 
     [TestMethod]

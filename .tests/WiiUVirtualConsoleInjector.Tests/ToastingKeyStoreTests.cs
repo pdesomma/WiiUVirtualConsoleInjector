@@ -26,21 +26,19 @@ public class ToastingKeyStoreTests
 
         store.CommonKey = new CommonKey(new byte[16]);
         store.WiiCommonKey = new WiiSharp.CommonKey(new byte[16]);
-        store.AncastKey = new AncastKey(new byte[16]);
         store.SetTitleKey(Id, new EncryptedTitleKey(new byte[16]));
         store.CommonKey = null;
 
         Assert.IsNull(inner.CommonKey);
         Assert.IsNotNull(inner.WiiCommonKey);
-        Assert.IsNotNull(inner.AncastKey);
         Assert.AreEqual(1, inner.TitleKeyWrites);
-        Assert.AreEqual(5, toasts.Shown.Count);
+        Assert.AreEqual(4, toasts.Shown.Count);
         Assert.IsTrue(toasts.Shown.All(t => t.Kind == ToastKind.Success));
         CollectionAssert.AreEqual(
-            new[] { ToastingKeyStore.SavedText, ToastingKeyStore.SavedText, ToastingKeyStore.SavedText, ToastingKeyStore.SavedText, ToastingKeyStore.ClearedText },
+            new[] { ToastingKeyStore.SavedText, ToastingKeyStore.SavedText, ToastingKeyStore.SavedText, ToastingKeyStore.ClearedText },
             toasts.Shown.Select(t => t.Title).ToArray());
         StringAssert.Contains(toasts.Shown[0].Message, "Wii U common key");
-        StringAssert.Contains(toasts.Shown[3].Message, Id.ToString());
+        StringAssert.Contains(toasts.Shown[2].Message, Id.ToString());
     }
 
     [TestMethod]
@@ -53,7 +51,6 @@ public class ToastingKeyStoreTests
 
         Assert.AreEqual(inner.CommonKey, store.CommonKey);
         Assert.IsNull(store.WiiCommonKey);
-        Assert.IsNull(store.AncastKey);
         Assert.IsNotNull(store.GetTitleKey(Id));
         Assert.AreEqual(0, toasts.Shown.Count);
     }
