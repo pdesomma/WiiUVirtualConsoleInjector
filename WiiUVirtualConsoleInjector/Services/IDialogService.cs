@@ -1,4 +1,4 @@
-namespace WiiUVirtualConsoleInjector.Services;
+﻿namespace WiiUVirtualConsoleInjector.Services;
 
 /// <summary>
 /// The pickers and message boxes view models need without touching Avalonia.
@@ -39,4 +39,11 @@ public interface IDialogService
     /// <param name="title">Window title.</param>
     /// <param name="message">Notice text.</param>
     Task ShowInfoAsync(string title, string message);
+
+    /// <summary>
+    /// Shows an image at its own size, as large as the screen allows; a click or Escape closes it.
+    /// </summary>
+    /// <param name="title">Window title.</param>
+    /// <param name="path">Image file.</param>
+    Task ShowImageAsync(string title, string path);
 }
