@@ -61,7 +61,7 @@ public class SdCardTests
         File.WriteAllText(Path.Combine(title, "code", "app.xml"), "app");
         var reported = new List<string>();
 
-        var destination = await card.CopyAsync(title, _root, new Progress<string>(reported.Add));
+        var destination = await card.CopyAsync(title, _root, new InlineProgress(reported.Add));
 
         Assert.AreEqual(Path.Combine(_root, SdCard.InstallFolder, "[WUP]Test"), destination);
         Assert.AreEqual("tmd", File.ReadAllText(Path.Combine(destination, "title.tmd")));
@@ -130,6 +130,18 @@ public class SdCardTests
         StringAssert.Contains(drive.Description, "WIIU");
         StringAssert.Contains(drive.ToString(), "3 GB");
         StringAssert.Contains(drive.ToString(), "15 GB");
+    }
+
+    /// <summary>
+    /// Reports on the calling thread, so every report is in before the copy returns.
+    /// </summary>
+    private sealed class InlineProgress : IProgress<string>
+    {
+        private readonly Action<string> _report;
+
+        public InlineProgress(Action<string> report) => _report = report;
+
+        public void Report(string value) => _report(value);
     }
 
     private static RemovableDrive Drive(string root, bool prepared = false) =>
