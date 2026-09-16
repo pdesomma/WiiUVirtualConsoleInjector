@@ -60,7 +60,7 @@ public sealed class WiiRomInjector : IRomInjector
     }
 
     /// <inheritdoc/>
-    /// <exception cref="NotSupportedException">Not an ISO or WBFS, or an option this injector cannot apply yet.</exception>
+    /// <exception cref="NotSupportedException">Not an ISO or WBFS, or more cheat lines than fit.</exception>
     /// <exception cref="InvalidOperationException">An encrypted disc with no common key supplied.</exception>
     public Task InjectAsync(Injection injection, TitleDirectory title, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
@@ -72,7 +72,6 @@ public sealed class WiiRomInjector : IRomInjector
             throw new ArgumentException($"Injection is for {injection.Console}.", nameof(injection));
 
         var options = injection.Options as WiiOptions ?? new WiiOptions();
-        RejectUnsupported(options);
 
         var extension = Path.GetExtension(injection.Rom.Path);
         if (string.Equals(extension, ".dol", StringComparison.OrdinalIgnoreCase))
@@ -241,6 +240,12 @@ public sealed class WiiRomInjector : IRomInjector
             var count = VideoModePatch.Apply(patched, options.VideoMode);
             progress?.Report($"Video modes set to {options.VideoMode}: {count}");
         }
+        if (options.CheatCodesPath is not null)
+        {
+            var lines = GeckoCodes.Load(options.CheatCodesPath);
+            patched = GeckoCheatPatch.Apply(patched, lines);
+            progress?.Report($"Gecko codes baked in: {lines.Count} lines");
+        }
         return patched;
     }
 
@@ -253,7 +258,7 @@ public sealed class WiiRomInjector : IRomInjector
         if (options is null)
             throw new ArgumentNullException(nameof(options));
 
-        return options.RemoveDeflicker || options.RemoveDithering || options.HalfVerticalFilter || options.VideoMode != WiiVideoMode.Unchanged;
+        return options.RemoveDeflicker || options.RemoveDithering || options.HalfVerticalFilter || options.VideoMode != WiiVideoMode.Unchanged || options.CheatCodesPath is not null;
     }
 
     private static byte[] ReadTmd(Stream iso, Partition partition)
@@ -269,12 +274,6 @@ public sealed class WiiRomInjector : IRomInjector
             read += n;
         }
         return tmd;
-    }
-
-    private static void RejectUnsupported(WiiOptions options)
-    {
-        if (options.CheatCodesPath is not null)
-            throw new NotSupportedException("Cheat codes are not supported yet.");
     }
 
     private static void WriteTicketAndTmd(TitleDirectory title, byte[] ticket, byte[] tmd)

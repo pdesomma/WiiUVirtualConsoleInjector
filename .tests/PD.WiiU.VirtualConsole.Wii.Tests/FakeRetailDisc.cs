@@ -27,6 +27,11 @@ internal static class FakeRetailDisc
     public const int DitheringOffset = 0x400;
     public const int VerticalFilterOffset = 0x600;
     public const int RenderModeOffset = 0x700;
+    /// <summary>
+    /// Where the VI retrace handler's first instructions sit; its blr is 0x10 bytes further on.
+    /// </summary>
+    public const int ViHookOffset = 0x380;
+    public static readonly byte[] ViRetraceStart = { 0x7C, 0xE3, 0x3B, 0x78, 0x38, 0x87, 0x00, 0x34, 0x38, 0xA7, 0x00, 0x38, 0x38, 0xC7, 0x00, 0x4C };
 
     /// <summary>
     /// DOL body with the deflicker, dithering, vertical filter and render mode patterns at fixed offsets.
@@ -41,6 +46,8 @@ internal static class FakeRetailDisc
         for (var i = 0x100; i < dol.Length; i++)
             dol[i] = (byte)(0x10 + i % 7);
 
+        ViRetraceStart.CopyTo(dol, ViHookOffset);
+        new byte[] { 0x4E, 0x80, 0x00, 0x20 }.CopyTo(dol, ViHookOffset + 0x10);
         DolFilterPatches.DeflickerPattern.CopyTo(dol, DeflickerOffset);
         new byte[] { 0x7C, 0x08, 0x02, 0xA6 }.CopyTo(dol, DitheringOffset - 4);
         DolFilterPatches.DitheringPattern.CopyTo(dol, DitheringOffset);
