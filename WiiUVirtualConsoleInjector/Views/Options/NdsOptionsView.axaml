@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels.Options"
+             xmlns:opt="using:PD.WiiU.VirtualConsole.Options"
+             xmlns:conv="using:WiiUVirtualConsoleInjector.Converters"
              x:Class="WiiUVirtualConsoleInjector.Views.Options.NdsOptionsView"
              x:DataType="vm:NdsOptionsViewModel">
     <StackPanel Spacing="16" Width="560" HorizontalAlignment="Left">
@@ -11,6 +13,17 @@
         <StackPanel Spacing="4">
             <TextBlock Classes="label" Text="Pixel art upscaler" />
             <NumericUpDown Minimum="0" Maximum="64" Increment="1" FormatString="0" Value="{Binding PixelArtUpscaler}" Width="110" HorizontalAlignment="Left" />
+        </StackPanel>
+        <StackPanel Spacing="4">
+            <TextBlock Classes="label" Text="Extra screen layouts" />
+            <ComboBox ItemsSource="{Binding LayoutPacks}" SelectedItem="{Binding LayoutPack}" Width="240" HorizontalAlignment="Left">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="opt:NdsLayoutPack">
+                        <TextBlock Text="{Binding, Converter={x:Static conv:NdsLayoutPackConverters.Label}}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBlock Classes="hint" FontSize="12" Text="MikaDubbz's community layouts: many more TV and GamePad arrangements in the emulator's menu. The Phantom Hourglass set puts the touch screen on the TV. A custom folder below wins over the pack." TextWrapping="Wrap" />
         </StackPanel>
         <ContentControl Content="{Binding LayoutScreens}" />
     </StackPanel>

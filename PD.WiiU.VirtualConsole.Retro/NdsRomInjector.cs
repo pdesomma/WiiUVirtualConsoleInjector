@@ -1,4 +1,4 @@
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using System.Text.Json.Nodes;
 using PD.WiiU.VirtualConsole.Options;
 using PD.WiiU.VirtualConsole.Ports;
@@ -68,6 +68,11 @@ public sealed class NdsRomInjector : IRomInjector
         {
             progress?.Report("Copying layout screens");
             CopyTree(options.LayoutScreensPath, title.Root);
+        }
+        else if (options.LayoutPack != NdsLayoutPack.None)
+        {
+            progress?.Report($"Adding the {options.LayoutPack} layout screens");
+            DsLayoutScreens.Extract(options.LayoutPack, title.Root);
         }
 
         if (options.Brightness != NdsOptions.DefaultBrightness || options.PixelArtUpscaler != 0)

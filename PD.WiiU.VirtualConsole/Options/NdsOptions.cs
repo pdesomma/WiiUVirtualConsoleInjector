@@ -1,4 +1,4 @@
-namespace PD.WiiU.VirtualConsole.Options;
+﻿namespace PD.WiiU.VirtualConsole.Options;
 
 /// <summary>
 /// Nintendo DS settings.
@@ -16,6 +16,10 @@ public sealed class NdsOptions : IConsoleOptions
     public int Brightness { get; init; } = DefaultBrightness;
     /// <inheritdoc/>
     public SourceConsole Console => SourceConsole.Nds;
+    /// <summary>
+    /// Bundled extra layouts to copy over the title; a <see cref="LayoutScreensPath"/> wins over it.
+    /// </summary>
+    public NdsLayoutPack LayoutPack { get; init; }
     /// <summary>
     /// Folder of replacement layout screens to copy over the title, or null to keep the base's.
     /// </summary>

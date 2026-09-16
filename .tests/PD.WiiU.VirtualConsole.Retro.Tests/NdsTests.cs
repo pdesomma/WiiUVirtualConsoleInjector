@@ -1,4 +1,4 @@
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using System.Text.Json.Nodes;
 using PD.WiiU.VirtualConsole.Options;
 using WiiUSharp;
@@ -74,6 +74,57 @@ public class NdsTests
 
         Assert.AreEqual("png", File.ReadAllText(Path.Combine(title.Content, "layout", "top.png")));
         Assert.AreEqual("x", File.ReadAllText(Path.Combine(title.Meta, "iconTex.tga")));
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_LayoutPack_LaysTheBundledFilesOverTheTitle()
+    {
+        var title = StageBase();
+        var rom = Write("game.nds", new byte[100]);
+        var injection = new Injection(Base(), new Rom(rom, SourceConsole.Nds), Game()) { Options = new NdsOptions { LayoutPack = NdsLayoutPack.PhantomHourglass, Brightness = 50 } };
+        var messages = new List<string>();
+
+        await new NdsRomInjector().InjectAsync(injection, title, new SyncProgress(messages.Add));
+
+        Assert.IsTrue(File.Exists(Path.Combine(title.Content, "0010", "assets", "textures", "sidewayslitetv.png")));
+        Assert.IsTrue(File.Exists(Path.Combine(title.Content, "0010", "data", "strings", "en", "strings.json")));
+        var configuration = File.ReadAllText(Path.Combine(title.Content, "0010", "configuration_cafe.json"));
+        StringAssert.Contains(configuration, "50", "the pack's configuration still takes the brightness afterwards");
+        CollectionAssert.Contains(messages, "Adding the PhantomHourglass layout screens");
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_LayoutFolderAndPack_FolderWins()
+    {
+        var title = StageBase();
+        var rom = Write("game.nds", new byte[100]);
+        var screens = Path.Combine(_root, "screens");
+        Directory.CreateDirectory(Path.Combine(screens, "content"));
+        File.WriteAllText(Path.Combine(screens, "content", "mine.png"), "png");
+        var injection = new Injection(Base(), new Rom(rom, SourceConsole.Nds), Game()) { Options = new NdsOptions { LayoutPack = NdsLayoutPack.All, LayoutScreensPath = screens } };
+
+        await new NdsRomInjector().InjectAsync(injection, title);
+
+        Assert.IsTrue(File.Exists(Path.Combine(title.Content, "mine.png")));
+        Assert.IsFalse(File.Exists(Path.Combine(title.Content, "0010", "assets", "textures", "ndslite.png")));
+    }
+
+    [TestMethod]
+    public void DsLayoutScreens_Extract_WritesEachPackAndNothingForNone()
+    {
+        var all = Path.Combine(_root, "all");
+        var hourglass = Path.Combine(_root, "hourglass");
+
+        Assert.AreEqual(12, DsLayoutScreens.Extract(NdsLayoutPack.All, all));
+        Assert.AreEqual(12, DsLayoutScreens.Extract(NdsLayoutPack.PhantomHourglass, hourglass));
+        Assert.AreEqual(0, DsLayoutScreens.Extract(NdsLayoutPack.None, Path.Combine(_root, "none")));
+
+        Assert.IsFalse(Directory.Exists(Path.Combine(_root, "none")));
+        Assert.IsTrue(File.Exists(Path.Combine(all, "content", "0010", "data", "images", "vcmenus_ntr.png")));
+        Assert.AreNotEqual(new FileInfo(Path.Combine(all, "content", "0010", "configuration_cafe.json")).Length, 0);
+        Assert.IsFalse(File.ReadAllBytes(Path.Combine(all, "content", "0010", "configuration_cafe.json")).SequenceEqual(File.ReadAllBytes(Path.Combine(hourglass, "content", "0010", "configuration_cafe.json"))), "the packs differ in their configuration");
+        Assert.ThrowsExactly<ArgumentNullException>(() => DsLayoutScreens.Extract(NdsLayoutPack.All, null!));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => DsLayoutScreens.Extract((NdsLayoutPack)9, _root));
     }
 
     [TestMethod]

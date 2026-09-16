@@ -84,12 +84,16 @@ public class OptionsViewModelTests
         vm.Brightness = 55;
         vm.PixelArtUpscaler = 4;
         vm.LayoutScreens.Path = @"C:\layout";
+        vm.LayoutPack = NdsLayoutPack.All;
 
         var built = (NdsOptions)vm.Build()!;
 
         Assert.AreEqual(55, built.Brightness);
         Assert.AreEqual(4, built.PixelArtUpscaler);
         Assert.AreEqual(@"C:\layout", built.LayoutScreensPath);
+        Assert.AreEqual(NdsLayoutPack.All, built.LayoutPack);
+        CollectionAssert.AreEqual(new[] { NdsLayoutPack.None, NdsLayoutPack.All, NdsLayoutPack.PhantomHourglass }, vm.LayoutPacks.ToArray());
+        Assert.AreEqual(NdsLayoutPack.None, ((NdsOptions)new NdsOptionsViewModel(_dialogs).Build()!).LayoutPack, "off by default");
     }
 
     [TestMethod]
@@ -258,9 +262,10 @@ public class OptionsViewModelTests
         Assert.IsTrue(n64.RemoveDarkFilter && n64.WideScreen);
 
         var nds = new NdsOptionsViewModel(_dialogs);
-        nds.Load(new NdsOptions { Brightness = 40, LayoutScreensPath = @"C:\layout", PixelArtUpscaler = 2 });
+        nds.Load(new NdsOptions { Brightness = 40, LayoutScreensPath = @"C:\layout", PixelArtUpscaler = 2, LayoutPack = NdsLayoutPack.PhantomHourglass });
         Assert.AreEqual(40, nds.Brightness);
         Assert.AreEqual(@"C:\layout", nds.LayoutScreens.Path);
+        Assert.AreEqual(NdsLayoutPack.PhantomHourglass, nds.LayoutPack);
         Assert.AreEqual(2, nds.PixelArtUpscaler);
         nds.Load(null);
         Assert.AreEqual(NdsOptions.DefaultBrightness, nds.Brightness);
