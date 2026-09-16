@@ -589,6 +589,38 @@ public class InjectViewModelTests
     }
 
     [TestMethod]
+    public void RomPath_HeaderName_FillsABlankNameOnly()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "WiiUVirtualConsoleInjector.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var iso = Path.Combine(root, "game.iso");
+            var bytes = new byte[0x100];
+            System.Text.Encoding.ASCII.GetBytes("LUIGI'S MANSION").CopyTo(bytes, 0x20);
+            File.WriteAllBytes(iso, bytes);
+            var vm = Create();
+            vm.SelectedConsole = SourceConsole.GameCube;
+
+            vm.RomPath = iso;
+            Assert.AreEqual("Luigi's Mansion", vm.Name);
+
+            vm.Name = "My Name";
+            vm.RomPath = null;
+            vm.RomPath = iso;
+            Assert.AreEqual("My Name", vm.Name, "a typed name is not overwritten");
+
+            vm.Name = "";
+            vm.RomPath = Path.Combine(root, "missing.iso");
+            Assert.AreEqual("", vm.Name, "nothing readable leaves it blank");
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void CommunityArtworkViewModel_NullArguments_Throw()
     {
         Assert.ThrowsExactly<ArgumentNullException>(() => new CommunityArtworkViewModel(null!, () => SourceConsole.Nes, () => null, () => "w"));
