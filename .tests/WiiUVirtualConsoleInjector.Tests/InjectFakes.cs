@@ -58,6 +58,14 @@ internal static class InjectFakes
 
         public Action? OnInfo { get; set; }
 
+        public List<(string Title, string Path)> Images { get; } = new();
+
+        public Task ShowImageAsync(string title, string path)
+        {
+            Images.Add((title, path));
+            return Task.CompletedTask;
+        }
+
         public Task ShowInfoAsync(string title, string message)
         {
             Infos.Add((title, message));

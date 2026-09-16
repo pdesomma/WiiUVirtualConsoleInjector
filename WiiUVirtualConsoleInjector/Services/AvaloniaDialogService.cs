@@ -1,4 +1,4 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using WiiUVirtualConsoleInjector.Views;
 
@@ -56,4 +56,7 @@ public sealed class AvaloniaDialogService : IDialogService
     /// <inheritdoc/>
     public Task ShowInfoAsync(string title, string message) =>
         MessageWindow.ShowAsync(_owner(), title, message, MessageWindow.Kind.Information);
+
+    /// <inheritdoc/>
+    public Task ShowImageAsync(string title, string path) => ImageWindow.ShowAsync(_owner(), title, path);
 }

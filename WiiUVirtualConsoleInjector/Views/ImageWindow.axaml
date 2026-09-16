@@ -1,0 +1,20 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="WiiUVirtualConsoleInjector.Views.ImageWindow"
+        SizeToContent="WidthAndHeight" CanResize="False"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        WindowDecorations="None" TransparencyLevelHint="Transparent" Background="Transparent"
+        FontFamily="{DynamicResource UiFont}">
+    <Border Margin="20" CornerRadius="16" Background="{DynamicResource DialogBrush}" BoxShadow="0 16 48 0 #73000000, 0 4 12 0 #33000000" Padding="12" Cursor="Hand" PointerPressed="OnPressed">
+        <StackPanel Spacing="8">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Name="TitleText" Grid.Column="0" FontSize="13" FontWeight="Bold" VerticalAlignment="Center" />
+                <TextBlock x:Name="SizeText" Grid.Column="1" Classes="hint mono" FontSize="11.5" VerticalAlignment="Center" />
+            </Grid>
+            <Border CornerRadius="8" ClipToBounds="True" Background="{DynamicResource SubtleBrush}">
+                <Image x:Name="Picture" Stretch="Uniform" StretchDirection="DownOnly" />
+            </Border>
+            <TextBlock Classes="fine" Text="Click anywhere or press Escape to close" TextAlignment="Center" />
+        </StackPanel>
+    </Border>
+</Window>

@@ -751,6 +751,25 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     }
 
     /// <summary>
+    /// A click on an artwork tile: the picture full size when the slot has one, otherwise the picker.
+    /// </summary>
+    /// <param name="slot">Which tile.</param>
+    [RelayCommand]
+    private Task OpenSlotAsync(PathFieldViewModel? slot)
+    {
+        if (slot is null)
+            return Task.CompletedTask;
+        return slot.HasPath ? _dialogs.ShowImageAsync(slot.Label, slot.Path!) : slot.PickCommand.ExecuteAsync(null);
+    }
+
+    /// <summary>
+    /// Shows a picture file full size.
+    /// </summary>
+    /// <param name="path">The file.</param>
+    [RelayCommand]
+    private Task ShowImageAsync(string? path) => string.IsNullOrWhiteSpace(path) ? Task.CompletedTask : _dialogs.ShowImageAsync("Community artwork", path!);
+
+    /// <summary>
     /// Back to the base step, to pick a bigger one.
     /// </summary>
     [RelayCommand]

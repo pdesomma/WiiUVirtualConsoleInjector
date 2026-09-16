@@ -334,6 +334,27 @@ public class InjectViewModelTests
     }
 
     [TestMethod]
+    public async Task OpenSlot_EmptyTilePicks_FilledTileShowsThePicture()
+    {
+        var vm = Ready();
+        _dialogs.NextPaths.Enqueue(@"C:\art\icon.png");
+
+        await vm.OpenSlotCommand.ExecuteAsync(vm.Icon);
+        Assert.AreEqual(@"C:\art\icon.png", vm.Icon.Path);
+        Assert.AreEqual(0, _dialogs.Images.Count);
+
+        await vm.OpenSlotCommand.ExecuteAsync(vm.Icon);
+        Assert.AreEqual(1, _dialogs.Images.Count);
+        Assert.AreEqual((vm.Icon.Label, @"C:\art\icon.png"), _dialogs.Images[0]);
+
+        await vm.OpenSlotCommand.ExecuteAsync(null);
+        await vm.ShowImageCommand.ExecuteAsync(" ");
+        await vm.ShowImageCommand.ExecuteAsync(@"C:\art\tv.png");
+        Assert.AreEqual(2, _dialogs.Images.Count);
+        Assert.AreEqual("Community artwork", _dialogs.Images[1].Title);
+    }
+
+    [TestMethod]
     public async Task RomFit_BaseNotDownloaded_IsNotAsked()
     {
         var asked = 0;

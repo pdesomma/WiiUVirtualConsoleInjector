@@ -229,12 +229,16 @@
                                         <TextBlock Classes="hint" FontSize="12" Text="{Binding CommunityArtwork.Status}" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="560" />
                                     </WrapPanel>
                                     <StackPanel Orientation="Horizontal" Spacing="16" IsVisible="{Binding CommunityArtwork.HasHit}">
-                                        <Border Width="96" Height="96" CornerRadius="12" ClipToBounds="True" Background="{DynamicResource SubtleBrush}">
-                                            <Image Source="{Binding CommunityArtwork.Files.Icon, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="UniformToFill" />
-                                        </Border>
-                                        <Border Width="256" Height="144" CornerRadius="8" ClipToBounds="True" Background="{DynamicResource SubtleBrush}">
-                                            <Image Source="{Binding CommunityArtwork.Files.BootTv, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="UniformToFill" />
-                                        </Border>
+                                        <Button Classes="slot" Command="{Binding ShowImageCommand}" CommandParameter="{Binding CommunityArtwork.Files.Icon}" ToolTip.Tip="Show full size">
+                                            <Border Width="96" Height="96" CornerRadius="12" ClipToBounds="True" Background="{DynamicResource SubtleBrush}">
+                                                <Image Source="{Binding CommunityArtwork.Files.Icon, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="UniformToFill" />
+                                            </Border>
+                                        </Button>
+                                        <Button Classes="slot" Command="{Binding ShowImageCommand}" CommandParameter="{Binding CommunityArtwork.Files.BootTv}" ToolTip.Tip="Show full size">
+                                            <Border Width="256" Height="144" CornerRadius="8" ClipToBounds="True" Background="{DynamicResource SubtleBrush}">
+                                                <Image Source="{Binding CommunityArtwork.Files.BootTv, Converter={x:Static conv:FileImageConverter.Bitmap}}" Stretch="UniformToFill" />
+                                            </Border>
+                                        </Button>
                                         <StackPanel Spacing="8" VerticalAlignment="Center">
                                             <Button Classes="primary sm" Content="Use these" Command="{Binding CommunityArtwork.ApplyCommand}" />
                                             <Button Classes="ghost sm" Content="No thanks" Command="{Binding CommunityArtwork.DismissCommand}" />
@@ -249,7 +253,7 @@
                                     <!-- The slot itself: what will be injected -->
                                     <StackPanel Grid.Column="0" Spacing="7">
                                         <TextBlock Classes="label" Text="{Binding Icon.Label}" />
-                                        <Button Classes="slot" Command="{Binding Icon.PickCommand}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Pick a finished image for this slot">
+                                        <Button Classes="slot" Command="{Binding OpenSlotCommand}" CommandParameter="{Binding Icon}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Shows the picture full size; pick one when the slot is empty">
                                             <Panel Width="128" Height="128">
                                                 <Rectangle Classes="slot-frame" RadiusX="16" RadiusY="16" />
                                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding Icon.Path, Converter={x:Static conv:FileImageConverter.IsMissing}}">
@@ -263,6 +267,7 @@
                                         </Button>
                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                             <TextBlock Classes="fine" Text="{Binding Icon.Hint}" VerticalAlignment="Center" />
+                                            <Button Classes="ghost sm tiny" Content="Pick" Command="{Binding Icon.PickCommand}" IsVisible="{Binding Icon.HasPath}" IsEnabled="{Binding !IsRunning}" />
                                             <Button Classes="ghost sm tiny" Content="Clear" Command="{Binding Icon.ClearCommand}" IsVisible="{Binding Icon.HasPath}" IsEnabled="{Binding !IsRunning}" />
                                         </StackPanel>
                                     </StackPanel>
@@ -328,7 +333,7 @@
                                     <!-- The slot itself: what will be injected -->
                                     <StackPanel Grid.Column="0" Spacing="7">
                                         <TextBlock Classes="label" Text="{Binding BootTv.Label}" />
-                                        <Button Classes="slot" Command="{Binding BootTv.PickCommand}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Pick a finished image for this slot">
+                                        <Button Classes="slot" Command="{Binding OpenSlotCommand}" CommandParameter="{Binding BootTv}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Shows the picture full size; pick one when the slot is empty">
                                             <Panel Width="256" Height="144">
                                                 <Rectangle Classes="slot-frame" RadiusX="10" RadiusY="10" />
                                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding BootTv.Path, Converter={x:Static conv:FileImageConverter.IsMissing}}">
@@ -342,6 +347,7 @@
                                         </Button>
                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                             <TextBlock Classes="fine" Text="{Binding BootTv.Hint}" VerticalAlignment="Center" />
+                                            <Button Classes="ghost sm tiny" Content="Pick" Command="{Binding BootTv.PickCommand}" IsVisible="{Binding BootTv.HasPath}" IsEnabled="{Binding !IsRunning}" />
                                             <Button Classes="ghost sm tiny" Content="Clear" Command="{Binding BootTv.ClearCommand}" IsVisible="{Binding BootTv.HasPath}" IsEnabled="{Binding !IsRunning}" />
                                         </StackPanel>
                                     </StackPanel>
@@ -407,7 +413,7 @@
                                     <!-- The slot itself: what will be injected -->
                                     <StackPanel Grid.Column="0" Spacing="7">
                                         <TextBlock Classes="label" Text="{Binding BootDrc.Label}" />
-                                        <Button Classes="slot" Command="{Binding BootDrc.PickCommand}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Pick a finished image for this slot">
+                                        <Button Classes="slot" Command="{Binding OpenSlotCommand}" CommandParameter="{Binding BootDrc}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Shows the picture full size; pick one when the slot is empty">
                                             <Panel Width="256" Height="144">
                                                 <Rectangle Classes="slot-frame" RadiusX="10" RadiusY="10" />
                                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding BootDrc.Path, Converter={x:Static conv:FileImageConverter.IsMissing}}">
@@ -421,6 +427,7 @@
                                         </Button>
                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                             <TextBlock Classes="fine" Text="{Binding BootDrc.Hint}" VerticalAlignment="Center" />
+                                            <Button Classes="ghost sm tiny" Content="Pick" Command="{Binding BootDrc.PickCommand}" IsVisible="{Binding BootDrc.HasPath}" IsEnabled="{Binding !IsRunning}" />
                                             <Button Classes="ghost sm tiny" Content="Clear" Command="{Binding BootDrc.ClearCommand}" IsVisible="{Binding BootDrc.HasPath}" IsEnabled="{Binding !IsRunning}" />
                                         </StackPanel>
                                     </StackPanel>
@@ -486,7 +493,7 @@
                                     <!-- The slot itself: what will be injected -->
                                     <StackPanel Grid.Column="0" Spacing="7">
                                         <TextBlock Classes="label" Text="{Binding BootLogo.Label}" />
-                                        <Button Classes="slot" Command="{Binding BootLogo.PickCommand}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Pick a finished image for this slot">
+                                        <Button Classes="slot" Command="{Binding OpenSlotCommand}" CommandParameter="{Binding BootLogo}" IsEnabled="{Binding !IsRunning}" ToolTip.Tip="Shows the picture full size; pick one when the slot is empty">
                                             <Panel Width="227" Height="56">
                                                 <Rectangle Classes="slot-frame" RadiusX="8" RadiusY="8" />
                                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding BootLogo.Path, Converter={x:Static conv:FileImageConverter.IsMissing}}">
@@ -500,6 +507,7 @@
                                         </Button>
                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                             <TextBlock Classes="fine" Text="{Binding BootLogo.Hint}" VerticalAlignment="Center" />
+                                            <Button Classes="ghost sm tiny" Content="Pick" Command="{Binding BootLogo.PickCommand}" IsVisible="{Binding BootLogo.HasPath}" IsEnabled="{Binding !IsRunning}" />
                                             <Button Classes="ghost sm tiny" Content="Clear" Command="{Binding BootLogo.ClearCommand}" IsVisible="{Binding BootLogo.HasPath}" IsEnabled="{Binding !IsRunning}" />
                                         </StackPanel>
                                     </StackPanel>
