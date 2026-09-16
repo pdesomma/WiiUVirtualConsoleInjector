@@ -1,4 +1,4 @@
-namespace WiiUVirtualConsoleInjector.ViewModels;
+﻿namespace WiiUVirtualConsoleInjector.ViewModels;
 
 /// <summary>
 /// One project or person this app owes something to.
@@ -10,6 +10,16 @@ namespace WiiUVirtualConsoleInjector.ViewModels;
 /// <param name="License">Licence of anything shipped, or null when only ideas were borrowed.</param>
 public sealed record Acknowledgement(string Name, string Authors, string Role, Uri? Url = null, string? License = null)
 {
+    /// <summary>
+    /// Where a tip to the author goes, when they take them.
+    /// </summary>
+    public Uri? Donate { get; init; }
+
+    /// <summary>
+    /// True when the author takes tips.
+    /// </summary>
+    public bool HasDonate => Donate is not null;
+
     /// <summary>
     /// True when a licence applies.
     /// </summary>
