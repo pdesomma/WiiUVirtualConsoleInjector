@@ -387,6 +387,10 @@ internal sealed class FakeBaseService : IBaseService
 
     public bool HasTitleKey(BaseTitle @base) => Keys.GetTitleKey(@base.TitleId) is not null;
 
+    public Dictionary<TitleId, ByteSize> Sizes { get; } = new();
+
+    public ByteSize? SizeOnDisk(BaseTitle @base) => Present.Contains(@base.TitleId) ? Sizes.TryGetValue(@base.TitleId, out var size) ? size : new ByteSize(0) : null;
+
     public BaseStatus Status(BaseTitle @base)
     {
         if (Present.Contains(@base.TitleId))

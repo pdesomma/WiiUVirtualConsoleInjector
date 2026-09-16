@@ -31,7 +31,7 @@ public sealed partial class BackupsViewModel : PageViewModel
     [NotifyCanExecuteChangedFor(nameof(PushCommand), nameof(CancelCommand))]
     private bool _isRunning;
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasPackage), nameof(SourceStatus))]
+    [NotifyPropertyChangedFor(nameof(HasPackage), nameof(SourceStatus), nameof(PackageSize), nameof(HasPackageSize))]
     [NotifyCanExecuteChangedFor(nameof(PushCommand))]
     private WupPackage? _package;
     [ObservableProperty]
@@ -88,10 +88,18 @@ public sealed partial class BackupsViewModel : PageViewModel
     /// </summary>
     public ObservableCollection<WupPackage> OnCard { get; } = new();
     /// <summary>
+    /// True when a complete package is picked.
+    /// </summary>
+    public bool HasPackageSize => PackageSize is not null;
+    /// <summary>
+    /// What the picked package takes; null unless one is picked and complete.
+    /// </summary>
+    public ByteSize? PackageSize => Package is { IsComplete: true } p ? new ByteSize(p.Size) : null;
+    /// <summary>
     /// What the picked source is.
     /// </summary>
     public string SourceStatus => Package is { } p
-        ? p.IsComplete ? $"{p.TitleId} v{p.TitleVersion}, {p.ContentCount} contents, {Gigabytes(p.Size)}" : $"{p.TitleId}: missing {string.Join(", ", p.Missing)}"
+        ? p.IsComplete ? $"{p.TitleId} v{p.TitleVersion}, {p.ContentCount} contents" : $"{p.TitleId}: missing {string.Join(", ", p.Missing)}"
         : ImagePath is { } i ? Path.GetFileName(i) + (NeedsDiscKey ? " (no game.key beside it; enter the disc key)" : "") : "Nothing picked.";
 
     /// <inheritdoc/>
@@ -129,8 +137,6 @@ public sealed partial class BackupsViewModel : PageViewModel
             }
         }
     }
-
-    private static string Gigabytes(long bytes) => bytes >= 1073741824 ? (bytes / 1073741824d).ToString("0.##") + " GB" : (bytes / 1048576d).ToString("0.#") + " MB";
 
     private bool CanPush() => !IsRunning && HasCard && (Package is { IsComplete: true } || ImagePath is not null);
 

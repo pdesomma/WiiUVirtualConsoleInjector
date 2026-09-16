@@ -484,6 +484,8 @@ public class InjectViewModelTests
         CollectionAssert.AreEqual(new[] { "StageBase: Staging", "Pack: Packing" }, log);
         Assert.AreEqual(1, _dialogs.Infos.Count);
         StringAssert.Contains(_dialogs.Infos[0].Message, _settings.OutputPath);
+        Assert.IsTrue(vm.HasOutputSize, "measured even when the fake wrote nothing");
+        StringAssert.Contains(_dialogs.Infos[0].Message, "(" + vm.OutputSize!.Value.Text + ")");
         Assert.AreEqual(0, _dialogs.Errors.Count);
     }
 

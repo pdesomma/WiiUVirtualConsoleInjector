@@ -120,6 +120,8 @@ internal static class InjectFakes
         public bool HasTitleKey(BaseTitle @base) => Keyed.Contains(@base.TitleId);
 
         public BaseStatus Status(BaseTitle @base) => Statuses.TryGetValue(@base.TitleId, out var status) ? status : BaseStatus.Downloadable;
+
+        public ByteSize? SizeOnDisk(BaseTitle @base) => Status(@base) == BaseStatus.Present ? new ByteSize(0) : null;
     }
 
     internal sealed class RecordingInjectionService : IInjectionService

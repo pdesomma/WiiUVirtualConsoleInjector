@@ -122,6 +122,21 @@ public class BaseServiceTests
     }
 
     [TestMethod]
+    public void SizeOnDisk_StoredBase_SumsItsFiles()
+    {
+        var @base = TestTitle.Base();
+
+        Assert.IsNull(_service.SizeOnDisk(@base));
+        TestTitle.Populate(_store.Locate(@base).Root);
+        var size = _service.SizeOnDisk(@base);
+
+        Assert.IsNotNull(size);
+        Assert.AreEqual(ByteSize.OfDirectory(_store.Locate(@base).Root), size);
+        Assert.IsTrue(size!.Value.Bytes > 0);
+        Assert.ThrowsExactly<ArgumentNullException>(() => _service.SizeOnDisk(null!));
+    }
+
+    [TestMethod]
     public async Task DownloadAsync_KeysPresent_PassesThemToTheDownloader()
     {
         var @base = TestTitle.Base();

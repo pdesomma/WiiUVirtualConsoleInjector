@@ -648,6 +648,7 @@
                                 <Button Classes="primary lg" Content="Inject" Command="{Binding InjectCommand}" />
                                 <Button Content="Cancel" Command="{Binding CancelCommand}" VerticalAlignment="Center" />
                                 <TextBlock Text="{Binding Status}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding OutputSize, Converter={x:Static conv:SizeConverters.Text}}" Foreground="{Binding OutputSize, Converter={x:Static conv:SizeConverters.Brush}}" FontSize="13" FontWeight="Bold" VerticalAlignment="Center" IsVisible="{Binding HasOutputSize}" ToolTip.Tip="The finished title on disk" />
                                 <TextBlock Text="{Binding CurrentStep}" FontSize="12" Foreground="{DynamicResource TextTertiaryBrush}" VerticalAlignment="Center" />
                             </StackPanel>
                         </Border>

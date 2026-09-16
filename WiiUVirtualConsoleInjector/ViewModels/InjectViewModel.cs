@@ -86,6 +86,9 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     [NotifyCanExecuteChangedFor(nameof(InjectCommand), nameof(ClearRomCommand))]
     private string? _romPath;
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasOutputSize))]
+    private ByteSize? _outputSize;
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanInject), nameof(HasRomFitHint))]
     [NotifyCanExecuteChangedFor(nameof(InjectCommand))]
     private string? _romFitHint;
@@ -576,6 +579,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         _cancellation = cancellation;
         IsRunning = true;
         Log.Clear();
+        OutputSize = null;
         CurrentStep = null;
         Status = "Running";
         var succeeded = false;
@@ -586,10 +590,11 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
             var copying = new Progress<string>(file => Log.Add("Copying " + file));
             var token = cancellation.Token;
             var result = await Task.Run(() => service.InjectAsync(injection, work, _settings.OutputPath, progress, token), token).ConfigureAwait(true);
+            OutputSize = await Task.Run(() => ByteSize.OfDirectory(result.OutputDirectory), token).ConfigureAwait(true);
             var copied = await CopyToCardAsync(result.OutputDirectory, copying, token).ConfigureAwait(true);
             await RememberAsync(injection, result).ConfigureAwait(true);
             Status = "Done";
-            await _dialogs.ShowInfoAsync(DialogTitle, $"Title written to {copied ?? result.OutputDirectory}").ConfigureAwait(true);
+            await _dialogs.ShowInfoAsync(DialogTitle, $"Title written to {copied ?? result.OutputDirectory} ({OutputSize})").ConfigureAwait(true);
             succeeded = true;
         }
         catch (OperationCanceledException)
@@ -734,6 +739,10 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         StartOver();
     }
 
+    /// <summary>
+    /// True once a finished title has been measured.
+    /// </summary>
+    public bool HasOutputSize => OutputSize is not null;
     /// <summary>
     /// True when the ROM will not fit the base.
     /// </summary>

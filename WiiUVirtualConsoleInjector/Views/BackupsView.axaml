@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels"
              xmlns:vc="using:PD.WiiU.VirtualConsole"
+             xmlns:conv="using:WiiUVirtualConsoleInjector.Converters"
              x:Class="WiiUVirtualConsoleInjector.Views.BackupsView"
              x:DataType="vm:BackupsViewModel">
     <Grid>
@@ -21,7 +22,10 @@
                         <Button Classes="sm" Content="Pick a package folder…" Command="{Binding PickPackageCommand}" />
                         <Button Classes="sm" Content="Pick a disc dump…" Command="{Binding PickImageCommand}" />
                     </StackPanel>
-                    <TextBlock FontSize="12.5" Text="{Binding SourceStatus}" TextWrapping="Wrap" />
+                    <WrapPanel ItemSpacing="8">
+                        <TextBlock FontSize="12.5" Text="{Binding SourceStatus}" TextWrapping="Wrap" />
+                        <TextBlock FontSize="12.5" FontWeight="Bold" Text="{Binding PackageSize, Converter={x:Static conv:SizeConverters.Text}}" Foreground="{Binding PackageSize, Converter={x:Static conv:SizeConverters.Brush}}" IsVisible="{Binding HasPackageSize}" />
+                    </WrapPanel>
                     <StackPanel Spacing="4" IsVisible="{Binding NeedsDiscKey}">
                         <TextBlock Classes="label" Text="Disc key" />
                         <TextBox Classes="mono" Text="{Binding DiscKeyHex}" PlaceholderText="32 hex digits from the disc's game.key" MaxLength="32" />
@@ -52,9 +56,10 @@
                     <ItemsControl ItemsSource="{Binding OnCard}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vc:WupPackage">
-                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
                                     <TextBlock Grid.Column="0" FontSize="12.5" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-                                    <TextBlock Grid.Column="1" Classes="mono" FontSize="11.5" Text="{Binding TitleId}" />
+                                    <TextBlock Grid.Column="1" FontSize="11.5" FontWeight="Bold" Text="{Binding Size, Converter={x:Static conv:SizeConverters.Text}}" Foreground="{Binding Size, Converter={x:Static conv:SizeConverters.Brush}}" />
+                                    <TextBlock Grid.Column="2" Classes="mono" FontSize="11.5" Text="{Binding TitleId}" />
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

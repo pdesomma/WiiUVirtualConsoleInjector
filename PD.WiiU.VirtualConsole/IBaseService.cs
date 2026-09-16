@@ -55,4 +55,10 @@ public interface IBaseService
     /// </summary>
     /// <param name="base">Base to check.</param>
     BaseStatus Status(BaseTitle @base);
+
+    /// <summary>
+    /// What the stored base takes on disk; null when it is not stored.
+    /// </summary>
+    /// <param name="base">Base to measure.</param>
+    ByteSize? SizeOnDisk(BaseTitle @base);
 }

@@ -102,6 +102,7 @@
                                             <TextBlock Classes="base-name" Text="{Binding Name}" />
                                             <TextBlock Classes="base-region" Text="{Binding Region}" />
                                             <TextBlock Classes="base-id mono" Text="{Binding TitleId}" />
+                                            <TextBlock Classes="base-id" FontWeight="Bold" Text="{Binding Size, Converter={x:Static conv:SizeConverters.Text}}" Foreground="{Binding Size, Converter={x:Static conv:SizeConverters.Brush}}" IsVisible="{Binding HasSize}" ToolTip.Tip="On disk in the base store" />
                                             <TextBlock Classes="base-id" Text="(custom)" IsVisible="{Binding IsCustom}" />
                                             <Button Classes="link" Command="{Binding $parent[ItemsControl].((vm:BasesViewModel)DataContext).RemoveCustomBaseCommand}" CommandParameter="{Binding}" IsVisible="{Binding IsCustom}" ToolTip.Tip="Forget this base; its files stay in the base store">
                                                 <TextBlock Text="Forget" FontSize="11" />

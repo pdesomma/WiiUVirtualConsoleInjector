@@ -81,7 +81,7 @@ public sealed class InjectionServiceFactory : IInjectionServiceFactory
         {
             var capacity = bounded.Capacity(new DirectoryBaseStore(_settings.BasePath).Locate(@base));
             var size = bounded.RomSize(romPath);
-            return size > capacity ? $"{Path.GetFileName(romPath)} is {RomSlot.Kilobytes(size)}; this base holds {RomSlot.Kilobytes(capacity)}. {RomSlot.BiggerBaseHint}" : null;
+            return size > capacity ? $"{Path.GetFileName(romPath)} is {new ByteSize(size)}; this base holds {new ByteSize(capacity)}. {RomSlot.BiggerBaseHint}" : null;
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidDataException)
         {

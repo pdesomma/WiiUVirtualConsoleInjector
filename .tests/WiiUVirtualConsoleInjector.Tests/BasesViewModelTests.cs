@@ -406,9 +406,11 @@ public class BasesViewModelTests
     public async Task Download_Succeeds_MarksPresent()
     {
         var row = DownloadableRow();
+        Assert.IsFalse(row.HasSize);
         _bases.Download = (b, _, _) =>
         {
             _bases.Present.Add(b.TitleId);
+            _bases.Sizes[b.TitleId] = new ByteSize(412 * 1048576L);
             return Task.FromResult(new TitleDirectory(Path.GetTempPath()));
         };
 
@@ -417,6 +419,8 @@ public class BasesViewModelTests
         Assert.AreEqual(1, _bases.Downloads.Count);
         Assert.AreEqual("Downloaded", row.ProgressText);
         Assert.AreEqual(BaseStatus.Present, row.Status);
+        Assert.IsTrue(row.HasSize);
+        Assert.AreEqual("412 MB", row.Size!.Value.Text);
         Assert.IsTrue(row.CanInspect);
         Assert.IsFalse(row.CanDownload);
         Assert.AreEqual(0, _dialogs.Errors.Count);
