@@ -56,6 +56,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(p => new UpdateNoticeViewModel(p.GetRequiredService<IUpdateCheck>(), p.GetRequiredService<ISettingsService>(), p.GetRequiredService<ILinkOpener>(), typeof(App).Assembly.GetName().Version ?? new Version(0, 0)));
         services.AddSingleton<INavigationService, NavigationService>();
 
+        services.AddSingleton<IDiscBackup, WudDiscBackup>();
+        services.AddSingleton<BackupsViewModel>();
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton(p => new ArtworkBuilderViewModel(p.GetRequiredService<IArtworkComposer>(), p.GetRequiredService<IDialogService>(), () => p.GetRequiredService<ISettingsService>().WorkPath));
         services.AddSingleton<IInjectionHistory>(new JsonInjectionHistory(paths.HistoryFolder));

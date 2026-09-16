@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels"
+             xmlns:vc="using:PD.WiiU.VirtualConsole"
+             x:Class="WiiUVirtualConsoleInjector.Views.BackupsView"
+             x:DataType="vm:BackupsViewModel">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <StackPanel Spacing="20">
+            <StackPanel Spacing="6">
+                <TextBlock Classes="hint" Text="Puts a Wii U game backup on the SD card for WUP Installer. A package folder (title.tmd, title.tik, title.cert and the .app files) is copied as it is; a .wud or .wux disc dump is unpacked into packages in the output folder first, which needs the Wii U common key and the disc's game.key." TextWrapping="Wrap" />
+            </StackPanel>
+
+            <!-- Source -->
+            <Border Classes="card">
+                <StackPanel Spacing="12">
+                    <TextBlock Classes="section" Text="Backup" />
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Button Classes="sm" Content="Pick a package folder…" Command="{Binding PickPackageCommand}" />
+                        <Button Classes="sm" Content="Pick a disc dump…" Command="{Binding PickImageCommand}" />
+                    </StackPanel>
+                    <TextBlock FontSize="12.5" Text="{Binding SourceStatus}" TextWrapping="Wrap" />
+                    <StackPanel Spacing="4" IsVisible="{Binding NeedsDiscKey}">
+                        <TextBlock Classes="label" Text="Disc key" />
+                        <TextBox Classes="mono" Text="{Binding DiscKeyHex}" PlaceholderText="32 hex digits from the disc's game.key" MaxLength="32" />
+                    </StackPanel>
+                    <TextBlock Classes="hint" FontSize="12" Text="The Wii U common key is not set; add it on Bases &amp; Keys before unpacking a dump." IsVisible="{Binding !HasCommonKey}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Card -->
+            <Border Classes="card">
+                <StackPanel Spacing="12">
+                    <TextBlock Classes="section" Text="SD card" />
+                    <TextBlock Classes="hint" FontSize="12" Text="{Binding CardStatus}" />
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Button Classes="primary sm" Content="Copy to the card" Command="{Binding PushCommand}" />
+                        <Button Classes="sm" Content="Cancel" Command="{Binding CancelCommand}" IsVisible="{Binding IsRunning}" />
+                        <TextBlock Classes="hint" FontSize="12" Text="{Binding Progress}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding Log}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <TextBlock Classes="mono" FontSize="11.5" Text="{Binding}" TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Classes="label" Text="Already under install" />
+                    <TextBlock Classes="hint" FontSize="12" Text="Nothing yet." IsVisible="{Binding !OnCard.Count}" />
+                    <ItemsControl ItemsSource="{Binding OnCard}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vc:WupPackage">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                    <TextBlock Grid.Column="0" FontSize="12.5" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Grid.Column="1" Classes="mono" FontSize="11.5" Text="{Binding TitleId}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Grid>
+</UserControl>
