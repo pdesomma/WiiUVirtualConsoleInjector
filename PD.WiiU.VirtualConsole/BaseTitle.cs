@@ -31,6 +31,10 @@ public sealed class BaseTitle
     /// </summary>
     public bool IsCustom { get; init; }
     /// <summary>
+    /// True for the base the community found works best for its console; it is picked first.
+    /// </summary>
+    public bool IsRecommended { get; init; }
+    /// <summary>
     /// Display name.
     /// </summary>
     public string Name { get; }

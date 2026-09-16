@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using WiiUSharp;
 
@@ -68,7 +68,7 @@ public sealed class BaseCatalog
     public IReadOnlyList<BaseTitle> For(SourceConsole console)
     {
         if (console == SourceConsole.GameCube)
-            return Titles.Where(t => t.Console == SourceConsole.Wii).Select(t => new BaseTitle(t.TitleId, t.Name, t.Region, SourceConsole.GameCube)).ToArray();
+            return Titles.Where(t => t.Console == SourceConsole.Wii).Select(t => new BaseTitle(t.TitleId, t.Name, t.Region, SourceConsole.GameCube) { IsRecommended = t.IsRecommended }).ToArray();
         return Titles.Where(t => t.Console == console).ToArray();
     }
 
@@ -86,7 +86,7 @@ public sealed class BaseCatalog
     }
 
     /// <summary>
-    /// Reads catalog JSON: an array of { titleId, name, region, console }.
+    /// Reads catalog JSON: an array of { titleId, name, region, console, recommended? }.
     /// </summary>
     /// <param name="json">JSON stream.</param>
     /// <exception cref="InvalidDataException">Malformed JSON or an entry with a bad field.</exception>
@@ -119,13 +119,14 @@ public sealed class BaseCatalog
         if (entry.Region is null || entry.Console is null)
             throw new InvalidDataException($"Title {id} is missing its region or console.");
 
-        return new BaseTitle(id, entry.Name!, entry.Region.Value, entry.Console.Value);
+        return new BaseTitle(id, entry.Name!, entry.Region.Value, entry.Console.Value) { IsRecommended = entry.Recommended };
     }
 
     private sealed class Entry
     {
         public SourceConsole? Console { get; set; }
         public string? Name { get; set; }
+        public bool Recommended { get; set; }
         public Region? Region { get; set; }
         public string? TitleId { get; set; }
     }

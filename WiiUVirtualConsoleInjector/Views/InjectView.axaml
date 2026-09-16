@@ -139,20 +139,23 @@
                             </ComboBox.ItemContainerTheme>
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="vm:BaseChoice">
-                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
+                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="10">
                                         <Border Grid.Column="0" Width="22" Height="15" CornerRadius="2" BorderThickness="1" BorderBrush="#26000000" VerticalAlignment="Center"
                                                 Background="{Binding Base.Region, Converter={x:Static conv:RegionConverters.Flag}}" />
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Base.Name}" FontSize="13" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
                                             <TextBlock Classes="mono" Text="{Binding TitleId}" FontSize="10.5" Foreground="{DynamicResource TextTertiaryBrush}" />
                                         </StackPanel>
-                                        <Viewbox Grid.Column="2" Width="16" Height="16" VerticalAlignment="Center" ToolTip.Tip="Title key added">
+                                        <Border Grid.Column="2" Classes="tag" IsVisible="{Binding Base.IsRecommended}" VerticalAlignment="Center" ToolTip.Tip="The base the community found works best for this console">
+                                            <TextBlock Text="Recommended" FontSize="10.5" />
+                                        </Border>
+                                        <Viewbox Grid.Column="3" Width="16" Height="16" VerticalAlignment="Center" ToolTip.Tip="Title key added">
                                             <Canvas Width="24" Height="24">
                                                 <Path Classes="glyph" Stroke="{Binding HasTitleKey, Converter={x:Static conv:StatusConverters.Glyph}}"
                                                       Data="M12 8 A4 4 0 1 1 4 8 A4 4 0 1 1 12 8 M10.8 10.8L20 20 M15.5 15.5l2.2 -2.2 M18 18l2.2 -2.2" />
                                             </Canvas>
                                         </Viewbox>
-                                        <Viewbox Grid.Column="3" Width="16" Height="16" VerticalAlignment="Center" ToolTip.Tip="Downloaded">
+                                        <Viewbox Grid.Column="4" Width="16" Height="16" VerticalAlignment="Center" ToolTip.Tip="Downloaded">
                                             <Canvas Width="24" Height="24">
                                                 <Path Classes="glyph" Stroke="{Binding IsPresent, Converter={x:Static conv:StatusConverters.Glyph}}"
                                                       Data="M12 3v11 M7.5 10.5L12 15l4.5-4.5 M4 17.5V19a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5" />

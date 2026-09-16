@@ -249,6 +249,27 @@ public class InjectViewModelTests
     }
 
     [TestMethod]
+    public void Ready_RecommendedBasePresent_IsPickedOverEarlierOnes()
+    {
+        _bases.Add(Base(SourceConsole.Nes, 0x2000, "Plain"));
+        _bases.Add(new BaseTitle(Base(SourceConsole.Nes, 0x3000, "Best").TitleId, "Best", Region.Japan, SourceConsole.Nes) { IsRecommended = true });
+
+        var vm = Ready();
+
+        Assert.AreEqual("Best", vm.SelectedBase!.Base.Name);
+    }
+
+    [TestMethod]
+    public void Ready_RecommendedBaseNotDownloaded_PresentOneWinsButNotOverNothing()
+    {
+        _bases.Add(new BaseTitle(Base(SourceConsole.Nes, 0x3000, "Best").TitleId, "Best", Region.Japan, SourceConsole.Nes) { IsRecommended = true }, BaseStatus.Downloadable);
+        Assert.AreEqual("Nes Base", Ready().SelectedBase!.Base.Name);
+
+        _bases.Statuses[_bases.Bases[0].TitleId] = BaseStatus.Downloadable;
+        Assert.AreEqual("Best", Ready().SelectedBase!.Base.Name);
+    }
+
+    [TestMethod]
     public async Task ActivateAsync_SelectionGone_PrefersFirstPresentBase()
     {
         _bases.Add(Base(SourceConsole.Nes, 0x2000, "Second"), BaseStatus.Downloadable);
