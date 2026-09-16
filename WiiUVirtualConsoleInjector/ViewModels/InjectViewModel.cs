@@ -42,6 +42,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
 
     private readonly IBaseService _bases;
     private readonly IDialogService _dialogs;
+    private readonly ICompatibilityLists _compatibility;
     private readonly IInjectionHistory _history;
     private readonly IInjectionServiceFactory _injections;
     private readonly INavigationService _navigation;
@@ -112,12 +113,14 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     /// <param name="artwork">Builds icons and boot screens from a screenshot.</param>
     /// <param name="sounds">Plays the boot sound back.</param>
     /// <param name="history">Remembers finished injects.</param>
-    public InjectViewModel(IBaseService bases, IDialogService dialogs, IInjectionServiceFactory injections, ISettingsService settings, INavigationService navigation, ISdCard sdCard, ArtworkBuilderViewModel artwork, ISoundPlayer sounds, IInjectionHistory history)
+    /// <param name="compatibility">Community compatibility pages per console.</param>
+    public InjectViewModel(IBaseService bases, IDialogService dialogs, IInjectionServiceFactory injections, ISettingsService settings, INavigationService navigation, ISdCard sdCard, ArtworkBuilderViewModel artwork, ISoundPlayer sounds, IInjectionHistory history, ICompatibilityLists compatibility)
         : base("Inject", "inject-icon.png", "M12 3v11 M7.5 10.5L12 15l4.5-4.5 M4 17.5V19a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5")
     {
         _bases = bases ?? throw new ArgumentNullException(nameof(bases));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _history = history ?? throw new ArgumentNullException(nameof(history));
+        _compatibility = compatibility ?? throw new ArgumentNullException(nameof(compatibility));
         _injections = injections ?? throw new ArgumentNullException(nameof(injections));
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
@@ -665,6 +668,12 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     /// </summary>
     [RelayCommand]
     private void ManageBases() => _navigation.Show<BasesViewModel>();
+
+    /// <summary>
+    /// Opens the community compatibility list for the selected console.
+    /// </summary>
+    [RelayCommand]
+    private Task OpenCompatibilityListAsync() => _compatibility.OpenAsync(SelectedConsole);
 
     /// <summary>
     /// Plays the chosen boot sound as the console will, or stops it when it is already playing.

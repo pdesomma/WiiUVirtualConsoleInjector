@@ -125,7 +125,12 @@
                     <!-- 2. Base -->
                     <StackPanel IsVisible="{Binding IsBaseStep}">
                         <TextBlock Classes="section" Text="{Binding SelectedConsoleName, StringFormat='Base for {0}'}" Margin="0,0,0,4" />
-                        <TextBlock Classes="hint" FontSize="12" Text="The base holds the Virtual Console emulator; your ROM gets patched into it." Margin="0,0,0,14" />
+                        <WrapPanel ItemSpacing="6" Margin="0,0,0,14">
+                            <TextBlock Classes="hint" FontSize="12" Text="The base holds the Virtual Console emulator; your ROM gets patched into it. Which games work on which base is community-tested:" VerticalAlignment="Center" />
+                            <Button Classes="link" Command="{Binding OpenCompatibilityListCommand}" ToolTip.Tip="Opens the UWUVCI compatibility page for this console in your browser">
+                                <TextBlock Text="Compatibility list ↗" />
+                            </Button>
+                        </WrapPanel>
                         <ComboBox ItemsSource="{Binding Bases}" SelectedItem="{Binding SelectedBase}" Width="480" HorizontalAlignment="Left" IsEnabled="{Binding !IsRunning}" PlaceholderText="Select a base…">
                             <ComboBox.ItemContainerTheme>
                                 <ControlTheme TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}" x:DataType="vm:BaseChoice">

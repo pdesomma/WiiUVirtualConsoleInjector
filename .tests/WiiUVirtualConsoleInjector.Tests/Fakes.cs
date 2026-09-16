@@ -138,6 +138,19 @@ internal sealed class FakeSdCard : ISdCard
     public IReadOnlyList<RemovableDrive> Drives() => Removable;
 }
 
+internal sealed class FakeCompatibilityLists : ICompatibilityLists
+{
+    public List<SourceConsole> Opened { get; } = new();
+
+    public Uri For(SourceConsole console) => new($"https://example.test/{console}");
+
+    public Task<bool> OpenAsync(SourceConsole console)
+    {
+        Opened.Add(console);
+        return Task.FromResult(true);
+    }
+}
+
 internal sealed class FakeLinkOpener : ILinkOpener
 {
     public List<string> Folders { get; } = new();

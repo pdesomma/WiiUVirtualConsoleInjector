@@ -28,7 +28,7 @@ public class HistoryViewModelTests
         foreach (var console in Enum.GetValues<SourceConsole>())
             _bases.Add(Base(console, 0x1000 + (uint)console, console + " Base"));
         var settings = new InjectSettingsService();
-        _inject = new InjectViewModel(_bases, _dialogs, new RecordingInjectionServiceFactory(), settings, _navigation, new FakeSdCard(), new ArtworkBuilderViewModel(new FakeArtworkComposer(), _dialogs, () => settings.WorkPath), new FakeSoundPlayer(), _history);
+        _inject = new InjectViewModel(_bases, _dialogs, new RecordingInjectionServiceFactory(), settings, _navigation, new FakeSdCard(), new ArtworkBuilderViewModel(new FakeArtworkComposer(), _dialogs, () => settings.WorkPath), new FakeSoundPlayer(), _history, new FakeCompatibilityLists());
         _navigation.Requested += (_, type) => _shown.Add(type);
     }
 
