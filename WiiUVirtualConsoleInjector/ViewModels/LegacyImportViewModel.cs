@@ -17,7 +17,7 @@ public sealed partial class LegacyImportViewModel : ViewModelBase
     private readonly IToastService _toasts;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasInstall), nameof(Summary), nameof(Location))]
+    [NotifyPropertyChangedFor(nameof(HasInstall), nameof(Summary), nameof(Location), nameof(Heading))]
     [NotifyCanExecuteChangedFor(nameof(ImportCommand))]
     private LegacyInstall? _install;
     [ObservableProperty]
@@ -48,6 +48,10 @@ public sealed partial class LegacyImportViewModel : ViewModelBase
     /// </summary>
     public event EventHandler? Imported;
 
+    /// <summary>
+    /// Whether it is here and whether there is anything to import.
+    /// </summary>
+    public string Heading => HasInstall ? "UWUVCI AIO was found on this machine. Keys and downloaded bases can be imported." : "UWUVCI AIO was not found on this machine.";
     /// <summary>
     /// True when the previous application left something to take.
     /// </summary>
@@ -94,7 +98,7 @@ public sealed partial class LegacyImportViewModel : ViewModelBase
         if (Install is null || _settings.Current.LegacyImportOffered)
             return;
         _settings.Update(s => s with { LegacyImportOffered = true });
-        _toasts.Show(ToastKind.Info, "UWUVCI AIO found", "Its keys and bases can be taken over on Settings.");
+        _toasts.Show(ToastKind.Info, "UWUVCI AIO found", "Its keys and downloaded bases can be imported on Settings.");
     }
 
     private bool CanImport() => HasInstall && !IsRunning;
@@ -133,7 +137,7 @@ public sealed partial class LegacyImportViewModel : ViewModelBase
             if (report.BasesAdded > 0)
                 parts.Add(report.BasesAdded == 1 ? "1 base" : $"{report.BasesAdded} bases");
             parts.AddRange(settingsTaken);
-            Status = parts.Count == 0 ? "Everything was already here." : "Took " + string.Join(", ", parts) + ".";
+            Status = parts.Count == 0 ? "Nothing to import; everything was already here." : "Imported " + string.Join(", ", parts) + ".";
             if (report.Failures.Count > 0)
                 Status += " Could not copy: " + string.Join("; ", report.Failures);
             Imported?.Invoke(this, EventArgs.Empty);
