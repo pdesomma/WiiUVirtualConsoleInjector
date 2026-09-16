@@ -631,6 +631,94 @@ public class BasesViewModelTests
     }
 
     [TestMethod]
+    public async Task PickCustomFolder_TitleFolder_FillsTheFormAndAddImportsIt()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "WiiUVirtualConsoleInjector.Tests", Guid.NewGuid().ToString("N"));
+        var folder = Path.Combine(root, "MyBase");
+        Directory.CreateDirectory(Path.Combine(folder, "code"));
+        Directory.CreateDirectory(Path.Combine(folder, "content"));
+        Directory.CreateDirectory(Path.Combine(folder, "meta"));
+        File.WriteAllText(Path.Combine(folder, "code", "app.xml"), "<?xml version=\"1.0\" encoding=\"utf-8\"?><app type=\"complex\" access=\"777\"><title_id type=\"hexBinary\" length=\"8\">0005000010199900</title_id></app>");
+        File.WriteAllText(Path.Combine(folder, "meta", "meta.xml"), "<?xml version=\"1.0\" encoding=\"utf-8\"?><menu type=\"complex\" access=\"777\"><title_id type=\"hexBinary\" length=\"8\">0005000010199900</title_id><group_id type=\"hexBinary\" length=\"4\">00001999</group_id><product_code type=\"string\" length=\"32\">WUP-N-ABCD</product_code><company_code type=\"string\" length=\"8\">0001</company_code><title_version type=\"unsignedInt\" length=\"4\">0</title_version><region type=\"hexBinary\" length=\"4\">00000004</region><drc_use type=\"unsignedInt\" length=\"4\">0</drc_use><longname_en type=\"string\" length=\"512\">Custom Kart</longname_en><shortname_en type=\"string\" length=\"256\">Kart</shortname_en></menu>");
+        try
+        {
+            var vm = Create();
+            _dialogs.FolderToPick = folder;
+
+            await vm.PickCustomFolderCommand.ExecuteAsync(null);
+
+            Assert.AreEqual(folder, vm.CustomFolder);
+            Assert.AreEqual(BaseFolderKind.Title, vm.CustomFolderKind);
+            Assert.AreEqual("0005000010199900", vm.CustomTitleId);
+            Assert.AreEqual("Custom Kart", vm.CustomName);
+            Assert.AreEqual(Region.Europe, vm.CustomRegion);
+            StringAssert.Contains(vm.CustomFolderHint, "copied");
+
+            await vm.AddCustomBaseCommand.ExecuteAsync(null);
+
+            Assert.AreEqual(1, _bases.Imports.Count);
+            Assert.AreEqual(folder, _bases.Imports[0].Folder);
+            Assert.IsTrue(_bases.Imports[0].Base.IsCustom);
+            var row = vm.Bases.Single(b => b.IsCustom);
+            Assert.AreEqual("Custom Kart", row.Name);
+            Assert.IsTrue(row.IsPresent, "imported bases are present at once");
+            Assert.IsNull(vm.CustomFolder);
+            Assert.IsNull(vm.CustomProgress);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task AddCustomBase_ImportFails_ShowsErrorAndKeepsTheForm()
+    {
+        var vm = Create();
+        _dialogs.FolderToPick = Path.GetTempPath();
+        await vm.PickCustomFolderCommand.ExecuteAsync(null);
+        Assert.IsNull(vm.CustomFolderKind, "a plain folder is not a base");
+        vm.CustomTitleId = "0005000010199900";
+        vm.CustomName = "Broken";
+
+        await vm.AddCustomBaseCommand.ExecuteAsync(null);
+        Assert.AreEqual(1, _dialogs.Errors.Count);
+        StringAssert.Contains(_dialogs.Errors[0].Message, "not a base");
+
+        vm.ClearCustomFolderCommand.Execute(null);
+        Assert.IsNull(vm.CustomFolder);
+        _bases.ImportFailure = new InvalidOperationException("no common key");
+        _dialogs.FolderToPick = Path.GetTempPath();
+        await vm.PickCustomFolderCommand.ExecuteAsync(null);
+        vm.CustomFolderKind = BaseFolderKind.Package;
+        await vm.AddCustomBaseCommand.ExecuteAsync(null);
+        Assert.AreEqual(2, _dialogs.Errors.Count);
+        Assert.AreEqual("no common key", _dialogs.Errors[1].Message);
+        Assert.AreEqual("Broken", vm.CustomName, "the form survives a failed import");
+        Assert.AreEqual(0, vm.Bases.Count(b => b.IsCustom));
+    }
+
+    [TestMethod]
+    public async Task RemoveCustomBase_Confirmed_ForgetsTheRow()
+    {
+        var vm = Create();
+        vm.CustomTitleId = "0005000010199900";
+        vm.CustomName = "Homebrew NES";
+        await vm.AddCustomBaseCommand.ExecuteAsync(null);
+        var row = vm.Bases.Single(b => b.IsCustom);
+
+        _dialogs.ConfirmResult = false;
+        await vm.RemoveCustomBaseCommand.ExecuteAsync(row);
+        Assert.AreEqual(1, vm.Bases.Count(b => b.IsCustom), "declined");
+
+        _dialogs.ConfirmResult = true;
+        await vm.RemoveCustomBaseCommand.ExecuteAsync(row);
+        Assert.AreEqual(0, vm.Bases.Count(b => b.IsCustom));
+        await vm.RemoveCustomBaseCommand.ExecuteAsync(vm.Bases[0]);
+        Assert.AreEqual(1, vm.Bases.Count, "catalog rows cannot be forgotten");
+    }
+
+    [TestMethod]
     public async Task AddCustomBase_InvalidTitleId_ShowsError()
     {
         var vm = Create();

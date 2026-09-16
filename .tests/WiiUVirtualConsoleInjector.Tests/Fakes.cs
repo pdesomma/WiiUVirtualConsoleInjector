@@ -288,6 +288,15 @@ internal sealed class FakeBaseService : IBaseService
     public HashSet<TitleId> Present { get; } = new();
     public List<BaseTitle> Titles { get; } = new();
 
+    public Exception? ImportFailure { get; set; }
+    public List<(BaseTitle Base, string Folder)> Imports { get; } = new();
+
+    public void AddCustom(BaseTitle @base)
+    {
+        Titles.RemoveAll(t => t.TitleId == @base.TitleId);
+        Titles.Add(new BaseTitle(@base.TitleId, @base.Name, @base.Region, @base.Console) { IsCustom = true });
+    }
+
     public IReadOnlyList<BaseTitle> Available(SourceConsole console) => Titles.Where(t => t.Console == console).ToArray();
 
     public Task<TitleDirectory> DownloadAsync(BaseTitle @base, IProgress<BaseDownloadProgress>? progress = null, CancellationToken cancellationToken = default)
@@ -295,6 +304,18 @@ internal sealed class FakeBaseService : IBaseService
         Downloads.Add(@base);
         return Download(@base, progress, cancellationToken);
     }
+
+    public Task<TitleDirectory> ImportAsync(BaseTitle @base, string sourceDirectory, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
+    {
+        if (ImportFailure is not null)
+            throw ImportFailure;
+        Imports.Add((@base, sourceDirectory));
+        progress?.Report("Copying " + Path.GetFileName(sourceDirectory));
+        Present.Add(@base.TitleId);
+        return Task.FromResult(new TitleDirectory(Path.Combine(Path.GetTempPath(), @base.TitleId.ToString())));
+    }
+
+    public bool RemoveCustom(TitleId titleId) => Titles.RemoveAll(t => t.TitleId == titleId && t.IsCustom) > 0;
 
     public bool HasTitleKey(BaseTitle @base) => Keys.GetTitleKey(@base.TitleId) is not null;
 

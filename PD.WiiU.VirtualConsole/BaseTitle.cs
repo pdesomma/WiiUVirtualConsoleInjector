@@ -1,4 +1,4 @@
-using WiiUSharp;
+﻿using WiiUSharp;
 
 namespace PD.WiiU.VirtualConsole;
 
@@ -26,6 +26,10 @@ public sealed class BaseTitle
     /// Console it emulates.
     /// </summary>
     public SourceConsole Console { get; }
+    /// <summary>
+    /// True for a base the user added rather than one from the bundled catalog.
+    /// </summary>
+    public bool IsCustom { get; init; }
     /// <summary>
     /// Display name.
     /// </summary>

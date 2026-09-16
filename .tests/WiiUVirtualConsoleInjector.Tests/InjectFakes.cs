@@ -97,7 +97,14 @@ internal static class InjectFakes
             return this;
         }
 
+        public void AddCustom(BaseTitle @base) => Bases.Add(@base);
+
         public IReadOnlyList<BaseTitle> Available(SourceConsole console) => Bases.Where(b => b.Console == console).ToList();
+
+        public Task<TitleDirectory> ImportAsync(BaseTitle @base, string sourceDirectory, IProgress<string>? progress = null, CancellationToken cancellationToken = default) =>
+            Task.FromResult(new TitleDirectory(Path.Combine(Path.GetTempPath(), @base.TitleId.ToString())));
+
+        public bool RemoveCustom(TitleId titleId) => Bases.RemoveAll(b => b.TitleId == titleId) > 0;
 
         public Task<TitleDirectory> DownloadAsync(BaseTitle @base, IProgress<BaseDownloadProgress>? progress = null, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();

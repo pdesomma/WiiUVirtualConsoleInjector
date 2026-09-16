@@ -1,4 +1,5 @@
-using PD.WiiU.VirtualConsole.Ports;
+﻿using PD.WiiU.VirtualConsole.Ports;
+using WiiUSharp.Nus;
 
 namespace PD.WiiU.VirtualConsole.Infrastructure;
 
@@ -26,6 +27,50 @@ public sealed class DirectoryBaseStore : IBaseStore
     /// </summary>
     public string Root { get; }
 
+    /// <inheritdoc/>
+    public async Task<TitleDirectory> ImportAsync(BaseTitle @base, string sourceDirectory, CommonKey? commonKey, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
+    {
+        if (@base is null)
+            throw new ArgumentNullException(nameof(@base));
+        if (string.IsNullOrWhiteSpace(sourceDirectory))
+            throw new ArgumentException("Source folder is required.", nameof(sourceDirectory));
+
+        var kind = BaseFolder.Inspect(sourceDirectory)?.Kind
+            ?? throw new InvalidDataException("The folder holds neither a title (code, content, meta) nor an installable package (title.tmd).");
+        if (kind == BaseFolderKind.Package && commonKey is null)
+            throw new InvalidOperationException("The Wii U common key is needed to unpack a package.");
+
+        var target = Locate(@base);
+        var temp = target.Root + ".import";
+        DeleteIfExists(temp);
+        try
+        {
+            if (kind == BaseFolderKind.Package)
+            {
+                progress?.Report("Unpacking " + Path.GetFileName(sourceDirectory));
+                await Task.Run(() => new NusUnpacker(commonKey!.Value).Unpack(sourceDirectory, temp, progress, cancellationToken), cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                progress?.Report("Copying " + Path.GetFileName(sourceDirectory));
+                var source = new TitleDirectory(sourceDirectory);
+                var staged = TitleDirectory.Create(temp);
+                await CopyTree(source.Code, staged.Code, cancellationToken).ConfigureAwait(false);
+                await CopyTree(source.Content, staged.Content, cancellationToken).ConfigureAwait(false);
+                await CopyTree(source.Meta, staged.Meta, cancellationToken).ConfigureAwait(false);
+            }
+        }
+        catch
+        {
+            DeleteIfExists(temp);
+            throw;
+        }
+
+        DeleteIfExists(target.Root);
+        Directory.Move(temp, target.Root);
+        return target;
+    }
+
     /// <summary>
     /// Folder a base lives in.
     /// </summary>
@@ -51,6 +96,12 @@ public sealed class DirectoryBaseStore : IBaseStore
         await CopyTree(source.Content, target.Content, cancellationToken).ConfigureAwait(false);
         await CopyTree(source.Meta, target.Meta, cancellationToken).ConfigureAwait(false);
         return target;
+    }
+
+    private static void DeleteIfExists(string path)
+    {
+        if (Directory.Exists(path))
+            Directory.Delete(path, recursive: true);
     }
 
     private static async Task CopyTree(string source, string destination, CancellationToken cancellationToken)

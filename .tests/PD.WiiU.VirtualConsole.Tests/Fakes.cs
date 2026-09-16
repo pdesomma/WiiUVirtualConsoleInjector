@@ -1,12 +1,35 @@
-using PD.WiiU.VirtualConsole.Ports;
+﻿using PD.WiiU.VirtualConsole.Ports;
 using WiiUSharp;
 
 namespace PD.WiiU.VirtualConsole.Tests;
 
+internal sealed class FakeCustomBases : ICustomBases
+{
+    public List<BaseTitle> Titles { get; } = new();
+
+    public void Add(BaseTitle @base)
+    {
+        Titles.RemoveAll(t => t.TitleId == @base.TitleId);
+        Titles.Add(new BaseTitle(@base.TitleId, @base.Name, @base.Region, @base.Console) { IsCustom = true });
+    }
+
+    public IReadOnlyList<BaseTitle> All() => Titles.ToArray();
+
+    public bool Remove(TitleId titleId) => Titles.RemoveAll(t => t.TitleId == titleId) > 0;
+}
+
 internal sealed class FakeBaseStore : IBaseStore
 {
     public List<string> Destinations { get; } = new();
+    public List<(BaseTitle Base, string Source, WiiUSharp.Nus.CommonKey? Key)> Imports { get; } = new();
     public string Root { get; init; } = Path.Combine(Path.GetTempPath(), "PD.WiiU.VirtualConsole.Tests", "store");
+
+    public Task<TitleDirectory> ImportAsync(BaseTitle @base, string sourceDirectory, WiiUSharp.Nus.CommonKey? commonKey, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
+    {
+        Imports.Add((@base, sourceDirectory, commonKey));
+        progress?.Report("Imported");
+        return Task.FromResult(TestTitle.Populate(Locate(@base).Root));
+    }
 
     public TitleDirectory Locate(BaseTitle @base) => new(Path.Combine(Root, @base.TitleId.ToString()));
 

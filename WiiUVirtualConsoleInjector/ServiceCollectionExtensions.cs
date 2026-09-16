@@ -44,6 +44,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(new HttpClient());
         services.AddSingleton<IBaseStore, CurrentBaseStore>();
         services.AddSingleton<IBaseDownloader>(p => new NusBaseDownloader(p.GetRequiredService<IBaseStore>(), p.GetRequiredService<HttpClient>(), paths.PackageCache));
+        services.AddSingleton<ICustomBases>(new JsonCustomBases(paths.CustomBasesFile));
         services.AddSingleton<IBaseService, BaseService>();
         services.AddSingleton<IInjectionServiceFactory, InjectionServiceFactory>();
         services.AddSingleton<IDialogService>(new AvaloniaDialogService(owner));
