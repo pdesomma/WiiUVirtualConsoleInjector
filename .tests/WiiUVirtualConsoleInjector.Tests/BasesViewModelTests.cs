@@ -21,6 +21,7 @@ public class BasesViewModelTests
     [TestInitialize]
     public void Initialize()
     {
+        InlineSynchronizationContext.Install();
         _keys = new FakeKeyStore();
         _bases = new FakeBaseService { Keys = _keys };
         _bases.Titles.Add(new BaseTitle(NesId, "Dr. Mario", Region.UnitedStates, SourceConsole.Nes));

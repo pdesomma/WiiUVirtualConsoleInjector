@@ -27,13 +27,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <param name="inject">The inject page.</param>
     /// <param name="history">The history page.</param>
     /// <param name="bases">The bases and keys page.</param>
+    /// <param name="backups">The backups page.</param>
     /// <param name="settingsPage">The settings page.</param>
     /// <param name="credits">The acknowledgements page.</param>
     /// <param name="settings">Where the colour scheme is remembered.</param>
     /// <param name="toasts">The notices shown in the corner.</param>
     /// <param name="navigation">Requests from pages to show another page.</param>
     /// <param name="update">Whether a newer release is out.</param>
-    public MainWindowViewModel(InjectViewModel inject, HistoryViewModel history, BasesViewModel bases, SettingsViewModel settingsPage, AcknowledgementsViewModel credits, ISettingsService settings, IToastService toasts, INavigationService navigation, UpdateNoticeViewModel update)
+    public MainWindowViewModel(InjectViewModel inject, HistoryViewModel history, BasesViewModel bases, BackupsViewModel backups, SettingsViewModel settingsPage, AcknowledgementsViewModel credits, ISettingsService settings, IToastService toasts, INavigationService navigation, UpdateNoticeViewModel update)
     {
         Update = update ?? throw new ArgumentNullException(nameof(update));
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -46,6 +47,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             inject ?? throw new ArgumentNullException(nameof(inject)),
             history ?? throw new ArgumentNullException(nameof(history)),
             bases ?? throw new ArgumentNullException(nameof(bases)),
+            backups ?? throw new ArgumentNullException(nameof(backups)),
             settingsPage ?? throw new ArgumentNullException(nameof(settingsPage)),
             credits ?? throw new ArgumentNullException(nameof(credits)),
         };

@@ -3,7 +3,7 @@
   <ItemGroup>
     <PackageReference Include="System.Text.Json" Version="10.0.12" />
     <PackageReference Include="WiiSharp" Version="0.7.0" />
-    <PackageReference Include="WiiUSharp" Version="0.8.0" />
+    <PackageReference Include="WiiUSharp" Version="0.9.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -138,6 +138,36 @@ internal sealed class FakeSdCard : ISdCard
     public IReadOnlyList<RemovableDrive> Drives() => Removable;
 }
 
+/// <summary>
+/// Runs posted work at once, so a Progress&lt;T&gt; report lands before the awaiting command continues, as it does on the UI thread.
+/// </summary>
+internal sealed class InlineSynchronizationContext : SynchronizationContext
+{
+    public static void Install() => SetSynchronizationContext(new InlineSynchronizationContext());
+
+    public override void Post(SendOrPostCallback d, object? state) => d(state);
+
+    public override void Send(SendOrPostCallback d, object? state) => d(state);
+}
+
+internal sealed class FakeDiscBackup : IDiscBackup
+{
+    public Exception? Failure { get; set; }
+    public List<string> Folders { get; } = new();
+    public List<(string Image, WiiUSharp.Wud.DiscKey? DiscKey, string Output)> Unpacked { get; } = new();
+
+    public bool Accepts(string imagePath) => imagePath.EndsWith(".wud", StringComparison.OrdinalIgnoreCase) || imagePath.EndsWith(".wux", StringComparison.OrdinalIgnoreCase);
+
+    public Task<IReadOnlyList<string>> UnpackAsync(string imagePath, WiiUSharp.Wud.DiscKey? discKey, CommonKey commonKey, string outputFolder, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
+    {
+        Unpacked.Add((imagePath, discKey, outputFolder));
+        if (Failure is not null)
+            return Task.FromException<IReadOnlyList<string>>(Failure);
+        progress?.Report("00000000.app");
+        return Task.FromResult<IReadOnlyList<string>>(Folders);
+    }
+}
+
 internal sealed class FakeUpdateCheck : IUpdateCheck
 {
     public int Calls { get; private set; }
