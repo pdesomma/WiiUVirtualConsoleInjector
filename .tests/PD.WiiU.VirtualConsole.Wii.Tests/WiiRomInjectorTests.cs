@@ -201,11 +201,26 @@ public class WiiRomInjectorTests
     }
 
     [TestMethod]
-    public async Task InjectAsync_UnsupportedOption_ThrowsNotSupportedException()
+    public async Task InjectAsync_CheatCodes_BakesHandlerAndCodesIntoMainDol()
     {
-        var injector = new WiiRomInjector(FakeDisc.CommonKey);
+        var title = StageBase();
+        var iso = Write("retail.iso", FakeRetailDisc.Encrypted(FakeRetailDisc.Dol()));
+        var codes = Write("codes.txt", System.Text.Encoding.ASCII.GetBytes("RSPE01\nRetail Game\n\nInfinite lives\n04123456 00000063\n"));
+        var options = new WiiOptions { TrimDisc = false, CheatCodesPath = codes };
+        var messages = new List<string>();
 
-        await Assert.ThrowsExactlyAsync<NotSupportedException>(() => injector.InjectAsync(Injection(new WiiOptions { CheatCodesPath = "codes.gct" }), StageBase()));
+        await new WiiRomInjector(FakeDisc.CommonKey).InjectAsync(new Injection(Base(), new Rom(iso, SourceConsole.Wii), Game()) { Options = options }, title, new SyncProgress(messages.Add));
+
+        using var payload = NfsReader.Open(title.Content, NfsKey).OpenPayload();
+        var partition = WiiDisc.Read(payload).DataPartitions[0];
+        var boot = PartitionSystemFiles.Read(payload, partition).Boot;
+        var data = new PartitionDataStream(payload, partition);
+        var header = DolHeader.Parse(ReadAt(data, Offset(boot, 0x420), DolHeader.Size));
+        var handlerSection = header.TextSections.Single(s => s.Address == GeckoCheatPatch.HandlerAddress);
+        var section = ReadAt(data, Offset(boot, 0x420) + handlerSection.Offset, (int)handlerSection.Size);
+        CollectionAssert.AreEqual(GeckoCheatPatch.Handler().Take(0xAA8).ToArray(), section.Take(0xAA8).ToArray());
+        CollectionAssert.AreEqual(GeckoCodes.Build(new[] { new GeckoCodeLine(0x04123456, 0x63) }), section.Skip(0xAA8).ToArray());
+        CollectionAssert.Contains(messages, "Gecko codes baked in: 1 lines");
     }
 
     [TestMethod]

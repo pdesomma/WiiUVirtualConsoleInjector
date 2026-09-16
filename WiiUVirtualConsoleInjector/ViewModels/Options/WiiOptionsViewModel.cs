@@ -38,7 +38,7 @@ public sealed partial class WiiOptionsViewModel : ConsoleOptionsViewModel
     public WiiOptionsViewModel(IDialogService dialogs)
         : base(SourceConsole.Wii)
     {
-        CheatCodes = new PathFieldViewModel(dialogs, "Cheat codes", "GCT file", new FileFilter("Cheat files", "*.gct", "*.txt"));
+        CheatCodes = new PathFieldViewModel(dialogs, "Cheat codes", "Gecko codes: .gct, Ocarina .txt or a Dolphin .ini", new FileFilter("Cheat files", "*.gct", "*.txt", "*.ini"));
         Forwarder = new PathFieldViewModel(dialogs, "Channel booter", "WAD only; empty uses the embedded one", new FileFilter("DOL files", "*.dol"));
     }
 
