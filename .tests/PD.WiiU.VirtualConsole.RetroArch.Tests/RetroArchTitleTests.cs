@@ -24,7 +24,7 @@ public class RetroArchTitleTests
     [TestMethod]
     public async Task StageInjectApply_RealCore_ProducesParseableTitleWithGameIdentity()
     {
-        var core = EmbeddedRetroArchCores.All.Single(c => c.Id == "genesis_plus_gx");
+        var core = EmbeddedRetroArchCores.All.Single(c => c.Id == "genesis_plus_gx" && c.Console == SourceConsole.Genesis);
         var romPath = Path.Combine(_root, "Sonic (U).md");
         var bytes = Enumerable.Range(0, 512).Select(i => (byte)i).ToArray();
         File.WriteAllBytes(romPath, bytes);

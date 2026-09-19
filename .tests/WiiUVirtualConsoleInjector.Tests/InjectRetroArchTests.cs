@@ -259,6 +259,17 @@ public class InjectRetroArchTests
     }
 
     [TestMethod]
+    public void RomExtensions_RetroArchConsole_ComeFromTheCatalog()
+    {
+        _cores.Systems.Add(new RetroArchSystem(SourceConsole.Genesis, ".sms", ".gg"));
+        var vm = Create();
+
+        vm.SelectedConsole = SourceConsole.Genesis;
+
+        Assert.AreEqual(".sms, .gg", vm.RomExtensions);
+    }
+
+    [TestMethod]
     public void SelectedConsole_GenesisWithoutCores_HasNoTemplate()
     {
         _cores.Cores.Clear();

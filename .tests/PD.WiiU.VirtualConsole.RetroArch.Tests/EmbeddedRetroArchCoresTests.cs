@@ -7,7 +7,7 @@ public class EmbeddedRetroArchCoresTests
 
     private string _root = null!;
 
-    private static RetroArchCore GenesisPlusGx => EmbeddedRetroArchCores.All.Single(core => core.Id == "genesis_plus_gx");
+    private static RetroArchCore GenesisPlusGx => EmbeddedRetroArchCores.All.Single(core => core.Id == "genesis_plus_gx" && core.Console == SourceConsole.Genesis);
 
     [TestInitialize]
     public void Initialize() => _root = TestPaths.TempRoot();
@@ -26,7 +26,38 @@ public class EmbeddedRetroArchCoresTests
 
         Assert.AreEqual(3, genesis.Length);
         CollectionAssert.AreEquivalent(new[] { "genesis_plus_gx", "genesis_plus_gx_wide", "picodrive" }, genesis.Select(core => core.Id).ToArray());
-        Assert.AreEqual("genesis_plus_gx", EmbeddedRetroArchCores.All.Single(core => core.IsRecommended).Id);
+        Assert.AreEqual("genesis_plus_gx", genesis.Single(core => core.IsRecommended).Id);
+    }
+
+    [TestMethod]
+    public void All_EveryConsole_HasExactlyOneRecommendedCoreAndASystem()
+    {
+        var cores = new EmbeddedRetroArchCores();
+        foreach (var console in EmbeddedRetroArchCores.All.Select(core => core.Console).Distinct())
+        {
+            Assert.AreEqual(1, cores.Available(console).Count(core => core.IsRecommended), console.ToString());
+            Assert.IsNotNull(cores.System(console), console.ToString());
+        }
+    }
+
+    [TestMethod]
+    public void Available_MasterSystemAndGameGear_ShareGenesisPlusGxWithGearsystem()
+    {
+        var cores = new EmbeddedRetroArchCores();
+        foreach (var console in new[] { SourceConsole.MasterSystem, SourceConsole.GameGear })
+            CollectionAssert.AreEqual(new[] { "genesis_plus_gx", "gearsystem" }, cores.Available(console).Select(core => core.Id).ToArray(), console.ToString());
+        CollectionAssert.AreEqual(new[] { "picodrive" }, cores.Available(SourceConsole.Sega32X).Select(core => core.Id).ToArray());
+    }
+
+    [TestMethod]
+    public void System_KnownAndUnknown()
+    {
+        var cores = new EmbeddedRetroArchCores();
+        CollectionAssert.AreEqual(new[] { ".sms" }, cores.System(SourceConsole.MasterSystem)!.Extensions.ToArray());
+        CollectionAssert.AreEqual(new[] { ".gg" }, cores.System(SourceConsole.GameGear)!.Extensions.ToArray());
+        CollectionAssert.AreEqual(new[] { ".32x", ".bin" }, cores.System(SourceConsole.Sega32X)!.Extensions.ToArray());
+        Assert.IsTrue(cores.System(SourceConsole.Genesis)!.Accepts("game.MD"));
+        Assert.IsNull(cores.System(SourceConsole.Nes));
     }
 
     [TestMethod]
@@ -55,9 +86,9 @@ public class EmbeddedRetroArchCoresTests
     }
 
     [TestMethod]
-    public void ResourceName_GenesisPlusGx_IsCoresGenesisPath()
+    public void ResourceName_GenesisPlusGx_IsCoresPath()
     {
-        Assert.AreEqual("cores/genesis/genesis_plus_gx_libretro.rpx", EmbeddedRetroArchCores.ResourceName(GenesisPlusGx));
+        Assert.AreEqual("cores/genesis_plus_gx_libretro.rpx", EmbeddedRetroArchCores.ResourceName(GenesisPlusGx));
     }
 
     [TestMethod]

@@ -13,7 +13,7 @@ public static class RomNames
     private static readonly Regex Spaces = new(@"\s+", RegexOptions.CultureInvariant);
 
     /// <summary>
-    /// Reads the internal name: the disc title for Wii and GameCube, the cartridge title for GBA, NDS, N64 and Genesis, the internal name for SNES. NES, MSX and TurboGrafx carry none.
+    /// Reads the internal name: the disc title for Wii and GameCube, the cartridge title for GBA, NDS, N64, Genesis and 32X, the internal name for SNES. NES, MSX and TurboGrafx carry none.
     /// </summary>
     /// <param name="console">Console the ROM is for.</param>
     /// <param name="romPath">The ROM.</param>
@@ -33,7 +33,7 @@ public static class RomNames
             SourceConsole.Nds => NintendoDs(romPath),
             SourceConsole.N64 => Nintendo64(romPath),
             SourceConsole.Snes => SuperNintendo(romPath),
-            SourceConsole.Genesis => Genesis(romPath),
+            SourceConsole.Genesis or SourceConsole.Sega32X => Genesis(romPath),
             _ => null,
         };
         return Tidy(raw);

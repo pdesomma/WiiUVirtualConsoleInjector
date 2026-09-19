@@ -27,7 +27,12 @@ internal static class InjectFakes
             return this;
         }
 
+        public List<RetroArchSystem> Systems { get; } = new();
+
         public IReadOnlyList<RetroArchCore> Available(SourceConsole console) => Cores.Where(c => c.Console == console).ToList();
+
+        public RetroArchSystem? System(SourceConsole console) =>
+            Systems.FirstOrDefault(s => s.Console == console) ?? (Available(console).Count > 0 ? new RetroArchSystem(console, ".md") : null);
 
         public Task<TitleDirectory> StageAsync(RetroArchCore core, string destination, CancellationToken cancellationToken = default)
         {

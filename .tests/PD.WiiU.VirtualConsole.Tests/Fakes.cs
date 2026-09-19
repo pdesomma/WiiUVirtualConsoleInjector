@@ -143,8 +143,13 @@ internal sealed class FakeRetroArchCores : IRetroArchCores
     public List<RetroArchCore> Cores { get; } = new();
     public List<(RetroArchCore Core, string Destination)> Staged { get; } = new();
 
+    public List<RetroArchSystem> Systems { get; } = new();
+
     public IReadOnlyList<RetroArchCore> Available(SourceConsole console) =>
         Cores.Where(c => c.Console == console).OrderByDescending(c => c.IsRecommended).ToArray();
+
+    public RetroArchSystem? System(SourceConsole console) =>
+        Systems.FirstOrDefault(s => s.Console == console) ?? (Available(console).Count > 0 ? new RetroArchSystem(console, ".bin") : null);
 
     public Task<TitleDirectory> StageAsync(RetroArchCore core, string destination, CancellationToken cancellationToken = default)
     {

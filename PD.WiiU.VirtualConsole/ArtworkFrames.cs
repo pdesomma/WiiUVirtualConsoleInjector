@@ -70,6 +70,9 @@ public static class ArtworkFrames
         Boot("homebrew-2", "Homebrew, second", SourceConsole.Wii, "homebrew2.png", BootWii),
         // no Genesis art yet; the Homebrew Launcher frames match the title template
         Boot("genesis-homebrew", "Homebrew, Genesis", SourceConsole.Genesis, "homebrew.png", BootWii),
+        Boot("sms-homebrew", "Homebrew, Master System", SourceConsole.MasterSystem, "homebrew.png", BootWii),
+        Boot("gg-homebrew", "Homebrew, Game Gear", SourceConsole.GameGear, "homebrew.png", BootWii),
+        Boot("32x-homebrew", "Homebrew, 32X", SourceConsole.Sega32X, "homebrew.png", BootWii),
         Boot("boot-plain", "None", null, null, BootFull),
 
         // Icons
@@ -98,6 +101,9 @@ public static class ArtworkFrames
         Icon("icon-wii-2", "Wii, style 2", SourceConsole.Wii, "WiiIcon.png", IconBadged),
         Icon("icon-homebrew", "Homebrew", SourceConsole.Wii, "HBICON.png", IconBadged),
         Icon("icon-genesis-homebrew", "Homebrew, Genesis", SourceConsole.Genesis, "HBICON.png", IconBadged),
+        Icon("icon-sms-homebrew", "Homebrew, Master System", SourceConsole.MasterSystem, "HBICON.png", IconBadged),
+        Icon("icon-gg-homebrew", "Homebrew, Game Gear", SourceConsole.GameGear, "HBICON.png", IconBadged),
+        Icon("icon-32x-homebrew", "Homebrew, 32X", SourceConsole.Sega32X, "HBICON.png", IconBadged),
         Icon("icon-plain", "None", null, null, IconFull),
 
         // Boot logos

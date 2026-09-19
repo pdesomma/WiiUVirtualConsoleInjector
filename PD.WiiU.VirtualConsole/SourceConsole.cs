@@ -15,4 +15,7 @@ public enum SourceConsole
     Wii,
     GameCube,
     Genesis,
+    MasterSystem,
+    GameGear,
+    Sega32X,
 }

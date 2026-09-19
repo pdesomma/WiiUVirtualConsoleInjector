@@ -43,6 +43,9 @@ public static class ConsoleIcons
         SourceConsole.Wii => "Wii",
         SourceConsole.GameCube => "GameCube",
         SourceConsole.Genesis => "Sega Genesis",
+        SourceConsole.MasterSystem => "Master System",
+        SourceConsole.GameGear => "Game Gear",
+        SourceConsole.Sega32X => "Sega 32X",
         _ => console.ToString(),
     };
 
@@ -52,7 +55,7 @@ public static class ConsoleIcons
     /// <param name="console">Console to annotate.</param>
     public static string? Caption(SourceConsole console) => console switch
     {
-        SourceConsole.Genesis => "Aroma only",
+        SourceConsole.Genesis or SourceConsole.MasterSystem or SourceConsole.GameGear or SourceConsole.Sega32X => "Aroma only",
         _ => null,
     };
 

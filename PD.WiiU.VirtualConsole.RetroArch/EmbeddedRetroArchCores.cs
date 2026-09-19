@@ -3,12 +3,12 @@ using PD.WiiU.VirtualConsole.Ports;
 namespace PD.WiiU.VirtualConsole.RetroArch;
 
 /// <summary>
-/// The cores compiled into this assembly, one folder per console, staged into the embedded template.
+/// The cores compiled into this assembly and the consoles they serve, staged into the embedded template. One executable can serve several consoles; it is embedded once, under its own name.
 /// </summary>
 public sealed class EmbeddedRetroArchCores : IRetroArchCores
 {
     /// <summary>
-    /// Prefix of every core resource; the console folder and file name follow.
+    /// Prefix of every core resource; the executable name follows.
     /// </summary>
     public const string ResourcePrefix = "cores/";
 
@@ -20,6 +20,22 @@ public sealed class EmbeddedRetroArchCores : IRetroArchCores
         new RetroArchCore("genesis_plus_gx", "Genesis Plus GX", SourceConsole.Genesis, "Most accurate; the usual choice.") { IsRecommended = true },
         new RetroArchCore("genesis_plus_gx_wide", "Genesis Plus GX Wide", SourceConsole.Genesis, "Same emulator with a 16:9 widescreen hack."),
         new RetroArchCore("picodrive", "PicoDrive", SourceConsole.Genesis, "Faster and lighter; less accurate."),
+        new RetroArchCore("genesis_plus_gx", "Genesis Plus GX", SourceConsole.MasterSystem, "Most accurate; the usual choice.") { IsRecommended = true },
+        new RetroArchCore("gearsystem", "Gearsystem", SourceConsole.MasterSystem, "Lighter Master System and Game Gear emulator."),
+        new RetroArchCore("genesis_plus_gx", "Genesis Plus GX", SourceConsole.GameGear, "Most accurate; the usual choice.") { IsRecommended = true },
+        new RetroArchCore("gearsystem", "Gearsystem", SourceConsole.GameGear, "Lighter Master System and Game Gear emulator."),
+        new RetroArchCore("picodrive", "PicoDrive", SourceConsole.Sega32X, "The one core with 32X support.") { IsRecommended = true },
+    };
+
+    /// <summary>
+    /// Every console a core serves and the ROM files it takes.
+    /// </summary>
+    public static readonly IReadOnlyList<RetroArchSystem> Systems = new[]
+    {
+        new RetroArchSystem(SourceConsole.Genesis, ".md", ".bin", ".gen", ".smd", ".68k", ".sgd"),
+        new RetroArchSystem(SourceConsole.MasterSystem, ".sms"),
+        new RetroArchSystem(SourceConsole.GameGear, ".gg"),
+        new RetroArchSystem(SourceConsole.Sega32X, ".32x", ".bin"),
     };
 
     /// <inheritdoc/>
@@ -34,8 +50,11 @@ public sealed class EmbeddedRetroArchCores : IRetroArchCores
     {
         if (core is null)
             throw new ArgumentNullException(nameof(core));
-        return ResourcePrefix + core.Console.ToString().ToLowerInvariant() + "/" + core.RpxFileName;
+        return ResourcePrefix + core.RpxFileName;
     }
+
+    /// <inheritdoc/>
+    public RetroArchSystem? System(SourceConsole console) => Systems.FirstOrDefault(s => s.Console == console);
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentException">The core is not one that ships.</exception>

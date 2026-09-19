@@ -55,8 +55,8 @@ public sealed class InjectionServiceFactory : IInjectionServiceFactory
             new GameCubeRomInjector(),
             // without the Wii common key it still serves NKit images, homebrew and channels; GameCube reads the NFS key from the base itself
             new WiiRomInjector(_keys.WiiCommonKey),
-            new RetroArchRomInjector(SourceConsole.Genesis),
         };
+        injectors.AddRange(EmbeddedRetroArchCores.Systems.Select(system => new RetroArchRomInjector(system.Console)));
 
         return new InjectionService(
             new DirectoryBaseStore(_settings.BasePath),

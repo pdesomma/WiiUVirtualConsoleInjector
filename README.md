@@ -1,6 +1,6 @@
 # Wii U Virtual Console Injector
 
-Turns a ROM or disc image into an installable Wii U title, using a stock Virtual Console game as the base — or, for Sega Genesis, a bundled RetroArch core. A rewrite of [UWUVCI AIO](https://github.com/stuff-by-3-random-dudes/UWUVCI-AIO-WPF): same recipes, no bundled tools, no bundled keys, runs on Windows, Linux and macOS.
+Turns a ROM or disc image into an installable Wii U title, using a stock Virtual Console game as the base — or, for the Sega consoles, a bundled RetroArch core. A rewrite of [UWUVCI AIO](https://github.com/stuff-by-3-random-dudes/UWUVCI-AIO-WPF): same recipes, no bundled tools, no bundled keys, runs on Windows, Linux and macOS.
 
 ## Download
 
@@ -17,13 +17,13 @@ Turns a ROM or disc image into an installable Wii U title, using a stock Virtual
 
 NES, SNES, Nintendo 64, Game Boy Advance (and Game Boy / Game Boy Color through Goomba), Nintendo DS, TurboGrafx-16 (HuCard and TurboCD), MSX, Wii, GameCube (through Nintendont).
 
-**Sega Genesis** titles are different: there is no Virtual Console base, so the title carries a libretro core (Genesis Plus GX, its widescreen build, or PicoDrive) as its emulator with the ROM beside it. They run under **Aroma only**, read and write settings and saves under `sd:/retroarch/`, and need Aroma's signature patch module ([01_sigpatches.rpx](https://github.com/marco-calautti/SigpatchesModuleWiiU/releases) in `wiiu/environments/aroma/modules/setup/`) to install; the Review step checks the card for both. Quit from RetroArch's own menu — closing the software from the HOME Menu hangs on the Wii U Menu, a RetroArch bug.
+**Sega Genesis, Master System, Game Gear and 32X** titles are different: there is no Virtual Console base, so the title carries a libretro core (Genesis Plus GX, its widescreen build, PicoDrive or Gearsystem) as its emulator with the ROM beside it. They run under **Aroma only**, read and write settings and saves under `sd:/retroarch/`, and need Aroma's signature patch module ([01_sigpatches.rpx](https://github.com/marco-calautti/SigpatchesModuleWiiU/releases) in `wiiu/environments/aroma/modules/setup/`) to install; the Review step checks the card for both. Quit from RetroArch's own menu — closing the software from the HOME Menu hangs on the Wii U Menu, a RetroArch bug.
 
 ## What you need
 
 - A Wii U with custom firmware (Aroma, Tiramisu or similar) and [WUP Installer](https://github.com/Fangal-Airbag/wup-installer-gx2) or similar to install the result.
 - Your Wii U common key, or an `otp.bin` dump to read it from. Entered on **Bases & Keys**; never shipped with the app.
-- A title key for each base you use. Also entered on **Bases & Keys**; the base is then downloaded from Nintendo's servers. Sega Genesis needs no base and no title key.
+- A title key for each base you use. Also entered on **Bases & Keys**; the base is then downloaded from Nintendo's servers. The Sega consoles need no base and no title key.
 - For encrypted Wii ISO/WBFS images, the Wii common key. NKit images need no key.
 - For GameCube, [Nintendont](https://github.com/GaryOderNichts/Nintendont) on the SD card; **Settings** puts it there and edits its `nincfg.bin`.
 

@@ -1,4 +1,5 @@
 using PD.WiiU.VirtualConsole;
+using PD.WiiU.VirtualConsole.RetroArch;
 using WiiUVirtualConsoleInjector.Assets;
 
 namespace WiiUVirtualConsoleInjector.Tests;
@@ -15,8 +16,9 @@ public class ConsoleIconsTests
     [TestMethod]
     public void Caption_BaseConsoles_Null()
     {
-        foreach (var console in Enum.GetValues<SourceConsole>().Where(c => c != SourceConsole.Genesis))
-            Assert.IsNull(ConsoleIcons.Caption(console), console.ToString());
+        var cores = new EmbeddedRetroArchCores();
+        foreach (var console in Enum.GetValues<SourceConsole>())
+            Assert.AreEqual(cores.System(console) is null ? null : "Aroma only", ConsoleIcons.Caption(console), console.ToString());
     }
 
     [TestMethod]

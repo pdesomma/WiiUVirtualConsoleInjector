@@ -519,7 +519,13 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         }
     }
 
-    private static FileFilter[] RomFilters(SourceConsole console) => console switch
+    /// <summary>
+    /// File types a console accepts: from the core catalog for RetroArch consoles, fixed for the rest.
+    /// </summary>
+    /// <param name="console">Console the ROM is for.</param>
+    private FileFilter[] RomFilters(SourceConsole console) => _cores.System(console) is { } system
+        ? new FileFilter[] { new(Assets.ConsoleIcons.DisplayName(console) + " ROMs", system.Extensions.Select(e => "*" + e).ToArray()) }
+        : console switch
     {
         SourceConsole.Nes => new FileFilter[] { new("NES ROMs", "*.nes") },
         SourceConsole.Snes => new FileFilter[] { new("SNES ROMs", "*.sfc", "*.smc") },
@@ -536,7 +542,6 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
             new("Channels", "*.wad"),
         },
         SourceConsole.GameCube => new FileFilter[] { new("GameCube images", "*.iso", "*.gcm", "*.gcz") },
-        SourceConsole.Genesis => new FileFilter[] { new("Sega Genesis ROMs", "*.md", "*.bin", "*.gen", "*.smd", "*.68k", "*.sgd") },
         _ => throw new ArgumentOutOfRangeException(nameof(console), console, "Unknown console."),
     };
 

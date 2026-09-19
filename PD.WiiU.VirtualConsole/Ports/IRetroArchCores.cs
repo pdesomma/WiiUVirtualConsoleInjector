@@ -1,7 +1,7 @@
 namespace PD.WiiU.VirtualConsole.Ports;
 
 /// <summary>
-/// The bundled RetroArch cores and the title template they run in.
+/// The bundled RetroArch cores, the consoles they serve and the title template they run in.
 /// </summary>
 public interface IRetroArchCores
 {
@@ -10,6 +10,12 @@ public interface IRetroArchCores
     /// </summary>
     /// <param name="console">Console the ROM is for.</param>
     IReadOnlyList<RetroArchCore> Available(SourceConsole console);
+
+    /// <summary>
+    /// What a console takes as a ROM, or null when no core serves it.
+    /// </summary>
+    /// <param name="console">Console the ROM is for.</param>
+    RetroArchSystem? System(SourceConsole console);
 
     /// <summary>
     /// Writes the template title with the core as its executable into a working folder.
