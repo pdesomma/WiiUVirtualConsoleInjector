@@ -5,27 +5,49 @@ using PD.WiiU.VirtualConsole;
 namespace WiiUVirtualConsoleInjector.Assets;
 
 /// <summary>
-/// The console logos shipped as resources, white and near-black, one per <see cref="SourceConsole"/>.
+/// The console and company logos shipped as resources, white and near-black, one per <see cref="SourceConsole"/> and per company.
 /// </summary>
 public static class ConsoleIcons
 {
     private const string DarkRoot = "avares://WiiUVirtualConsoleInjector/Assets/Consoles/Dark/";
     private const string Root = "avares://WiiUVirtualConsoleInjector/Assets/Consoles/";
 
-    private static readonly Dictionary<SourceConsole, Bitmap> Cache = new();
-    private static readonly Dictionary<SourceConsole, Bitmap> DarkCache = new();
+    private static readonly Dictionary<string, Bitmap> Cache = new(StringComparer.Ordinal);
+    private static readonly Dictionary<string, Bitmap> DarkCache = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// A note shown under the tile, or null: which consoles need a particular firmware.
+    /// </summary>
+    /// <param name="console">Console to annotate.</param>
+    public static string? Caption(SourceConsole console) => console switch
+    {
+        SourceConsole.Genesis or SourceConsole.MasterSystem or SourceConsole.GameGear or SourceConsole.Sega32X => "Aroma only",
+        _ => null,
+    };
 
     /// <summary>
     /// Loads (once) the near-black logo bitmap for a console, for light tiles.
     /// </summary>
     /// <param name="console">Console to show.</param>
-    public static Bitmap DarkFor(SourceConsole console) => Load(DarkCache, console, DarkUriFor(console));
+    public static Bitmap DarkFor(SourceConsole console) => DarkFor(console.ToString());
+
+    /// <summary>
+    /// Loads (once) the near-black logo bitmap by file name, for light tiles.
+    /// </summary>
+    /// <param name="name">Console or company name, as the file is called.</param>
+    public static Bitmap DarkFor(string name) => Load(DarkCache, name, DarkUriFor(name));
 
     /// <summary>
     /// Resource URI of a console's near-black logo.
     /// </summary>
     /// <param name="console">Console to show.</param>
-    public static Uri DarkUriFor(SourceConsole console) => new(DarkRoot + console + ".png");
+    public static Uri DarkUriFor(SourceConsole console) => DarkUriFor(console.ToString());
+
+    /// <summary>
+    /// Resource URI of a near-black logo by file name.
+    /// </summary>
+    /// <param name="name">Console or company name.</param>
+    public static Uri DarkUriFor(string name) => new(DarkRoot + name + ".png");
 
     /// <summary>
     /// Human label for a console.
@@ -50,42 +72,47 @@ public static class ConsoleIcons
     };
 
     /// <summary>
-    /// A note shown under the tile, or null: which consoles need a particular firmware.
-    /// </summary>
-    /// <param name="console">Console to annotate.</param>
-    public static string? Caption(SourceConsole console) => console switch
-    {
-        SourceConsole.Genesis or SourceConsole.MasterSystem or SourceConsole.GameGear or SourceConsole.Sega32X => "Aroma only",
-        _ => null,
-    };
-
-    /// <summary>
     /// Loads (once) the white logo bitmap for a console.
     /// </summary>
     /// <param name="console">Console to show.</param>
-    public static Bitmap For(SourceConsole console) => Load(Cache, console, UriFor(console));
+    public static Bitmap For(SourceConsole console) => For(console.ToString());
+
+    /// <summary>
+    /// Loads (once) the white logo bitmap by file name.
+    /// </summary>
+    /// <param name="name">Console or company name, as the file is called.</param>
+    public static Bitmap For(string name) => Load(Cache, name, UriFor(name));
 
     /// <summary>
     /// Resource URI of a console's white logo.
     /// </summary>
     /// <param name="console">Console to show.</param>
-    public static Uri UriFor(SourceConsole console) => new(Root + console + ".png");
+    public static Uri UriFor(SourceConsole console) => UriFor(console.ToString());
+
+    /// <summary>
+    /// Resource URI of a white logo by file name.
+    /// </summary>
+    /// <param name="name">Console or company name.</param>
+    public static Uri UriFor(string name) => new(Root + name + ".png");
 
     /// <summary>
     /// Reads a logo into the cache on first use.
     /// </summary>
     /// <param name="cache">Cache for the variant.</param>
-    /// <param name="console">Console to show.</param>
+    /// <param name="name">File name without extension.</param>
     /// <param name="uri">Resource to read.</param>
-    private static Bitmap Load(Dictionary<SourceConsole, Bitmap> cache, SourceConsole console, Uri uri)
+    private static Bitmap Load(Dictionary<string, Bitmap> cache, string name, Uri uri)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name is required.", nameof(name));
+
         lock (cache)
         {
-            if (!cache.TryGetValue(console, out var bitmap))
+            if (!cache.TryGetValue(name, out var bitmap))
             {
                 using var stream = AssetLoader.Open(uri);
                 bitmap = new Bitmap(stream);
-                cache[console] = bitmap;
+                cache[name] = bitmap;
             }
             return bitmap;
         }

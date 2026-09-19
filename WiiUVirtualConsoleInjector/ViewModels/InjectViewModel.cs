@@ -60,6 +60,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     private readonly ISoundPlayer _sounds;
     private CancellationTokenSource? _cancellation;
     private TitleIdentity? _identity;
+    private bool _showingTiles;
 
     [ObservableProperty]
     private ConsoleOptionsViewModel _currentOptions;
@@ -111,6 +112,14 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasAromaWarnings))]
     private IReadOnlyList<string> _aromaWarnings = Array.Empty<string>();
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsGroupOpen), nameof(OpenGroupName))]
+    [NotifyCanExecuteChangedFor(nameof(CloseGroupCommand))]
+    private ConsoleTile? _openGroup;
+    [ObservableProperty]
+    private ConsoleTile? _selectedTile;
+    [ObservableProperty]
+    private ConsoleTile? _selectedTopTile;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsGamePadVisible), nameof(IsTurboCd), nameof(SelectedConsoleName), nameof(RomExtensions), nameof(ReviewGame))]
     private SourceConsole _selectedConsole;
@@ -176,6 +185,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         _selectedConsole = SourceConsole.Nes;
         _currentOptions = CreateOptions(_selectedConsole);
         ArtworkBuilder.Refresh(_selectedConsole, Name, ShortName);
+        ShowTiles(null);
         Refresh();
     }
 
@@ -292,6 +302,26 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     /// Every console an injection can target.
     /// </summary>
     public IReadOnlyList<SourceConsole> Consoles { get; } = Enum.GetValues<SourceConsole>();
+
+    /// <summary>
+    /// True while a company's consoles are on screen instead of the top level.
+    /// </summary>
+    public bool IsGroupOpen => OpenGroup is not null;
+
+    /// <summary>
+    /// Name of the open company, or null at the top level.
+    /// </summary>
+    public string? OpenGroupName => OpenGroup?.Label;
+
+    /// <summary>
+    /// The open company's consoles; empty at the top level.
+    /// </summary>
+    public ObservableCollection<ConsoleTile> Tiles { get; } = new();
+
+    /// <summary>
+    /// The top level of the console step: companies and loose consoles.
+    /// </summary>
+    public IReadOnlyList<ConsoleTile> TopTiles { get; } = Assets.ConsoleGroups.Top;
 
     /// <summary>
     /// True when a key the inject needs is missing.
@@ -453,6 +483,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
 
         StartOver();
         SelectedConsole = record.Console;
+        ShowTiles(Assets.ConsoleGroups.GroupOf(record.Console));
         if (record.Template.IsCore)
             SelectedCore = Cores.FirstOrDefault(c => c.Id == record.Template.CoreId) ?? SelectedCore;
         else
@@ -497,8 +528,69 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         SelectedConsole = SourceConsole.Nes;
         CurrentOptions = CreateOptions(SelectedConsole);
         ArtworkBuilder.Refresh(SelectedConsole, Name, ShortName);
+        ShowTiles(null, highlight: false);
         Refresh();
         Step = 1;
+    }
+
+    /// <summary>
+    /// Shows the top level or a company's consoles, highlighting the selected console when it is there.
+    /// </summary>
+    /// <param name="group">Company to open, or null for the top level.</param>
+    /// <param name="highlight">Select the tile of the current console when it is there; off when the user is browsing, so clicking it still counts.</param>
+    private void ShowTiles(ConsoleTile? group, bool highlight = true)
+    {
+        // highlighting the current console here is not a click on it
+        _showingTiles = true;
+        try
+        {
+            OpenGroup = group;
+            Tiles.Clear();
+            if (group is not null)
+                foreach (var tile in Assets.ConsoleGroups.Members(group))
+                    Tiles.Add(tile);
+            SelectedTile = highlight ? Tiles.FirstOrDefault(t => t.Console == SelectedConsole) : null;
+            SelectedTopTile = highlight ? TopTiles.FirstOrDefault(t => t.Console == SelectedConsole) : null;
+        }
+        finally
+        {
+            _showingTiles = false;
+        }
+    }
+
+    /// <summary>
+    /// Returns from a company's consoles to the top level.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(IsGroupOpen))]
+    private void CloseGroup() => ShowTiles(null, highlight: false);
+
+    partial void OnSelectedTileChanged(ConsoleTile? value)
+    {
+        if (value is not null && !_showingTiles)
+            Choose(value);
+    }
+
+    partial void OnSelectedTopTileChanged(ConsoleTile? value)
+    {
+        if (value is null || _showingTiles)
+            return;
+        if (value.IsGroup)
+            ShowTiles(value, highlight: false);
+        else
+            Choose(value);
+    }
+
+    /// <summary>
+    /// A click on a console tile: selects it and moves on, even when it was the console already.
+    /// </summary>
+    /// <param name="tile">The console tile.</param>
+    private void Choose(ConsoleTile tile)
+    {
+        if (tile.Console is not { } console)
+            return;
+        if (console == SelectedConsole && Step == 1)
+            Step = 2;
+        SelectedConsole = console;
     }
 
     private static string? ClearedProductId(string? productId) =>

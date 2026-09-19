@@ -101,23 +101,48 @@
                 <Panel>
                     <!-- 1. Console -->
                     <StackPanel IsVisible="{Binding IsConsoleStep}">
-                        <TextBlock Classes="section" Text="Choose the source console" />
-                        <!-- five 152px tiles per row: two rows for ten consoles -->
-                        <ListBox Classes="tiles" ItemsSource="{Binding Consoles}" SelectedItem="{Binding SelectedConsole}" IsEnabled="{Binding !IsRunning}"
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Classes="section" Text="Choose the source console" IsVisible="{Binding !IsGroupOpen}" />
+                            <TextBlock Grid.Column="0" Classes="section" Text="{Binding OpenGroupName, StringFormat='{}{0} consoles'}" IsVisible="{Binding IsGroupOpen}" />
+                            <Button Grid.Column="1" Classes="link" Command="{Binding CloseGroupCommand}" IsVisible="{Binding IsGroupOpen}" VerticalAlignment="Top" Margin="0,4,0,0">
+                                <TextBlock Text="‹ All consoles" />
+                            </Button>
+                        </Grid>
+                        <!-- two grids, five 152px tiles per row; the top one only hides while a company is open, so the tile that took the click keeps the pointer -->
+                        <ListBox Classes="tiles" ItemsSource="{Binding TopTiles}" SelectedItem="{Binding SelectedTopTile}" IsEnabled="{Binding !IsRunning}" IsVisible="{Binding !IsGroupOpen}"
                                  MaxWidth="760" Padding="0" HorizontalAlignment="Center">
                             <ListBox.ItemTemplate>
-                                <DataTemplate x:DataType="vc:SourceConsole">
+                                <DataTemplate x:DataType="vm:ConsoleTile">
                                     <StackPanel>
                                         <Border Classes="tile-frame">
                                             <Panel>
                                                 <Border Classes="tile-panel">
-                                                    <Image Classes="tile-logo" Source="{Binding, Converter={x:Static conv:ConsoleConverters.DarkIcon}}" Opacity="0.8" />
+                                                    <Image Classes="tile-logo" Source="{Binding, Converter={x:Static conv:ConsoleConverters.TileDarkIcon}}" Opacity="0.8" />
                                                 </Border>
                                                 <Border Classes="tile-gloss" />
                                             </Panel>
                                         </Border>
-                                        <TextBlock Classes="tile-label" Text="{Binding, Converter={x:Static conv:ConsoleConverters.Name}}" />
-                                        <TextBlock Classes="tile-caption" Text="{Binding, Converter={x:Static conv:ConsoleConverters.Caption}}" IsVisible="{Binding, Converter={x:Static conv:ConsoleConverters.HasCaption}}" />
+                                        <TextBlock Classes="tile-label" Text="{Binding Label}" />
+                                        <TextBlock Classes="tile-caption" Text="{Binding Caption}" IsVisible="{Binding Caption, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <ListBox Classes="tiles" ItemsSource="{Binding Tiles}" SelectedItem="{Binding SelectedTile}" IsEnabled="{Binding !IsRunning}" IsVisible="{Binding IsGroupOpen}"
+                                 MaxWidth="760" Padding="0" HorizontalAlignment="Center">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ConsoleTile">
+                                    <StackPanel>
+                                        <Border Classes="tile-frame">
+                                            <Panel>
+                                                <Border Classes="tile-panel">
+                                                    <Image Classes="tile-logo" Source="{Binding, Converter={x:Static conv:ConsoleConverters.TileDarkIcon}}" Opacity="0.8" />
+                                                </Border>
+                                                <Border Classes="tile-gloss" />
+                                            </Panel>
+                                        </Border>
+                                        <TextBlock Classes="tile-label" Text="{Binding Label}" />
+                                        <TextBlock Classes="tile-caption" Text="{Binding Caption}" IsVisible="{Binding Caption, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
                                     </StackPanel>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
