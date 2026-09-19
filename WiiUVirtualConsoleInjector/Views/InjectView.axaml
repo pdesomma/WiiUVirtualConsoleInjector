@@ -155,9 +155,16 @@
                         <StackPanel IsVisible="{Binding IsRetroArch}">
                             <TextBlock Classes="label" Text="RetroArch core" Margin="0,8,0,2" />
                             <TextBlock Classes="hint" FontSize="12" Text="The core is the emulator; it is packed into the title with your ROM. The title runs under Aroma only and uses the retroarch folder on the SD card for settings and saves." Margin="0,0,0,14" />
-                            <Border Classes="banner-warning" Margin="0,0,0,14" IsVisible="{Binding BiosHint, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                                <TextBlock Text="{Binding BiosHint}" />
-                            </Border>
+                            <ItemsControl ItemsSource="{Binding BiosFiles}" Margin="0,0,0,14">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:BiosFileViewModel">
+                                        <StackPanel Spacing="4" Width="560" HorizontalAlignment="Left" Margin="0,0,0,10">
+                                            <ContentControl Content="{Binding Field}" />
+                                            <TextBlock Classes="hint" FontSize="12" Text="{Binding Status}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                             <ComboBox ItemsSource="{Binding Cores}" SelectedItem="{Binding SelectedCore}" Width="480" HorizontalAlignment="Left" IsEnabled="{Binding !IsRunning}" PlaceholderText="Select a core…">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate x:DataType="vc:RetroArchCore">
@@ -687,6 +694,17 @@
                         <Border Classes="banner-warning" Margin="0,0,0,14" IsVisible="{Binding HasRomFitHint}">
                             <TextBlock Text="{Binding RomFitHint}" />
                         </Border>
+                        <StackPanel Spacing="4" Margin="0,0,0,14" IsVisible="{Binding HasReviewExtras}">
+                            <TextBlock Classes="label" Text="Also to the SD card" />
+                            <ItemsControl ItemsSource="{Binding ReviewExtras}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <TextBlock Classes="summary-value" Text="{Binding}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Classes="hint" FontSize="12" Text="Copied when the title is copied to the card; with that setting off, copy them yourself." />
+                        </StackPanel>
                         <ItemsControl ItemsSource="{Binding AromaWarnings}" IsVisible="{Binding HasAromaWarnings}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="x:String">

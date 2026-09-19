@@ -23,7 +23,7 @@ NES, SNES, Nintendo 64, Game Boy Advance (and Game Boy / Game Boy Color through 
 
 - A Wii U with custom firmware (Aroma, Tiramisu or similar) and [WUP Installer](https://github.com/Fangal-Airbag/wup-installer-gx2) or similar to install the result.
 - Your Wii U common key, or an `otp.bin` dump to read it from. Entered on **Bases & Keys**; never shipped with the app.
-- A title key for each base you use. Also entered on **Bases & Keys**; the base is then downloaded from Nintendo's servers. The Sega and Atari consoles need no base and no title key. Lynx needs `lynxboot.img` in `sd:/retroarch/system/`; the Review step checks for it.
+- A title key for each base you use. Also entered on **Bases & Keys**; the base is then downloaded from Nintendo's servers. The Sega and Atari consoles need no base and no title key. Lynx needs `lynxboot.img` in `sd:/retroarch/system/`; the Review step checks for it, and a dump you pick on the Game step is copied to the card with the title.
 - For encrypted Wii ISO/WBFS images, the Wii common key. NKit images need no key.
 - For GameCube, [Nintendont](https://github.com/GaryOderNichts/Nintendont) on the SD card; **Settings** puts it there and edits its `nincfg.bin`.
 

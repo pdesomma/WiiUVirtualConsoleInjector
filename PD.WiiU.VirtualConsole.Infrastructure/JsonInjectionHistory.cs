@@ -72,6 +72,7 @@ public sealed class JsonInjectionHistory : IInjectionHistory
                 BootLogo = Keep(record.Artwork.BootLogo, home, ImageSlot.BootLogo.Name),
             },
             BootSoundPath = Keep(record.BootSoundPath, home, "bootSound"),
+            CardFiles = record.CardFiles,
             Format = record.Format,
             GamePad = record.GamePad,
             IconPath = WriteIcon(iconTga, home),
@@ -224,6 +225,7 @@ public sealed class JsonInjectionHistory : IInjectionHistory
         BootDrc = record.Artwork.BootDrc,
         BootLogo = record.Artwork.BootLogo,
         BootSound = record.BootSoundPath,
+        CardFiles = record.CardFiles.Select(f => new CardFileDocument { Source = f.SourcePath, CardPath = f.CardPath }).ToArray(),
         IconPng = record.IconPath,
         OutputDirectory = record.OutputDirectory,
         Options = record.Options is { } options ? JsonSerializer.SerializeToElement(options, options.GetType(), Options) : null,
@@ -245,6 +247,7 @@ public sealed class JsonInjectionHistory : IInjectionHistory
         {
             Artwork = new Artwork { Icon = d.Icon, BootTv = d.BootTv, BootDrc = d.BootDrc, BootLogo = d.BootLogo },
             BootSoundPath = d.BootSound,
+            CardFiles = ReadCardFiles(d.CardFiles),
             Format = d.Format,
             GamePad = d.GamePad,
             IconPath = d.IconPng,
@@ -253,6 +256,29 @@ public sealed class JsonInjectionHistory : IInjectionHistory
             ProductId = d.ProductId,
             ShortName = d.ShortName,
         };
+    }
+
+    /// <summary>
+    /// The card files that still parse; an entry missing either path is dropped.
+    /// </summary>
+    private static IReadOnlyList<CardFile> ReadCardFiles(CardFileDocument[]? documents)
+    {
+        if (documents is null)
+            return Array.Empty<CardFile>();
+        var files = new List<CardFile>();
+        foreach (var d in documents)
+        {
+            if (string.IsNullOrWhiteSpace(d.Source) || string.IsNullOrWhiteSpace(d.CardPath))
+                continue;
+            try
+            {
+                files.Add(new CardFile(d.Source!, d.CardPath!));
+            }
+            catch (ArgumentException)
+            {
+            }
+        }
+        return files;
     }
 
     /// <summary>
@@ -298,9 +324,16 @@ public sealed class JsonInjectionHistory : IInjectionHistory
         _ => null,
     };
 
+    private sealed class CardFileDocument
+    {
+        public string? CardPath { get; set; }
+        public string? Source { get; set; }
+    }
+
     private sealed class Document
     {
         public string? BaseTitleId { get; set; }
+        public CardFileDocument[]? CardFiles { get; set; }
         public string? BootDrc { get; set; }
         public string? BootLogo { get; set; }
         public string? BootSound { get; set; }

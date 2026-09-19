@@ -52,6 +52,30 @@ public class SdCardTests
     }
 
     [TestMethod]
+    public async Task CopyAsync_CardFile_LandsAtItsCardPath()
+    {
+        var card = new SdCard(new FakeRemovableDrives());
+        var source = Path.Combine(_root, "lynxboot.img");
+        File.WriteAllBytes(source, new byte[] { 1, 2, 3 });
+
+        var destination = await card.CopyAsync(new CardFile(source, "retroarch/system/lynxboot.img"), _root);
+
+        Assert.AreEqual(Path.Combine(_root, "retroarch", "system", "lynxboot.img"), destination);
+        CollectionAssert.AreEqual(new byte[] { 1, 2, 3 }, File.ReadAllBytes(destination));
+    }
+
+    [TestMethod]
+    public async Task CopyAsync_CardFile_InvalidArguments_Throw()
+    {
+        var card = new SdCard(new FakeRemovableDrives());
+        var file = new CardFile(Path.Combine(_root, "missing.img"), "retroarch/system/missing.img");
+
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(() => card.CopyAsync((CardFile)null!, _root));
+        await Assert.ThrowsExactlyAsync<ArgumentException>(() => card.CopyAsync(file, " "));
+        await Assert.ThrowsExactlyAsync<FileNotFoundException>(() => card.CopyAsync(file, _root));
+    }
+
+    [TestMethod]
     public async Task CopyAsync_Title_LandsUnderInstallWithItsTreeIntact()
     {
         var card = new SdCard(new FakeRemovableDrives());

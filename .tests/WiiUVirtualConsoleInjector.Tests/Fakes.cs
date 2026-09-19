@@ -126,6 +126,7 @@ internal sealed class FakeSoundPlayer : ISoundPlayer
 internal sealed class FakeSdCard : ISdCard
 {
     public List<(string Title, string Root)> Copies { get; } = new();
+    public List<(CardFile File, string Root)> FileCopies { get; } = new();
     public string CopyResult { get; set; } = @"E:\install\[WUP]Test";
     public RemovableDrive? Detected { get; set; }
     public Exception? Failure { get; set; }
@@ -139,6 +140,12 @@ internal sealed class FakeSdCard : ISdCard
 
         progress?.Report("title.tmd");
         return Task.FromResult(CopyResult);
+    }
+
+    public Task<string> CopyAsync(CardFile file, string root, CancellationToken cancellationToken = default)
+    {
+        FileCopies.Add((file, root));
+        return Failure is not null ? Task.FromException<string>(Failure) : Task.FromResult(file.On(root));
     }
 
     public RemovableDrive? Detect() => Detected;

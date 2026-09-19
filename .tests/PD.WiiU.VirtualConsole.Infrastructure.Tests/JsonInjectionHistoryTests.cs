@@ -101,6 +101,25 @@ public class JsonInjectionHistoryTests
     }
 
     [TestMethod]
+    public void Add_RecordWithCardFiles_RoundTripsThemAndDropsBrokenEntries()
+    {
+        var history = new JsonInjectionHistory(_folder);
+        var record = new InjectionRecord("bios", DateTimeOffset.Now, SourceConsole.AtariLynx, TemplateKey.Core("handy"), @"C:oms\game.lnx", "Game",
+            new TitleIdentity(new TitleId(TitleType.Demo, 0x31323334), new GroupId(0x3456), new ProductCode(ProductCode.EShop, "WXYZ")))
+        {
+            CardFiles = new[] { new CardFile(@"C:\dumps\lynxboot.img", "retroarch/system/lynxboot.img") },
+        };
+
+        history.Add(record, null);
+        var stored = new JsonInjectionHistory(_folder).All().Single();
+
+        Assert.AreEqual(1, stored.CardFiles.Count);
+        Assert.AreEqual(@"C:\dumps\lynxboot.img", stored.CardFiles[0].SourcePath);
+        Assert.AreEqual("retroarch/system/lynxboot.img", stored.CardFiles[0].CardPath);
+        StringAssert.Contains(File.ReadAllText(Path.Combine(_folder, JsonInjectionHistory.IndexFileName)), "\"cardFiles\"");
+    }
+
+    [TestMethod]
     public void Add_TwoRecords_NewestFirst()
     {
         var history = new JsonInjectionHistory(_folder);

@@ -25,4 +25,14 @@ public interface ISdCard
     /// <exception cref="DirectoryNotFoundException">The title folder is not there.</exception>
     /// <exception cref="IOException">The card has too little room.</exception>
     Task<string> CopyAsync(string titleDirectory, string root, IProgress<string>? progress = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Puts a single file onto the card at its card path, making the folders, and returns where it landed.
+    /// </summary>
+    /// <param name="file">File and where it goes.</param>
+    /// <param name="root">Card root to copy onto.</param>
+    /// <param name="cancellationToken">Stops the copy.</param>
+    /// <exception cref="FileNotFoundException">The source is not there.</exception>
+    /// <exception cref="IOException">The card has too little room.</exception>
+    Task<string> CopyAsync(CardFile file, string root, CancellationToken cancellationToken = default);
 }

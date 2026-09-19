@@ -107,6 +107,129 @@ public class InjectRetroArchTests
     }
 
     [TestMethod]
+    public void BiosFiles_LynxWithAPick_ClearsTheWarningAndListsTheCopy()
+    {
+        var sd = TempFolder();
+        try
+        {
+            _settings.Current = _settings.Current with { SdPath = sd };
+            WriteAroma(sd, sigPatches: true);
+            var vm = Lynx();
+            var bios = vm.BiosFiles.Single();
+            Assert.IsTrue(bios.IsWanted);
+            Assert.IsFalse(bios.IsOnCard);
+            Assert.AreEqual(1, vm.AromaWarnings.Count);
+            Assert.AreEqual(0, vm.CardFiles.Count);
+
+            var dump = Path.Combine(sd, "lynxboot.img");
+            File.WriteAllBytes(dump, new byte[512]);
+            bios.Field.Path = dump;
+            vm.Step = InjectViewModel.Steps.Count;
+
+            Assert.IsFalse(bios.IsWanted);
+            Assert.AreEqual(0, vm.AromaWarnings.Count, "a picked copy answers the warning");
+            Assert.IsTrue(vm.HasReviewExtras);
+            StringAssert.Contains(vm.ReviewExtras.Single(), "lynxboot.img");
+            StringAssert.Contains(vm.ReviewExtras.Single(), "SD:/retroarch/system/lynxboot.img");
+            StringAssert.Contains(vm.ReviewExtras.Single(), new ByteSize(512).ToString());
+            Assert.AreEqual("retroarch/system/lynxboot.img", vm.CardFiles.Single().CardPath);
+        }
+        finally
+        {
+            Directory.Delete(sd, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void BiosFiles_AlreadyOnTheCard_NoWarningAndNoCopyEvenWhenPicked()
+    {
+        var sd = TempFolder();
+        try
+        {
+            _settings.Current = _settings.Current with { SdPath = sd };
+            WriteAroma(sd, sigPatches: true);
+            Directory.CreateDirectory(Path.Combine(sd, "retroarch", "system"));
+            File.WriteAllBytes(Path.Combine(sd, "retroarch", "system", "lynxboot.img"), new byte[] { 1 });
+            var vm = Lynx();
+
+            vm.BiosFiles.Single().Field.Path = Path.Combine(sd, "retroarch", "system", "lynxboot.img");
+            vm.Step = InjectViewModel.Steps.Count;
+
+            Assert.IsTrue(vm.BiosFiles.Single().IsOnCard);
+            Assert.AreEqual(0, vm.AromaWarnings.Count);
+            Assert.IsFalse(vm.HasReviewExtras);
+            StringAssert.Contains(vm.BiosFiles.Single().Status, "Already");
+        }
+        finally
+        {
+            Directory.Delete(sd, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task Inject_LynxWithABiosPick_CopiesItToTheCardAndRemembersIt()
+    {
+        var sd = TempFolder();
+        try
+        {
+            _settings.Current = _settings.Current with { SdPath = sd, CopyToSdCard = true };
+            WriteAroma(sd, sigPatches: true);
+            var dump = Path.Combine(sd, "lynxboot.img");
+            File.WriteAllBytes(dump, new byte[16]);
+            var card = new FakeSdCard();
+            var vm = Lynx(card);
+            vm.BiosFiles.Single().Field.Path = dump;
+            vm.RomPath = @"C:\game.lnx";
+            vm.Name = "Slime World";
+
+            await vm.InjectCommand.ExecuteAsync(null);
+
+            Assert.AreEqual(1, card.Copies.Count, "the title");
+            Assert.AreEqual(1, card.FileCopies.Count, "then the BIOS");
+            Assert.AreEqual("retroarch/system/lynxboot.img", card.FileCopies[0].File.CardPath);
+            Assert.AreEqual(sd, card.FileCopies[0].Root);
+            var record = _history.Added.Single().Record;
+            Assert.AreEqual(dump, record.CardFiles.Single().SourcePath);
+            Assert.AreEqual(0, _dialogs.Errors.Count);
+        }
+        finally
+        {
+            Directory.Delete(sd, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task Inject_CopyToCardOff_LeavesTheBiosAlone()
+    {
+        var card = new FakeSdCard();
+        var vm = Lynx(card);
+        vm.BiosFiles.Single().Field.Path = @"C:\dumps\lynxboot.img";
+        vm.RomPath = @"C:\game.lnx";
+        vm.Name = "Slime World";
+
+        await vm.InjectCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(0, card.FileCopies.Count);
+        Assert.AreEqual(1, _history.Added.Single().Record.CardFiles.Count, "still remembered for a rebuild");
+    }
+
+    [TestMethod]
+    public void Load_RecordWithCardFiles_RestoresThePick()
+    {
+        var vm = Lynx();
+        var record = new InjectionRecord("abc", DateTimeOffset.Now, SourceConsole.AtariLynx, TemplateKey.Core("handy"), @"C:\game.lnx", "Slime World",
+            new TitleIdentity(new TitleId(TitleType.Demo, 0x31323334), new GroupId(0x3456), new ProductCode(ProductCode.EShop, "SLIM")))
+        {
+            CardFiles = new[] { new CardFile(@"C:\dumps\lynxboot.img", "retroarch/system/lynxboot.img") },
+        };
+
+        vm.Load(record);
+
+        Assert.AreEqual(@"C:\dumps\lynxboot.img", vm.BiosFiles.Single().Field.Path);
+        Assert.AreEqual(1, vm.CardFiles.Count);
+    }
+
+    [TestMethod]
     public void BiosHint_ConsoleWithoutBios_Null()
     {
         var vm = Genesis();
@@ -341,6 +464,15 @@ public class InjectRetroArchTests
 
     private InjectViewModel Create() =>
         new(_bases, _cores, _dialogs, _factory, _settings, _navigation, new FakeSdCard(), new ArtworkBuilderViewModel(new FakeArtworkComposer(), _dialogs, () => _settings.WorkPath), new FakeSoundPlayer(), _history, new FakeCompatibilityLists(), new FakeCommunityArtwork());
+
+    private InjectViewModel Lynx(FakeSdCard? card = null)
+    {
+        _cores.Add(Core("handy", "Handy", SourceConsole.AtariLynx, recommended: true));
+        _cores.Systems.Add(new RetroArchSystem(SourceConsole.AtariLynx, ".lnx") { BiosFiles = new[] { "lynxboot.img" } });
+        var vm = card is null ? Create() : new InjectViewModel(_bases, _cores, _dialogs, _factory, _settings, _navigation, card, new ArtworkBuilderViewModel(new FakeArtworkComposer(), _dialogs, () => _settings.WorkPath), new FakeSoundPlayer(), _history, new FakeCompatibilityLists(), new FakeCommunityArtwork());
+        vm.SelectedConsole = SourceConsole.AtariLynx;
+        return vm;
+    }
 
     private InjectViewModel Genesis()
     {

@@ -57,6 +57,25 @@ public sealed class SdCard : ISdCard
     }
 
     /// <inheritdoc/>
+    public async Task<string> CopyAsync(CardFile file, string root, CancellationToken cancellationToken = default)
+    {
+        if (file is null)
+            throw new ArgumentNullException(nameof(file));
+        if (string.IsNullOrWhiteSpace(root))
+            throw new ArgumentException("Card root is required.", nameof(root));
+        if (!File.Exists(file.SourcePath))
+            throw new FileNotFoundException($"{file.SourcePath} is not there.", file.SourcePath);
+
+        RequireRoom(new[] { file.SourcePath }, root);
+        var target = file.On(root);
+        Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+        using (var source = new FileStream(file.SourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true))
+        using (var copy = new FileStream(target, FileMode.Create, FileAccess.Write, FileShare.None, 81920, useAsync: true))
+            await source.CopyToAsync(copy, 81920, cancellationToken).ConfigureAwait(false);
+        return target;
+    }
+
+    /// <inheritdoc/>
     public RemovableDrive? Detect()
     {
         var drives = Drives();

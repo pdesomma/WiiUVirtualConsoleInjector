@@ -218,9 +218,29 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     /// <summary>
     /// The BIOS files the selected console's core needs on the card, or null when it needs none.
     /// </summary>
-    public string? BiosHint => _cores.System(SelectedConsole) is { BiosFiles.Count: > 0 } system
-        ? $"Needs {string.Join(" and ", system.BiosFiles)} in {RetroArchSystem.SystemFolder} on the SD card. Not shipped; dump it from your own hardware."
+    public string? BiosHint => BiosFiles.Count > 0
+        ? $"Needs {string.Join(" and ", BiosFiles.Select(b => b.FileName))} in {RetroArchSystem.SystemFolder} on the SD card. Not shipped; dump it from your own hardware."
         : null;
+
+    /// <summary>
+    /// The BIOS files the selected console's core needs, with what the card has and what the user offers.
+    /// </summary>
+    public ObservableCollection<BiosFileViewModel> BiosFiles { get; } = new();
+
+    /// <summary>
+    /// The files that will go onto the card beside the title.
+    /// </summary>
+    public IReadOnlyList<CardFile> CardFiles => BiosFiles.Select(b => b.CardFile).Where(f => f is not null).ToArray()!;
+
+    /// <summary>
+    /// True when something goes onto the card beside the title.
+    /// </summary>
+    public bool HasReviewExtras => ReviewExtras.Count > 0;
+
+    /// <summary>
+    /// One line per extra file: name, size and where it lands on the card.
+    /// </summary>
+    public IReadOnlyList<string> ReviewExtras => CardFiles.Select(f => $"{f.FileName} \u00b7 {f.Size} \u2192 SD:/{f.CardPath}").ToArray();
 
     /// <summary>
     /// The quit hint for RetroArch titles, or null for the rest.
@@ -506,6 +526,8 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         BootDrc.Path = record.Artwork.BootDrc;
         BootLogo.Path = record.Artwork.BootLogo;
         BootSound.Path = record.BootSoundPath;
+        foreach (var bios in BiosFiles)
+            bios.Field.Path = record.CardFiles.FirstOrDefault(f => string.Equals(f.CardPath, bios.CardPath, StringComparison.OrdinalIgnoreCase))?.SourcePath;
         CurrentOptions.Load(record.Options);
         _identity = record.Identity;
         Step = Steps.Count;
@@ -745,6 +767,8 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
             var result = await Task.Run(() => service.InjectAsync(injection, work, _settings.OutputPath, progress, token), token).ConfigureAwait(true);
             OutputSize = await Task.Run(() => ByteSize.OfDirectory(result.OutputDirectory), token).ConfigureAwait(true);
             var copied = await CopyToCardAsync(result.OutputDirectory, copying, token).ConfigureAwait(true);
+            if (copied is not null)
+                await CopyExtrasAsync(token).ConfigureAwait(true);
             await RememberAsync(injection, result).ConfigureAwait(true);
             Status = "Done";
             await _dialogs.ShowInfoAsync(DialogTitle, $"Title written to {copied ?? result.OutputDirectory} ({OutputSize})").ConfigureAwait(true);
@@ -799,6 +823,26 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     }
 
     /// <summary>
+    /// Puts the extra files (a BIOS the user offered) onto the card after the title; a failure is reported but does not fail the inject.
+    /// </summary>
+    /// <param name="cancellationToken">Stops the copy.</param>
+    private async Task CopyExtrasAsync(CancellationToken cancellationToken)
+    {
+        foreach (var file in CardFiles)
+        {
+            Log.Add($"Copying {file.FileName} to {file.CardPath}");
+            try
+            {
+                await _sdCard.CopyAsync(file, _settings.SdPath!, cancellationToken).ConfigureAwait(true);
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+                await _dialogs.ShowErrorAsync(DialogTitle, $"The title was copied, but {file.FileName} could not be put on the SD card: {e.Message}").ConfigureAwait(true);
+            }
+        }
+    }
+
+    /// <summary>
     /// The artwork field a slot's image lands in.
     /// </summary>
     /// <param name="slot">Slot that was built.</param>
@@ -813,6 +857,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         {
             Artwork = injection.Artwork,
             BootSoundPath = injection.BootSoundPath,
+            CardFiles = CardFiles,
             Format = injection.Format,
             GamePad = IsGamePadVisible && GamePad,
             Options = injection.Options,
@@ -1040,6 +1085,16 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         Cores.Clear();
         foreach (var core in _cores.Available(SelectedConsole))
             Cores.Add(core);
+        var kept = BiosFiles.ToDictionary(b => b.FileName, b => b.Field.Path, StringComparer.OrdinalIgnoreCase);
+        BiosFiles.Clear();
+        foreach (var file in _cores.System(SelectedConsole)?.BiosFiles ?? Array.Empty<string>())
+        {
+            var bios = new BiosFileViewModel(_dialogs, file);
+            bios.PropertyChanged += (_, _) => NotifyExtrasChanged();
+            if (kept.TryGetValue(file, out var path))
+                bios.Field.Path = path;
+            BiosFiles.Add(bios);
+        }
         OnPropertyChanged(nameof(IsRetroArch));
         OnPropertyChanged(nameof(RetroArchHint));
         OnPropertyChanged(nameof(BiosHint));
@@ -1081,9 +1136,25 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
             warnings.Add($"Aroma was not found on the SD card at {sd} (no {AromaEnvironment.EnvironmentFolder}). RetroArch titles only run under Aroma.");
         else if (!aroma.HasSigPatches)
             warnings.Add($"Aroma on the SD card has no signature patches ({AromaEnvironment.SigPatchesFile} is missing), so installing will fail. Get 01_sigpatches.rpx from {SigPatchesUrl}.");
-        if (_cores.System(SelectedConsole) is { } system && system.MissingBios(sd) is { Count: > 0 } missing)
-            warnings.Add($"{SelectedConsoleName} needs {string.Join(" and ", missing)} in {RetroArchSystem.SystemFolder} on the SD card; the core will not start without it.");
+        var missing = _cores.System(SelectedConsole)?.MissingBios(sd) ?? Array.Empty<string>();
+        foreach (var bios in BiosFiles)
+            bios.IsOnCard = !missing.Contains(bios.FileName, StringComparer.OrdinalIgnoreCase);
+        var wanted = BiosFiles.Where(b => b.IsWanted).Select(b => b.FileName).ToArray();
+        if (wanted.Length > 0)
+            warnings.Add($"{SelectedConsoleName} needs {string.Join(" and ", wanted)} in {RetroArchSystem.SystemFolder} on the SD card; the core will not start without it. Pick your own copy on the Game step and it is copied with the title.");
         return warnings;
+    }
+
+    /// <summary>
+    /// A BIOS pick changed: the review lines and the warnings follow.
+    /// </summary>
+    private void NotifyExtrasChanged()
+    {
+        OnPropertyChanged(nameof(CardFiles));
+        OnPropertyChanged(nameof(ReviewExtras));
+        OnPropertyChanged(nameof(HasReviewExtras));
+        if (Step == Steps.Count)
+            AromaWarnings = CheckAroma();
     }
 
     partial void OnStepChanged(int value)

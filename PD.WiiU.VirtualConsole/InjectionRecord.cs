@@ -45,6 +45,10 @@ public sealed class InjectionRecord
     /// </summary>
     public string? BootSoundPath { get; init; }
     /// <summary>
+    /// Files that went onto the card beside the title, such as a BIOS.
+    /// </summary>
+    public IReadOnlyList<CardFile> CardFiles { get; init; } = Array.Empty<CardFile>();
+    /// <summary>
     /// Console injected.
     /// </summary>
     public SourceConsole Console { get; }
