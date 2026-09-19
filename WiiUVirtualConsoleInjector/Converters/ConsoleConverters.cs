@@ -10,6 +10,14 @@ namespace WiiUVirtualConsoleInjector.Converters;
 public static class ConsoleConverters
 {
     /// <summary>
+    /// Console to the note under its tile, or null.
+    /// </summary>
+    public static readonly IValueConverter Caption = new FuncValueConverter<SourceConsole, string?>(ConsoleIcons.Caption);
+    /// <summary>
+    /// True when the console has a note under its tile.
+    /// </summary>
+    public static readonly IValueConverter HasCaption = new FuncValueConverter<SourceConsole, bool>(c => ConsoleIcons.Caption(c) is not null);
+    /// <summary>
     /// Console to its near-black logo bitmap, for light tiles.
     /// </summary>
     public static readonly IValueConverter DarkIcon = new FuncValueConverter<SourceConsole, object?>(c => ConsoleIcons.DarkFor(c));

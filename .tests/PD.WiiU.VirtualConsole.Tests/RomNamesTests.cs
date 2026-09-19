@@ -81,6 +81,18 @@ public class RomNamesTests
     }
 
     [TestMethod]
+    public void Suggest_Genesis_PrefersTheOverseasNameOverTheDomestic()
+    {
+        var both = Genesis("both.md", "SONIC THE HEDGEHOG 2", "SONIC THE HEDGEHOG 2 (US)");
+        var domesticOnly = Genesis("domestic.md", "PUYO PUYO", "");
+        var notSega = Write("other.md", 0x200, (0x150, "SHOULD NOT BE READ"));
+
+        Assert.AreEqual("Sonic The Hedgehog 2 (Us)", RomNames.Suggest(SourceConsole.Genesis, both));
+        Assert.AreEqual("Puyo Puyo", RomNames.Suggest(SourceConsole.Genesis, domesticOnly), "blank overseas field falls back to the domestic name");
+        Assert.IsNull(RomNames.Suggest(SourceConsole.Genesis, notSega), "no SEGA at 0x100, no header");
+    }
+
+    [TestMethod]
     public void Suggest_NothingToRead_IsNull()
     {
         var nes = Write("game.nes", 0x100, (0, "NES\x1a"));
@@ -103,6 +115,17 @@ public class RomNamesTests
         Assert.AreEqual("F-Zero Gx", RomNames.Tidy("F-ZERO GX"));
         Assert.IsNull(RomNames.Tidy("   "));
         Assert.IsNull(RomNames.Tidy(null));
+    }
+
+    private string Genesis(string name, string domestic, string overseas)
+    {
+        var bytes = new byte[0x200];
+        Encoding.ASCII.GetBytes("SEGA MEGA DRIVE ").CopyTo(bytes, 0x100);
+        Encoding.ASCII.GetBytes(domestic.PadRight(48)).CopyTo(bytes, 0x120);
+        Encoding.ASCII.GetBytes(overseas.PadRight(48)).CopyTo(bytes, 0x150);
+        var path = Path.Combine(_root, name);
+        File.WriteAllBytes(path, bytes);
+        return path;
     }
 
     private string Snes(int header, string name, bool copierHeader)

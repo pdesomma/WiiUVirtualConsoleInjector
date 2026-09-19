@@ -13,6 +13,7 @@ namespace WiiUVirtualConsoleInjector.Tests;
 public class InjectViewModelTests
 {
     private InjectBaseService _bases = null!;
+    private FakeRetroArchCores _cores = null!;
     private InjectDialogService _dialogs = null!;
     private RecordingInjectionServiceFactory _factory = null!;
     private FakeSdCard _sdCard = null!;
@@ -28,6 +29,7 @@ public class InjectViewModelTests
     {
         SynchronizationContext.SetSynchronizationContext(new InlineSynchronizationContext());
         _bases = new InjectBaseService();
+        _cores = new FakeRetroArchCores();
         _dialogs = new InjectDialogService();
         _factory = new RecordingInjectionServiceFactory();
         _settings = new InjectSettingsService();
@@ -43,17 +45,18 @@ public class InjectViewModelTests
     [TestMethod]
     public void Constructor_NullArguments_ThrowsArgumentNullException()
     {
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(null!, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, _community));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, null!, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, _community));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, null!, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, _community));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, null!, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, _community));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, null!, _sdCard, Builder(), _sounds, _history, _compatibility, _community));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, null!, Builder(), _sounds, _history, _compatibility, _community));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, null!, _sounds, _history, _compatibility, _community));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), null!, _history, _compatibility, _community));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, null!, _compatibility, _community));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, null!, _community));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(null!, _cores, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, null!, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _cores, null!, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _cores, _dialogs, null!, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _cores, _dialogs, _factory, null!, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _cores, _dialogs, _factory, _settings, null!, _sdCard, Builder(), _sounds, _history, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _cores, _dialogs, _factory, _settings, _navigation, null!, Builder(), _sounds, _history, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _cores, _dialogs, _factory, _settings, _navigation, _sdCard, null!, _sounds, _history, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _cores, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), null!, _history, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _cores, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, null!, _compatibility, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _cores, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, null!, _community));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectViewModel(_bases, _cores, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, null!));
     }
 
     [TestMethod]
@@ -581,7 +584,7 @@ public class InjectViewModelTests
         Assert.AreEqual(0, _dialogs.FilePicks.Count);
     }
 
-    private InjectViewModel Create() => new(_bases, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, _community);
+    private InjectViewModel Create() => new(_bases, _cores, _dialogs, _factory, _settings, _navigation, _sdCard, Builder(), _sounds, _history, _compatibility, _community);
 
     [TestMethod]
     public async Task CommunityArtwork_HitApplied_FillsTheSlotsAndTheN64Ini()
@@ -888,7 +891,7 @@ public class InjectViewModelTests
         var (record, icon) = _history.Added.Single();
         CollectionAssert.AreEqual(new byte[] { 1, 2, 3 }, icon);
         Assert.AreEqual(SourceConsole.Snes, record.Console);
-        Assert.AreEqual(_factory.Service.Received!.Base.TitleId, record.BaseTitleId);
+        Assert.AreEqual(TemplateKey.Base(_factory.Service.Received!.Base!.TitleId), record.Template);
         Assert.AreEqual(@"C:\game.sfc", record.RomPath);
         Assert.AreEqual("Super Game, The Sequel", record.Name);
         Assert.AreEqual("Super", record.ShortName);
@@ -935,7 +938,7 @@ public class InjectViewModelTests
 
         Assert.AreEqual(InjectViewModel.Steps.Count, vm.Step);
         Assert.AreEqual(SourceConsole.Wii, vm.SelectedConsole);
-        Assert.AreEqual(record.BaseTitleId, vm.SelectedBase!.Base.TitleId);
+        Assert.AreEqual(record.Template.BaseTitleId, vm.SelectedBase!.Base.TitleId);
         Assert.AreEqual(@"C:\wii.iso", vm.RomPath);
         Assert.AreEqual("Wii Game", vm.Name);
         Assert.AreEqual("Wii", vm.ShortName);
@@ -992,7 +995,7 @@ public class InjectViewModelTests
     }
 
     private InjectionRecord Record() =>
-        new("abc", DateTimeOffset.Now, SourceConsole.Wii, new TitleId(TitleType.Game, 0x1000 + (uint)SourceConsole.Wii), @"C:\wii.iso", "Wii Game",
+        new("abc", DateTimeOffset.Now, SourceConsole.Wii, TemplateKey.Base(new TitleId(TitleType.Game, 0x1000 + (uint)SourceConsole.Wii)), @"C:\wii.iso", "Wii Game",
             new TitleIdentity(new TitleId(TitleType.Demo, 0x31323334), new GroupId(0x3456), new ProductCode(ProductCode.EShop, "WXYZ")))
         {
             Artwork = new Artwork { Icon = @"C:\h\icon.png", BootTv = @"C:\h\tv.png", BootDrc = @"C:\h\drc.png", BootLogo = @"C:\h\logo.png" },

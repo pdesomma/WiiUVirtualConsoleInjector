@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\PD.WiiU.VirtualConsole\PD.WiiU.VirtualConsole.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WiiUSharp" Version="0.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Cores\Genesis\genesis_plus_gx_libretro.rpx" LogicalName="cores/genesis/genesis_plus_gx_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Genesis\genesis_plus_gx_wide_libretro.rpx" LogicalName="cores/genesis/genesis_plus_gx_wide_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Genesis\picodrive_libretro.rpx" LogicalName="cores/genesis/picodrive_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Template\app.xml" LogicalName="template/code/app.xml" />
+    <EmbeddedResource Include="Assets\Template\cos.xml" LogicalName="template/code/cos.xml" />
+    <EmbeddedResource Include="Assets\Template\meta.xml" LogicalName="template/meta/meta.xml" />
+    <EmbeddedResource Include="Assets\Template\iconTex.tga" LogicalName="template/meta/iconTex.tga" />
+    <EmbeddedResource Include="Assets\Template\bootTvTex.tga" LogicalName="template/meta/bootTvTex.tga" />
+    <EmbeddedResource Include="Assets\Template\bootDrcTex.tga" LogicalName="template/meta/bootDrcTex.tga" />
+    <EmbeddedResource Include="Assets\Template\bootLogoTex.tga" LogicalName="template/meta/bootLogoTex.tga" />
+    <EmbeddedResource Include="Assets\Template\bootMovie.h264" LogicalName="template/meta/bootMovie.h264" />
+    <EmbeddedResource Include="Assets\Template\bootSound.btsnd" LogicalName="template/meta/bootSound.btsnd" />
+    <None Include="Assets\CORES.md" />
+    <None Include="Assets\TEMPLATE.md" />
+  </ItemGroup>
+
+</Project>

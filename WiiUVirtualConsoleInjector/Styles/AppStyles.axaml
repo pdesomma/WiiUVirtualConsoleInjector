@@ -329,6 +329,13 @@
     <Style Selector="ListBox.tiles ListBoxItem:selected TextBlock.tile-label">
         <Setter Property="Foreground" Value="{DynamicResource CyanDarkBrush}" />
     </Style>
+    <Style Selector="ListBox.tiles TextBlock.tile-caption">
+        <Setter Property="FontSize" Value="10.5" />
+        <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="TextAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0,1,0,0" />
+    </Style>
 
     <!-- ===== Console tab pills (Bases page) ===== -->
     <Style Selector="ListBox.tabs">

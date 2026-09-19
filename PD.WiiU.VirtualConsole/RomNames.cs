@@ -13,7 +13,7 @@ public static class RomNames
     private static readonly Regex Spaces = new(@"\s+", RegexOptions.CultureInvariant);
 
     /// <summary>
-    /// Reads the internal name: the disc title for Wii and GameCube, the cartridge title for GBA, NDS and N64, the internal name for SNES. NES, MSX and TurboGrafx carry none.
+    /// Reads the internal name: the disc title for Wii and GameCube, the cartridge title for GBA, NDS, N64 and Genesis, the internal name for SNES. NES, MSX and TurboGrafx carry none.
     /// </summary>
     /// <param name="console">Console the ROM is for.</param>
     /// <param name="romPath">The ROM.</param>
@@ -33,6 +33,7 @@ public static class RomNames
             SourceConsole.Nds => NintendoDs(romPath),
             SourceConsole.N64 => Nintendo64(romPath),
             SourceConsole.Snes => SuperNintendo(romPath),
+            SourceConsole.Genesis => Genesis(romPath),
             _ => null,
         };
         return Tidy(raw);
@@ -69,6 +70,16 @@ public static class RomNames
             return null;
         var offset = string.Equals(extension, ".wbfs", StringComparison.OrdinalIgnoreCase) ? WbfsHeaderOffset : 0;
         return Ascii(Read(path, offset + 0x20, 0x40));
+    }
+
+    /// <summary>
+    /// The overseas name at 0x150 of a plain (non-interleaved) dump, falling back to the domestic one at 0x120; both are space-padded to 48 bytes.
+    /// </summary>
+    private static string? Genesis(string path)
+    {
+        if (Ascii(Read(path, 0x100, 4)) is not { } console || !console.StartsWith("SEGA", StringComparison.Ordinal))
+            return null;
+        return Padded(Read(path, 0x150, 48)) ?? Padded(Read(path, 0x120, 48));
     }
 
     /// <summary>
@@ -124,6 +135,15 @@ public static class RomNames
                 return null;
         }
         return Ascii(name);
+    }
+
+    /// <summary>
+    /// A space-padded ASCII field; null when empty or not printable.
+    /// </summary>
+    private static string? Padded(byte[]? bytes)
+    {
+        var text = Ascii(bytes)?.Trim();
+        return string.IsNullOrEmpty(text) ? null : text;
     }
 
     private static byte[]? Read(string path, long offset, int count)

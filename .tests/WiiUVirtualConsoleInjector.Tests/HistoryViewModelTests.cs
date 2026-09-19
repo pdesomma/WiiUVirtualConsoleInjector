@@ -28,7 +28,7 @@ public class HistoryViewModelTests
         foreach (var console in Enum.GetValues<SourceConsole>())
             _bases.Add(Base(console, 0x1000 + (uint)console, console + " Base"));
         var settings = new InjectSettingsService();
-        _inject = new InjectViewModel(_bases, _dialogs, new RecordingInjectionServiceFactory(), settings, _navigation, new FakeSdCard(), new ArtworkBuilderViewModel(new FakeArtworkComposer(), _dialogs, () => settings.WorkPath), new FakeSoundPlayer(), _history, new FakeCompatibilityLists(), new FakeCommunityArtwork());
+        _inject = new InjectViewModel(_bases, new FakeRetroArchCores(), _dialogs, new RecordingInjectionServiceFactory(), settings, _navigation, new FakeSdCard(), new ArtworkBuilderViewModel(new FakeArtworkComposer(), _dialogs, () => settings.WorkPath), new FakeSoundPlayer(), _history, new FakeCompatibilityLists(), new FakeCommunityArtwork());
         _navigation.Requested += (_, type) => _shown.Add(type);
     }
 
@@ -273,6 +273,6 @@ public class HistoryViewModelTests
     private HistoryViewModel Create() => new(_history, _inject, _navigation, _dialogs, _ui);
 
     private static InjectionRecord Record(string id, string name, string rom = @"C:\nowhere\game.nes") =>
-        new(id, DateTimeOffset.Now, SourceConsole.Nes, new TitleId(TitleType.Game, 0x1000 + (uint)SourceConsole.Nes), rom, name,
+        new(id, DateTimeOffset.Now, SourceConsole.Nes, TemplateKey.Base(new TitleId(TitleType.Game, 0x1000 + (uint)SourceConsole.Nes)), rom, name,
             new TitleIdentity(new TitleId(TitleType.Demo, 0x31323334), new GroupId(0x3456), new ProductCode(ProductCode.EShop, "ABCD")));
 }

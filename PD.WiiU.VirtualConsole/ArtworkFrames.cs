@@ -68,6 +68,8 @@ public static class ArtworkFrames
         Boot("wii-narrow", "Wii, 4:3", SourceConsole.Wii, "wii3New.png", BootStandard),
         Boot("homebrew", "Homebrew", SourceConsole.Wii, "homebrew.png", BootWii),
         Boot("homebrew-2", "Homebrew, second", SourceConsole.Wii, "homebrew2.png", BootWii),
+        // no Genesis art yet; the Homebrew Launcher frames match the title template
+        Boot("genesis-homebrew", "Homebrew, Genesis", SourceConsole.Genesis, "homebrew.png", BootWii),
         Boot("boot-plain", "None", null, null, BootFull),
 
         // Icons
@@ -95,6 +97,7 @@ public static class ArtworkFrames
         Icon("icon-wii", "Wii", SourceConsole.Wii, "Wii2.png", IconBadged),
         Icon("icon-wii-2", "Wii, style 2", SourceConsole.Wii, "WiiIcon.png", IconBadged),
         Icon("icon-homebrew", "Homebrew", SourceConsole.Wii, "HBICON.png", IconBadged),
+        Icon("icon-genesis-homebrew", "Homebrew, Genesis", SourceConsole.Genesis, "HBICON.png", IconBadged),
         Icon("icon-plain", "None", null, null, IconFull),
 
         // Boot logos

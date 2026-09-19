@@ -42,7 +42,18 @@ public static class ConsoleIcons
         SourceConsole.Msx => "MSX",
         SourceConsole.Wii => "Wii",
         SourceConsole.GameCube => "GameCube",
+        SourceConsole.Genesis => "Sega Genesis",
         _ => console.ToString(),
+    };
+
+    /// <summary>
+    /// A note shown under the tile, or null: which consoles need a particular firmware.
+    /// </summary>
+    /// <param name="console">Console to annotate.</param>
+    public static string? Caption(SourceConsole console) => console switch
+    {
+        SourceConsole.Genesis => "Aroma only",
+        _ => null,
     };
 
     /// <summary>

@@ -70,6 +70,15 @@ public class CommunityArtworkIdsTests
     }
 
     [TestMethod]
+    public void Candidates_Genesis_IsEmptyWithoutAFolder()
+    {
+        var genesis = Write("game.md", 0x200, (0x100, "SEGA MEGA DRIVE "));
+
+        Assert.AreEqual(0, CommunityArtworkIds.Candidates(SourceConsole.Genesis, genesis).Count, "no repository folder, so nothing to look up");
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => CommunityArtworkIds.Folder(SourceConsole.Genesis));
+    }
+
+    [TestMethod]
     public void Candidates_NothingToLookUpBy_IsEmpty()
     {
         var tiny = Path.Combine(_root, "tiny.nes");

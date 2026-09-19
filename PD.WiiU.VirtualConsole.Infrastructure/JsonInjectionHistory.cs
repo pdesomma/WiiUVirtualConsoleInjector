@@ -62,7 +62,7 @@ public sealed class JsonInjectionHistory : IInjectionHistory
 
         var home = Path.Combine(Folder, record.Id);
         Directory.CreateDirectory(home);
-        var stored = new InjectionRecord(record.Id, record.CreatedAt, record.Console, record.BaseTitleId, record.RomPath, record.Name, record.Identity)
+        var stored = new InjectionRecord(record.Id, record.CreatedAt, record.Console, record.Template, record.RomPath, record.Name, record.Identity)
         {
             Artwork = new Artwork
             {
@@ -208,7 +208,8 @@ public sealed class JsonInjectionHistory : IInjectionHistory
         Id = record.Id,
         CreatedAt = record.CreatedAt,
         Console = record.Console,
-        BaseTitleId = record.BaseTitleId.ToString(),
+        BaseTitleId = record.Template.BaseTitleId?.ToString(),
+        CoreId = record.Template.CoreId,
         RomPath = record.RomPath,
         Name = record.Name,
         ShortName = record.ShortName,
@@ -234,13 +235,13 @@ public sealed class JsonInjectionHistory : IInjectionHistory
     private static InjectionRecord? ToRecord(Document d)
     {
         if (d.Id is null || d.RomPath is null || d.Name is null
-            || !TitleId.TryParse(d.BaseTitleId, out var baseId)
+            || ReadTemplate(d) is not { } template
             || !TitleId.TryParse(d.TitleId, out var titleId)
             || !GroupId.TryParse(d.GroupId, out var groupId)
             || !ProductCode.TryParse(d.ProductCode, out var productCode))
             return null;
 
-        return new InjectionRecord(d.Id, d.CreatedAt, d.Console, baseId, d.RomPath, d.Name, new TitleIdentity(titleId, groupId, productCode))
+        return new InjectionRecord(d.Id, d.CreatedAt, d.Console, template, d.RomPath, d.Name, new TitleIdentity(titleId, groupId, productCode))
         {
             Artwork = new Artwork { Icon = d.Icon, BootTv = d.BootTv, BootDrc = d.BootDrc, BootLogo = d.BootLogo },
             BootSoundPath = d.BootSound,
@@ -252,6 +253,16 @@ public sealed class JsonInjectionHistory : IInjectionHistory
             ProductId = d.ProductId,
             ShortName = d.ShortName,
         };
+    }
+
+    /// <summary>
+    /// The core when the document names one, else the base; null when neither parses. Older documents only carry a base.
+    /// </summary>
+    private static TemplateKey? ReadTemplate(Document d)
+    {
+        if (!string.IsNullOrWhiteSpace(d.CoreId))
+            return TemplateKey.Core(d.CoreId!);
+        return TitleId.TryParse(d.BaseTitleId, out var baseId) ? TemplateKey.Base(baseId) : null;
     }
 
     /// <summary>
@@ -295,6 +306,7 @@ public sealed class JsonInjectionHistory : IInjectionHistory
         public string? BootSound { get; set; }
         public string? BootTv { get; set; }
         public SourceConsole Console { get; set; }
+        public string? CoreId { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public OutputFormat Format { get; set; }
         public bool GamePad { get; set; }

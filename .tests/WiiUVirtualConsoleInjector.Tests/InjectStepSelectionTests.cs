@@ -53,5 +53,5 @@ public class InjectStepSelectionTests
     }
 
     private static InjectViewModel Create() =>
-        new(new InjectFakes.InjectBaseService(), new InjectFakes.InjectDialogService(), new InjectFakes.RecordingInjectionServiceFactory(), new InjectFakes.InjectSettingsService(), new NavigationService(), new FakeSdCard(), new ArtworkBuilderViewModel(new FakeArtworkComposer(), new InjectFakes.InjectDialogService(), () => Path.GetTempPath()), new FakeSoundPlayer(), new FakeInjectionHistory(), new FakeCompatibilityLists(), new FakeCommunityArtwork());
+        new(new InjectFakes.InjectBaseService(), new InjectFakes.FakeRetroArchCores(), new InjectFakes.InjectDialogService(), new InjectFakes.RecordingInjectionServiceFactory(), new InjectFakes.InjectSettingsService(), new NavigationService(), new FakeSdCard(), new ArtworkBuilderViewModel(new FakeArtworkComposer(), new InjectFakes.InjectDialogService(), () => Path.GetTempPath()), new FakeSoundPlayer(), new FakeInjectionHistory(), new FakeCompatibilityLists(), new FakeCommunityArtwork());
 }

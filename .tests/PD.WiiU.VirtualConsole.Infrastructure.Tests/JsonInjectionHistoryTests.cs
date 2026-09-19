@@ -49,7 +49,7 @@ public class JsonInjectionHistoryTests
         var tv = Write(sources, "tv.jpg", 2);
         var sound = Write(sources, "boot.wav", 3);
         var bare = Record("one", "Super Game, The Sequel");
-        var record = new InjectionRecord(bare.Id, bare.CreatedAt, bare.Console, bare.BaseTitleId, bare.RomPath, bare.Name, bare.Identity)
+        var record = new InjectionRecord(bare.Id, bare.CreatedAt, bare.Console, bare.Template, bare.RomPath, bare.Name, bare.Identity)
         {
             Artwork = new Artwork { Icon = icon, BootTv = tv, BootDrc = @"C:\gone\drc.png" },
             BootSoundPath = sound,
@@ -81,7 +81,7 @@ public class JsonInjectionHistoryTests
         Assert.AreEqual("one", reloaded.Id);
         Assert.AreEqual(record.CreatedAt, reloaded.CreatedAt);
         Assert.AreEqual(SourceConsole.Wii, reloaded.Console);
-        Assert.AreEqual(record.BaseTitleId, reloaded.BaseTitleId);
+        Assert.AreEqual(record.Template, reloaded.Template);
         Assert.AreEqual(record.RomPath, reloaded.RomPath);
         Assert.AreEqual("Super Game, The Sequel", reloaded.Name);
         Assert.AreEqual("Super", reloaded.ShortName);
@@ -204,6 +204,47 @@ public class JsonInjectionHistoryTests
     }
 
     [TestMethod]
+    public void All_OldShapeWithOnlyABaseTitleId_LoadsAsABaseKey()
+    {
+        Directory.CreateDirectory(_folder);
+        File.WriteAllText(Path.Combine(_folder, JsonInjectionHistory.IndexFileName),
+            "[{\"id\":\"x\",\"romPath\":\"C:\\\\r.nes\",\"name\":\"X\",\"console\":\"Nes\",\"baseTitleId\":\"0005000010101D00\",\"titleId\":\"0005000231323334\",\"groupId\":\"00003456\",\"productCode\":\"WUP-N-ABCD\"}]");
+
+        var record = new JsonInjectionHistory(_folder).All().Single();
+
+        Assert.AreEqual(TemplateKey.Base(new TitleId(TitleType.Game, 0x10101D00)), record.Template);
+        Assert.IsFalse(record.Template.IsCore);
+        Assert.IsNull(record.Template.CoreId);
+    }
+
+    [TestMethod]
+    public void All_NeitherCoreNorBaseParses_IsSkipped()
+    {
+        Directory.CreateDirectory(_folder);
+        File.WriteAllText(Path.Combine(_folder, JsonInjectionHistory.IndexFileName),
+            "[{\"id\":\"x\",\"romPath\":\"C:\\\\r.md\",\"name\":\"X\",\"console\":\"Genesis\",\"coreId\":\"  \",\"titleId\":\"0005000231323334\",\"groupId\":\"00003456\",\"productCode\":\"WUP-N-ABCD\"}]");
+
+        Assert.AreEqual(0, new JsonInjectionHistory(_folder).All().Count);
+    }
+
+    [TestMethod]
+    public void Add_CoreRecord_RoundTripsTheCoreKey()
+    {
+        var history = new JsonInjectionHistory(_folder);
+
+        history.Add(Record("one", "Sonic", SourceConsole.Genesis, TemplateKey.Core("genesis_plus_gx")), null);
+
+        foreach (var reloaded in new[] { history.All().Single(), new JsonInjectionHistory(_folder).All().Single() })
+        {
+            Assert.IsTrue(reloaded.Template.IsCore);
+            Assert.AreEqual("genesis_plus_gx", reloaded.Template.CoreId);
+            Assert.IsNull(reloaded.Template.BaseTitleId);
+            Assert.AreEqual(SourceConsole.Genesis, reloaded.Console);
+        }
+        StringAssert.Contains(File.ReadAllText(Path.Combine(_folder, JsonInjectionHistory.IndexFileName)), "\"coreId\": \"genesis_plus_gx\"");
+    }
+
+    [TestMethod]
     public void All_OptionsOfTheWrongShape_ReadAsDefaults()
     {
         Directory.CreateDirectory(_folder);
@@ -257,7 +298,10 @@ public class JsonInjectionHistoryTests
     }
 
     private static InjectionRecord Record(string id, string name) =>
-        new(id, new DateTimeOffset(2026, 9, 15, 14, 41, 0, TimeSpan.FromHours(-4)), SourceConsole.Wii, new TitleId(TitleType.Game, 0x10101D00), @"C:\roms\game.iso", name,
+        Record(id, name, SourceConsole.Wii, TemplateKey.Base(new TitleId(TitleType.Game, 0x10101D00)));
+
+    private static InjectionRecord Record(string id, string name, SourceConsole console, TemplateKey template) =>
+        new(id, new DateTimeOffset(2026, 9, 15, 14, 41, 0, TimeSpan.FromHours(-4)), console, template, @"C:\roms\game.iso", name,
             new TitleIdentity(new TitleId(TitleType.Demo, 0x31323334), new GroupId(0x3456), new ProductCode(ProductCode.EShop, "WXYZ")));
 
     private static string Write(string folder, string name, byte value)

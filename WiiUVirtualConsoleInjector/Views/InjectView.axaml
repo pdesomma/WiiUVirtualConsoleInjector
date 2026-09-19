@@ -102,8 +102,9 @@
                     <!-- 1. Console -->
                     <StackPanel IsVisible="{Binding IsConsoleStep}">
                         <TextBlock Classes="section" Text="Choose the source console" />
+                        <!-- five 152px tiles per row: two rows for ten consoles -->
                         <ListBox Classes="tiles" ItemsSource="{Binding Consoles}" SelectedItem="{Binding SelectedConsole}" IsEnabled="{Binding !IsRunning}"
-                                 MaxWidth="456" Padding="0" HorizontalAlignment="Center">
+                                 MaxWidth="760" Padding="0" HorizontalAlignment="Center">
                             <ListBox.ItemTemplate>
                                 <DataTemplate x:DataType="vc:SourceConsole">
                                     <StackPanel>
@@ -116,6 +117,7 @@
                                             </Panel>
                                         </Border>
                                         <TextBlock Classes="tile-label" Text="{Binding, Converter={x:Static conv:ConsoleConverters.Name}}" />
+                                        <TextBlock Classes="tile-caption" Text="{Binding, Converter={x:Static conv:ConsoleConverters.Caption}}" IsVisible="{Binding, Converter={x:Static conv:ConsoleConverters.HasCaption}}" />
                                     </StackPanel>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
@@ -125,53 +127,74 @@
                     <!-- 2. Game: base, then the ROM and its names -->
                     <StackPanel IsVisible="{Binding IsGameStep}">
                         <TextBlock Classes="section" Text="{Binding SelectedConsoleName, StringFormat='{}{0} game'}" Margin="0,0,0,4" />
-                        <TextBlock Classes="label" Text="Base" Margin="0,8,0,2" />
-                        <WrapPanel ItemSpacing="6" Margin="0,0,0,14">
-                            <TextBlock Classes="hint" FontSize="12" Text="The base holds the Virtual Console emulator; your ROM gets patched into it. Which games work on which base is community-tested:" VerticalAlignment="Center" />
-                            <Button Classes="link" Command="{Binding OpenCompatibilityListCommand}" ToolTip.Tip="Opens the UWUVCI compatibility page for this console in your browser">
-                                <TextBlock Text="Compatibility list ↗" />
-                            </Button>
-                        </WrapPanel>
-                        <ComboBox ItemsSource="{Binding Bases}" SelectedItem="{Binding SelectedBase}" Width="480" HorizontalAlignment="Left" IsEnabled="{Binding !IsRunning}" PlaceholderText="Select a base…">
-                            <ComboBox.ItemContainerTheme>
-                                <ControlTheme TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}" x:DataType="vm:BaseChoice">
-                                    <Setter Property="Opacity" Value="{Binding IsUsable, Converter={x:Static conv:StatusConverters.UsableOpacity}}" />
-                                </ControlTheme>
-                            </ComboBox.ItemContainerTheme>
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate x:DataType="vm:BaseChoice">
-                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="10">
-                                        <Border Grid.Column="0" Width="22" Height="15" CornerRadius="2" BorderThickness="1" BorderBrush="#26000000" VerticalAlignment="Center"
-                                                Background="{Binding Base.Region, Converter={x:Static conv:RegionConverters.Flag}}" />
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Base.Name}" FontSize="13" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Classes="mono" Text="{Binding TitleId}" FontSize="10.5" Foreground="{DynamicResource TextTertiaryBrush}" />
-                                        </StackPanel>
-                                        <Border Grid.Column="2" Classes="tag" IsVisible="{Binding Base.IsRecommended}" VerticalAlignment="Center" ToolTip.Tip="The base the community found works best for this console">
-                                            <TextBlock Text="Recommended" FontSize="10.5" />
-                                        </Border>
-                                        <Viewbox Grid.Column="3" Width="16" Height="16" VerticalAlignment="Center" ToolTip.Tip="Title key added">
-                                            <Canvas Width="24" Height="24">
-                                                <Path Classes="glyph" Stroke="{Binding HasTitleKey, Converter={x:Static conv:StatusConverters.Glyph}}"
-                                                      Data="M12 8 A4 4 0 1 1 4 8 A4 4 0 1 1 12 8 M10.8 10.8L20 20 M15.5 15.5l2.2 -2.2 M18 18l2.2 -2.2" />
-                                            </Canvas>
-                                        </Viewbox>
-                                        <Viewbox Grid.Column="4" Width="16" Height="16" VerticalAlignment="Center" ToolTip.Tip="Downloaded">
-                                            <Canvas Width="24" Height="24">
-                                                <Path Classes="glyph" Stroke="{Binding IsPresent, Converter={x:Static conv:StatusConverters.Glyph}}"
-                                                      Data="M12 3v11 M7.5 10.5L12 15l4.5-4.5 M4 17.5V19a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5" />
-                                            </Canvas>
-                                        </Viewbox>
-                                    </Grid>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                        <WrapPanel ItemSpacing="6" Margin="0,12,0,0" IsVisible="{Binding BaseHint, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                            <TextBlock Classes="warning" Text="{Binding BaseHint}" VerticalAlignment="Center" />
-                            <Button Classes="link" Command="{Binding ManageBasesCommand}">
-                                <TextBlock Text="Manage bases &amp; keys →" />
-                            </Button>
-                        </WrapPanel>
+                        <StackPanel IsVisible="{Binding IsRetroArch}">
+                            <TextBlock Classes="label" Text="RetroArch core" Margin="0,8,0,2" />
+                            <TextBlock Classes="hint" FontSize="12" Text="The core is the emulator; it is packed into the title with your ROM. The title runs under Aroma only and uses the retroarch folder on the SD card for settings and saves." Margin="0,0,0,14" />
+                            <ComboBox ItemsSource="{Binding Cores}" SelectedItem="{Binding SelectedCore}" Width="480" HorizontalAlignment="Left" IsEnabled="{Binding !IsRunning}" PlaceholderText="Select a core…">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="vc:RetroArchCore">
+                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding Description}" FontSize="10.5" Foreground="{DynamicResource TextTertiaryBrush}" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                            <Border Grid.Column="1" Classes="tag" IsVisible="{Binding IsRecommended}" VerticalAlignment="Center" ToolTip.Tip="The core to start with for this console">
+                                                <TextBlock Text="Recommended" FontSize="10.5" />
+                                            </Border>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel IsVisible="{Binding !IsRetroArch}">
+                            <TextBlock Classes="label" Text="Base" Margin="0,8,0,2" />
+                            <WrapPanel ItemSpacing="6" Margin="0,0,0,14">
+                                <TextBlock Classes="hint" FontSize="12" Text="The base holds the Virtual Console emulator; your ROM gets patched into it. Which games work on which base is community-tested:" VerticalAlignment="Center" />
+                                <Button Classes="link" Command="{Binding OpenCompatibilityListCommand}" ToolTip.Tip="Opens the UWUVCI compatibility page for this console in your browser">
+                                    <TextBlock Text="Compatibility list ↗" />
+                                </Button>
+                            </WrapPanel>
+                            <ComboBox ItemsSource="{Binding Bases}" SelectedItem="{Binding SelectedBase}" Width="480" HorizontalAlignment="Left" IsEnabled="{Binding !IsRunning}" PlaceholderText="Select a base…">
+                                <ComboBox.ItemContainerTheme>
+                                    <ControlTheme TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}" x:DataType="vm:BaseChoice">
+                                        <Setter Property="Opacity" Value="{Binding IsUsable, Converter={x:Static conv:StatusConverters.UsableOpacity}}" />
+                                    </ControlTheme>
+                                </ComboBox.ItemContainerTheme>
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:BaseChoice">
+                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="10">
+                                            <Border Grid.Column="0" Width="22" Height="15" CornerRadius="2" BorderThickness="1" BorderBrush="#26000000" VerticalAlignment="Center"
+                                                    Background="{Binding Base.Region, Converter={x:Static conv:RegionConverters.Flag}}" />
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Base.Name}" FontSize="13" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Classes="mono" Text="{Binding TitleId}" FontSize="10.5" Foreground="{DynamicResource TextTertiaryBrush}" />
+                                            </StackPanel>
+                                            <Border Grid.Column="2" Classes="tag" IsVisible="{Binding Base.IsRecommended}" VerticalAlignment="Center" ToolTip.Tip="The base the community found works best for this console">
+                                                <TextBlock Text="Recommended" FontSize="10.5" />
+                                            </Border>
+                                            <Viewbox Grid.Column="3" Width="16" Height="16" VerticalAlignment="Center" ToolTip.Tip="Title key added">
+                                                <Canvas Width="24" Height="24">
+                                                    <Path Classes="glyph" Stroke="{Binding HasTitleKey, Converter={x:Static conv:StatusConverters.Glyph}}"
+                                                          Data="M12 8 A4 4 0 1 1 4 8 A4 4 0 1 1 12 8 M10.8 10.8L20 20 M15.5 15.5l2.2 -2.2 M18 18l2.2 -2.2" />
+                                                </Canvas>
+                                            </Viewbox>
+                                            <Viewbox Grid.Column="4" Width="16" Height="16" VerticalAlignment="Center" ToolTip.Tip="Downloaded">
+                                                <Canvas Width="24" Height="24">
+                                                    <Path Classes="glyph" Stroke="{Binding IsPresent, Converter={x:Static conv:StatusConverters.Glyph}}"
+                                                          Data="M12 3v11 M7.5 10.5L12 15l4.5-4.5 M4 17.5V19a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5" />
+                                                </Canvas>
+                                            </Viewbox>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <WrapPanel ItemSpacing="6" Margin="0,12,0,0" IsVisible="{Binding BaseHint, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                <TextBlock Classes="warning" Text="{Binding BaseHint}" VerticalAlignment="Center" />
+                                <Button Classes="link" Command="{Binding ManageBasesCommand}">
+                                    <TextBlock Text="Manage bases &amp; keys →" />
+                                </Button>
+                            </WrapPanel>
+                        </StackPanel>
                         <Border Classes="divider" Margin="0,18,0,18" />
                         <StackPanel Spacing="16" Width="560" HorizontalAlignment="Left">
                             <StackPanel Spacing="4">
@@ -606,8 +629,8 @@
                                 <TextBlock Classes="summary-value" Text="{Binding SelectedConsoleName}" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="10">
-                                <TextBlock Classes="summary-label" Text="Base" />
-                                <TextBlock Classes="summary-value" Text="{Binding ReviewBase}" />
+                                <TextBlock Classes="summary-label" Text="{Binding ReviewTemplateLabel}" />
+                                <TextBlock Classes="summary-value" Text="{Binding ReviewTemplate}" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <TextBlock Classes="summary-label" Text="ROM" />
@@ -636,6 +659,16 @@
                         <Border Classes="banner-warning" Margin="0,0,0,14" IsVisible="{Binding HasRomFitHint}">
                             <TextBlock Text="{Binding RomFitHint}" />
                         </Border>
+                        <ItemsControl ItemsSource="{Binding AromaWarnings}" IsVisible="{Binding HasAromaWarnings}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Border Classes="banner-warning" Margin="0,0,0,14">
+                                        <TextBlock Text="{Binding}" />
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Classes="hint" FontSize="12" Text="{Binding RetroArchHint}" TextWrapping="Wrap" Margin="0,0,0,14" IsVisible="{Binding IsRetroArch}" />
 
                         <Border Classes="divider" Padding="0,16,0,0" Margin="0,4,0,0">
                             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">

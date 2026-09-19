@@ -1,4 +1,4 @@
-﻿using PD.WiiU.VirtualConsole.Options;
+using PD.WiiU.VirtualConsole.Options;
 using WiiUSharp;
 
 namespace PD.WiiU.VirtualConsole;
@@ -13,18 +13,18 @@ public sealed class Injection
     /// <summary>
     /// Creates a new instance of the <see cref="Injection"/> class.
     /// </summary>
-    /// <param name="base">Template title.</param>
+    /// <param name="template">What the title is built on: a base or a RetroArch core.</param>
     /// <param name="rom">File to inject.</param>
     /// <param name="game">Metadata for the produced title.</param>
-    /// <exception cref="ArgumentException">ROM console differs from the base's.</exception>
-    public Injection(BaseTitle @base, Rom rom, Game game)
+    /// <exception cref="ArgumentException">ROM console differs from the template's.</exception>
+    public Injection(ITitleTemplate template, Rom rom, Game game)
     {
-        Base = @base ?? throw new ArgumentNullException(nameof(@base));
+        Template = template ?? throw new ArgumentNullException(nameof(template));
         Rom = rom ?? throw new ArgumentNullException(nameof(rom));
         Game = game ?? throw new ArgumentNullException(nameof(game));
 
-        if (rom.Console != @base.Console)
-            throw new ArgumentException($"ROM is for {rom.Console} but the base is for {@base.Console}.", nameof(rom));
+        if (rom.Console != template.Console)
+            throw new ArgumentException($"ROM is for {rom.Console} but the {Kind(template)} is for {template.Console}.", nameof(rom));
     }
 
     /// <summary>
@@ -32,17 +32,21 @@ public sealed class Injection
     /// </summary>
     public Artwork Artwork { get; init; } = Artwork.None;
     /// <summary>
-    /// Template title.
+    /// The base the title is built on, or null when it runs a RetroArch core.
     /// </summary>
-    public BaseTitle Base { get; }
+    public BaseTitle? Base => Template as BaseTitle;
     /// <summary>
-    /// Audio to play at boot, or null to keep the base title's.
+    /// Audio to play at boot, or null to keep the template's.
     /// </summary>
     public string? BootSoundPath { get; init; }
     /// <summary>
     /// Console being emulated.
     /// </summary>
-    public SourceConsole Console => Base.Console;
+    public SourceConsole Console => Template.Console;
+    /// <summary>
+    /// The RetroArch core the title runs, or null when it is built on a base.
+    /// </summary>
+    public RetroArchCore? Core => Template as RetroArchCore;
     /// <summary>
     /// How the finished title is written out.
     /// </summary>
@@ -69,4 +73,14 @@ public sealed class Injection
     /// File to inject.
     /// </summary>
     public Rom Rom { get; }
+    /// <summary>
+    /// What the title is built on.
+    /// </summary>
+    public ITitleTemplate Template { get; }
+
+    /// <summary>
+    /// The word for a template in messages.
+    /// </summary>
+    /// <param name="template">Template to name.</param>
+    private static string Kind(ITitleTemplate template) => template is RetroArchCore ? "core" : "base";
 }

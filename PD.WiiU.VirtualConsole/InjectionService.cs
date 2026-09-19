@@ -19,6 +19,7 @@ public sealed class InjectionService : IInjectionService
 
     private readonly IBaseStore _bases;
     private readonly IBootSoundConverter _bootSounds;
+    private readonly IRetroArchCores _cores;
     private readonly IImageConverter _images;
     private readonly IReadOnlyDictionary<SourceConsole, IRomInjector> _injectors;
     private readonly ITitlePacker _packer;
@@ -27,14 +28,16 @@ public sealed class InjectionService : IInjectionService
     /// Creates a new instance of the <see cref="InjectionService"/> class.
     /// </summary>
     /// <param name="bases">Where bases come from.</param>
+    /// <param name="cores">Where RetroArch cores and their template come from.</param>
     /// <param name="injectors">One injector per console.</param>
     /// <param name="images">Artwork converter.</param>
     /// <param name="bootSounds">Boot sound converter.</param>
     /// <param name="packer">Final packer.</param>
     /// <exception cref="ArgumentException">Two injectors claim the same console.</exception>
-    public InjectionService(IBaseStore bases, IEnumerable<IRomInjector> injectors, IImageConverter images, IBootSoundConverter bootSounds, ITitlePacker packer)
+    public InjectionService(IBaseStore bases, IRetroArchCores cores, IEnumerable<IRomInjector> injectors, IImageConverter images, IBootSoundConverter bootSounds, ITitlePacker packer)
     {
         _bases = bases ?? throw new ArgumentNullException(nameof(bases));
+        _cores = cores ?? throw new ArgumentNullException(nameof(cores));
         _images = images ?? throw new ArgumentNullException(nameof(images));
         _bootSounds = bootSounds ?? throw new ArgumentNullException(nameof(bootSounds));
         _packer = packer ?? throw new ArgumentNullException(nameof(packer));
@@ -72,10 +75,10 @@ public sealed class InjectionService : IInjectionService
         Directory.CreateDirectory(work);
         try
         {
-            var title = await Run(InjectionStep.StageBase, $"Staging {injection.Base}", progress,
-                () => _bases.StageAsync(injection.Base, work, cancellationToken)).ConfigureAwait(false);
+            var title = await Run(InjectionStep.StageBase, $"Staging {injection.Template}", progress,
+                () => Stage(injection.Template, work, cancellationToken)).ConfigureAwait(false);
 
-            await Run(InjectionStep.InspectBase, "Checking base", progress,
+            await Run(InjectionStep.InspectBase, injection.Core is null ? "Checking base" : "Checking core", progress,
                 () => RequireUsable(Inspect(title, injector))).ConfigureAwait(false);
 
             await Run(InjectionStep.InjectRom, $"Injecting {Path.GetFileName(injection.Rom.Path)}", progress,
@@ -125,6 +128,19 @@ public sealed class InjectionService : IInjectionService
         var layout = new BaseInspection(title).Layout();
         return layout.Passed ? injector.Inspect(title) : layout.Issues;
     }
+
+    /// <summary>
+    /// Copies the template into the work folder from whichever store holds it.
+    /// </summary>
+    /// <param name="template">Base or core.</param>
+    /// <param name="work">Folder that becomes the title root.</param>
+    /// <param name="cancellationToken">Cancels the copy.</param>
+    private Task<TitleDirectory> Stage(ITitleTemplate template, string work, CancellationToken cancellationToken) => template switch
+    {
+        BaseTitle @base => _bases.StageAsync(@base, work, cancellationToken),
+        RetroArchCore core => _cores.StageAsync(core, work, cancellationToken),
+        _ => throw new NotSupportedException($"Cannot stage a {template.GetType().Name}."),
+    };
 
     /// <summary>
     /// The staged icon, read before the work folder goes.

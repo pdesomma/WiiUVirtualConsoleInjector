@@ -112,7 +112,7 @@ public class InjectWizardTests
         vm.Name = " Super Mario Bros. ";
         vm.ProductId = "SMB1";
 
-        Assert.AreEqual("NES Base (UnitedStates)", vm.ReviewBase);
+        Assert.AreEqual("NES Base (UnitedStates)", vm.ReviewTemplate);
         Assert.AreEqual(@"C:\roms\mario.nes", vm.ReviewRom);
         Assert.AreEqual("Super Mario Bros. \u00b7 #SMB1", vm.ReviewGame);
 
@@ -153,5 +153,5 @@ public class InjectWizardTests
         Assert.AreEqual("0005000010101900", vm.SelectedBase.TitleId);
     }
 
-    private InjectViewModel Create() => new(_bases, _dialogs, _factory, _settings, _navigation, new FakeSdCard(), new ArtworkBuilderViewModel(new FakeArtworkComposer(), _dialogs, () => _settings.WorkPath), new FakeSoundPlayer(), new FakeInjectionHistory(), new FakeCompatibilityLists(), new FakeCommunityArtwork());
+    private InjectViewModel Create() => new(_bases, new InjectFakes.FakeRetroArchCores(), _dialogs, _factory, _settings, _navigation, new FakeSdCard(), new ArtworkBuilderViewModel(new FakeArtworkComposer(), _dialogs, () => _settings.WorkPath), new FakeSoundPlayer(), new FakeInjectionHistory(), new FakeCompatibilityLists(), new FakeCommunityArtwork());
 }

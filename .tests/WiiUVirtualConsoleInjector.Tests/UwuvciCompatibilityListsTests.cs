@@ -14,8 +14,17 @@ public class UwuvciCompatibilityListsTests
         Assert.AreEqual("https://uwuvci-prime.github.io/UWUVCI-Resources/n64/n64.html", lists.For(SourceConsole.N64).ToString());
         Assert.AreEqual("https://uwuvci-prime.github.io/UWUVCI-Resources/tgfx/tgfx.html", lists.For(SourceConsole.Tg16).ToString(), "the site calls TurboGrafx tgfx");
         Assert.AreEqual("https://uwuvci-prime.github.io/UWUVCI-Resources/gcn/gcn.html", lists.For(SourceConsole.GameCube).ToString());
-        foreach (var console in Enum.GetValues<SourceConsole>())
+        // UWUVCI never injected Genesis, so its site has no page for it
+        foreach (var console in Enum.GetValues<SourceConsole>().Where(c => c != SourceConsole.Genesis))
             StringAssert.StartsWith(lists.For(console).ToString(), UwuvciCompatibilityLists.Root, console.ToString());
+    }
+
+    [TestMethod]
+    public void For_Genesis_ThrowsArgumentOutOfRangeException()
+    {
+        var lists = new UwuvciCompatibilityLists(new FakeLinkOpener());
+
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => lists.For(SourceConsole.Genesis));
     }
 
     [TestMethod]

@@ -1,4 +1,5 @@
 ﻿using PD.WiiU.VirtualConsole;
+using PD.WiiU.VirtualConsole.Ports;
 using WiiUSharp;
 using WiiUVirtualConsoleInjector.Services;
 
@@ -11,6 +12,30 @@ internal static class InjectFakes
 {
     public static BaseTitle Base(SourceConsole console, uint id = 0x10101D00, string name = "Base") =>
         new(new TitleId(TitleType.Game, id), name, Region.UnitedStates, console);
+
+    public static RetroArchCore Core(string id, string name, SourceConsole console = SourceConsole.Genesis, bool recommended = false) =>
+        new(id, name, console, name + " core") { IsRecommended = recommended };
+
+    internal sealed class FakeRetroArchCores : IRetroArchCores
+    {
+        public List<RetroArchCore> Cores { get; } = new();
+        public List<(RetroArchCore Core, string Destination)> Staged { get; } = new();
+
+        public FakeRetroArchCores Add(RetroArchCore core)
+        {
+            Cores.Add(core);
+            return this;
+        }
+
+        public IReadOnlyList<RetroArchCore> Available(SourceConsole console) => Cores.Where(c => c.Console == console).ToList();
+
+        public Task<TitleDirectory> StageAsync(RetroArchCore core, string destination, CancellationToken cancellationToken = default)
+        {
+            Staged.Add((core, destination));
+            Directory.CreateDirectory(destination);
+            return Task.FromResult(new TitleDirectory(destination));
+        }
+    }
 
     /// <summary>
     /// Runs posted callbacks inline so Progress callbacks land before the awaited call returns.

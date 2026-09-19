@@ -8,12 +8,14 @@ namespace WiiUVirtualConsoleInjector.Tests;
 [TestClass]
 public class InjectionServiceFactoryTests
 {
+    private FakeRetroArchCores _cores = null!;
     private FakeKeyStore _keys = null!;
     private InjectSettingsService _settings = null!;
 
     [TestInitialize]
     public void Setup()
     {
+        _cores = new FakeRetroArchCores();
         _keys = new FakeKeyStore { CommonKey = CommonKey.Parse("00112233445566778899AABBCCDDEEFF") };
         _settings = new InjectSettingsService();
     }
@@ -21,14 +23,15 @@ public class InjectionServiceFactoryTests
     [TestMethod]
     public void Constructor_NullArguments_ThrowsArgumentNullException()
     {
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectionServiceFactory(null!, _keys));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectionServiceFactory(_settings, null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectionServiceFactory(null!, _keys, _cores));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectionServiceFactory(_settings, null!, _cores));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectionServiceFactory(_settings, _keys, null!));
     }
 
     [TestMethod]
     public void Create_WiiUCommonKeyOnly_HasGameCubeAndWii()
     {
-        var service = (InjectionService)new InjectionServiceFactory(_settings, _keys).Create();
+        var service = (InjectionService)new InjectionServiceFactory(_settings, _keys, _cores).Create();
 
         CollectionAssert.Contains(service.SupportedConsoles.ToArray(), SourceConsole.GameCube);
         CollectionAssert.Contains(service.SupportedConsoles.ToArray(), SourceConsole.Wii, "NKit images, homebrew and channels need no Wii key");
@@ -37,11 +40,19 @@ public class InjectionServiceFactoryTests
     }
 
     [TestMethod]
+    public void Create_Always_HasGenesisThroughRetroArch()
+    {
+        var service = (InjectionService)new InjectionServiceFactory(_settings, _keys, _cores).Create();
+
+        CollectionAssert.Contains(service.SupportedConsoles.ToArray(), SourceConsole.Genesis);
+    }
+
+    [TestMethod]
     public void Create_WiiCommonKeyToo_HasWii()
     {
         _keys.WiiCommonKey = new WiiSharp.CommonKey(new byte[16]);
 
-        var service = (InjectionService)new InjectionServiceFactory(_settings, _keys).Create();
+        var service = (InjectionService)new InjectionServiceFactory(_settings, _keys, _cores).Create();
 
         CollectionAssert.Contains(service.SupportedConsoles.ToArray(), SourceConsole.Wii);
     }
@@ -51,13 +62,13 @@ public class InjectionServiceFactoryTests
     {
         _keys.CommonKey = null;
 
-        Assert.ThrowsExactly<InvalidOperationException>(() => new InjectionServiceFactory(_settings, _keys).Create());
+        Assert.ThrowsExactly<InvalidOperationException>(() => new InjectionServiceFactory(_settings, _keys, _cores).Create());
     }
 
     [TestMethod]
     public void MissingKeys_WiiNeedsTheWiiKeyOnlyForAnEncryptedDisc()
     {
-        var factory = new InjectionServiceFactory(_settings, _keys);
+        var factory = new InjectionServiceFactory(_settings, _keys, _cores);
         var root = Path.Combine(Path.GetTempPath(), "WiiUVirtualConsoleInjector.Tests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try
@@ -92,7 +103,7 @@ public class InjectionServiceFactoryTests
     {
         _keys.CommonKey = null;
 
-        var missing = new InjectionServiceFactory(_settings, _keys).MissingKeys(SourceConsole.Wii, @"C:\game.wbfs");
+        var missing = new InjectionServiceFactory(_settings, _keys, _cores).MissingKeys(SourceConsole.Wii, @"C:\game.wbfs");
 
         CollectionAssert.AreEqual(new[] { InjectionServiceFactory.WiiUCommonKeyName, InjectionServiceFactory.WiiCommonKeyName }, missing.ToArray());
     }

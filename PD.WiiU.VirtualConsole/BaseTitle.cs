@@ -5,7 +5,7 @@ namespace PD.WiiU.VirtualConsole;
 /// <summary>
 /// Stock Virtual Console title used as the template for an injection.
 /// </summary>
-public sealed class BaseTitle
+public sealed class BaseTitle : ITitleTemplate
 {
     /// <summary>
     /// Creates a new instance of the <see cref="BaseTitle"/> class.
@@ -22,9 +22,7 @@ public sealed class BaseTitle
         Console = console;
     }
 
-    /// <summary>
-    /// Console it emulates.
-    /// </summary>
+    /// <inheritdoc/>
     public SourceConsole Console { get; }
     /// <summary>
     /// True for a base the user added rather than one from the bundled catalog.
@@ -34,9 +32,7 @@ public sealed class BaseTitle
     /// True for the base the community found works best for its console; it is picked first.
     /// </summary>
     public bool IsRecommended { get; init; }
-    /// <summary>
-    /// Display name.
-    /// </summary>
+    /// <inheritdoc/>
     public string Name { get; }
     /// <summary>
     /// Release region.

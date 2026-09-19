@@ -23,7 +23,7 @@ public class InjectionServiceTests
     {
         var injectors = new[] { new FakeRomInjector(SourceConsole.N64), new FakeRomInjector(SourceConsole.N64) };
 
-        Assert.ThrowsExactly<ArgumentException>(() => new InjectionService(new FakeBaseStore(), injectors, new FakeImageConverter(), new FakeBootSoundConverter(), new FakeTitlePacker()));
+        Assert.ThrowsExactly<ArgumentException>(() => new InjectionService(new FakeBaseStore(), new FakeRetroArchCores(), injectors, new FakeImageConverter(), new FakeBootSoundConverter(), new FakeTitlePacker()));
     }
 
     [TestMethod]
@@ -31,11 +31,12 @@ public class InjectionServiceTests
     {
         var injectors = new[] { new FakeRomInjector(SourceConsole.N64) };
 
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectionService(null!, injectors, new FakeImageConverter(), new FakeBootSoundConverter(), new FakeTitlePacker()));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectionService(new FakeBaseStore(), null!, new FakeImageConverter(), new FakeBootSoundConverter(), new FakeTitlePacker()));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectionService(new FakeBaseStore(), injectors, null!, new FakeBootSoundConverter(), new FakeTitlePacker()));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectionService(new FakeBaseStore(), injectors, new FakeImageConverter(), null!, new FakeTitlePacker()));
-        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectionService(new FakeBaseStore(), injectors, new FakeImageConverter(), new FakeBootSoundConverter(), null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectionService(null!, new FakeRetroArchCores(), injectors, new FakeImageConverter(), new FakeBootSoundConverter(), new FakeTitlePacker()));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectionService(new FakeBaseStore(), null!, injectors, new FakeImageConverter(), new FakeBootSoundConverter(), new FakeTitlePacker()));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectionService(new FakeBaseStore(), new FakeRetroArchCores(), null!, new FakeImageConverter(), new FakeBootSoundConverter(), new FakeTitlePacker()));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectionService(new FakeBaseStore(), new FakeRetroArchCores(), injectors, null!, new FakeBootSoundConverter(), new FakeTitlePacker()));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectionService(new FakeBaseStore(), new FakeRetroArchCores(), injectors, new FakeImageConverter(), null!, new FakeTitlePacker()));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new InjectionService(new FakeBaseStore(), new FakeRetroArchCores(), injectors, new FakeImageConverter(), new FakeBootSoundConverter(), null!));
     }
 
     [TestMethod]
@@ -95,6 +96,37 @@ public class InjectionServiceTests
         var call = sounds.Calls.Single();
         Assert.AreEqual(@"C:\audio\boot.wav", call.Source);
         Assert.AreEqual(Path.Combine(packer.Calls.Single().Title.Meta, BootSound.FileName), call.Destination);
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_CoreTemplate_StagesThroughTheCoresNotTheBaseStore()
+    {
+        var bases = new FakeBaseStore();
+        var cores = new FakeRetroArchCores();
+        var core = new RetroArchCore("genesis_plus_gx", "Genesis Plus GX", SourceConsole.Genesis, "Accurate.");
+        var rpxSeen = false;
+        var injector = new FakeRomInjector(SourceConsole.Genesis, (_, title) =>
+        {
+            rpxSeen = File.Exists(Path.Combine(title.Code, core.RpxFileName));
+            return Task.CompletedTask;
+        });
+        var packer = new FakeTitlePacker();
+        var reports = new List<InjectionProgress>();
+        var service = new InjectionService(bases, cores, new[] { injector }, new FakeImageConverter(), new FakeBootSoundConverter(), packer);
+        var injection = new Injection(core, new Rom(@"C:\roms\sonic.md", SourceConsole.Genesis), TestTitle.Game());
+
+        var result = await service.InjectAsync(injection, Work(), Output(), new SyncProgress(reports.Add));
+
+        Assert.AreEqual(0, bases.Destinations.Count);
+        Assert.AreSame(core, cores.Staged.Single().Core);
+        Assert.AreEqual(cores.Staged.Single().Destination, injector.Titles.Single().Root);
+        Assert.IsTrue(rpxSeen, "the injector gets the staged title with the core's executable in it");
+        Assert.AreSame(injector.Titles.Single(), packer.Calls.Single().Title);
+        Assert.AreEqual(InjectionStep.StageBase, reports[0].Step);
+        StringAssert.Contains(reports[0].Message, "Genesis Plus GX");
+        Assert.AreEqual("Checking core", reports[1].Message);
+        Assert.AreEqual(Path.Combine(Output(), "[WUP]Test"), result.OutputDirectory);
+        Assert.AreEqual(0, Directory.GetDirectories(Work()).Length);
     }
 
     [TestMethod]
@@ -175,7 +207,7 @@ public class InjectionServiceTests
         var injector = new FakeRomInjector(SourceConsole.N64);
         var packer = new FakeTitlePacker();
         var reports = new List<InjectionProgress>();
-        var service = new InjectionService(bases, new[] { injector }, new FakeImageConverter(), new FakeBootSoundConverter(), packer);
+        var service = new InjectionService(bases, new FakeRetroArchCores(), new[] { injector }, new FakeImageConverter(), new FakeBootSoundConverter(), packer);
         var injection = new Injection(TestTitle.Base(), Rom(), TestTitle.Game()) { BootSoundPath = @"C:\audio\boot.wav" };
 
         var result = await service.InjectAsync(injection, Work(), Output(), new SyncProgress(reports.Add));
@@ -271,7 +303,7 @@ public class InjectionServiceTests
         var injector = new FakeRomInjector(SourceConsole.N64);
         injector.Issues.Add(new BaseIssue("content/rom", "folder missing"));
         var bases = new FakeBaseStore { Root = Path.Combine(_root, "store") };
-        var service = new InjectionService(bases, new[] { injector }, new FakeImageConverter(), new FakeBootSoundConverter(), new FakeTitlePacker());
+        var service = new InjectionService(bases, new FakeRetroArchCores(), new[] { injector }, new FakeImageConverter(), new FakeBootSoundConverter(), new FakeTitlePacker());
 
         var issues = service.InspectBase(TestTitle.Base());
 
@@ -287,7 +319,7 @@ public class InjectionServiceTests
         injector.Issues.Add(new BaseIssue("content/rom", "folder missing"));
         var bases = new FakeBaseStore { Root = Path.Combine(_root, "store") };
         TestTitle.Populate(bases.Locate(TestTitle.Base()).Root);
-        var service = new InjectionService(bases, new[] { injector }, new FakeImageConverter(), new FakeBootSoundConverter(), new FakeTitlePacker());
+        var service = new InjectionService(bases, new FakeRetroArchCores(), new[] { injector }, new FakeImageConverter(), new FakeBootSoundConverter(), new FakeTitlePacker());
 
         var issues = service.InspectBase(TestTitle.Base());
 
@@ -316,7 +348,7 @@ public class InjectionServiceTests
         Service(injector is null ? null : new[] { injector }, images, sounds, packer);
 
     private static InjectionService Service(FakeRomInjector[]? injectors, FakeImageConverter? images, FakeBootSoundConverter? sounds, ITitlePacker? packer) =>
-        new(new FakeBaseStore(), injectors ?? new[] { new FakeRomInjector(SourceConsole.N64) }, images ?? new FakeImageConverter(), sounds ?? new FakeBootSoundConverter(), packer ?? new FakeTitlePacker());
+        new(new FakeBaseStore(), new FakeRetroArchCores(), injectors ?? new[] { new FakeRomInjector(SourceConsole.N64) }, images ?? new FakeImageConverter(), sounds ?? new FakeBootSoundConverter(), packer ?? new FakeTitlePacker());
 
     private string Work()
     {

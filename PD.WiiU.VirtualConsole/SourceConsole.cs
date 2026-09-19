@@ -14,4 +14,5 @@ public enum SourceConsole
     Msx,
     Wii,
     GameCube,
+    Genesis,
 }

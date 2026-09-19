@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PD.WiiU.VirtualConsole;
 using PD.WiiU.VirtualConsole.Infrastructure;
 using PD.WiiU.VirtualConsole.Ports;
+using PD.WiiU.VirtualConsole.RetroArch;
 using WiiUVirtualConsoleInjector.Services;
 using WiiUVirtualConsoleInjector.ViewModels;
 
@@ -46,6 +47,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IBaseDownloader>(p => new NusBaseDownloader(p.GetRequiredService<IBaseStore>(), p.GetRequiredService<HttpClient>(), paths.PackageCache));
         services.AddSingleton<ICustomBases>(new JsonCustomBases(paths.CustomBasesFile));
         services.AddSingleton<IBaseService, BaseService>();
+        services.AddSingleton<IRetroArchCores, EmbeddedRetroArchCores>();
         services.AddSingleton<IInjectionServiceFactory, InjectionServiceFactory>();
         services.AddSingleton<IDialogService>(new AvaloniaDialogService(owner));
         services.AddSingleton<ILinkOpener>(new AvaloniaLinkOpener(owner));

@@ -47,6 +47,17 @@ public class BasesViewModelTests
     }
 
     [TestMethod]
+    public void Constructor_ConsoleWithoutBases_IsLeftOutOfConsoles()
+    {
+        var vm = Create();
+
+        CollectionAssert.Contains(vm.Consoles.ToArray(), SourceConsole.Nes);
+        CollectionAssert.Contains(vm.Consoles.ToArray(), SourceConsole.Snes);
+        CollectionAssert.DoesNotContain(vm.Consoles.ToArray(), SourceConsole.Genesis);
+        CollectionAssert.DoesNotContain(vm.Consoles.ToArray(), SourceConsole.Wii, "nothing in the catalog for it either");
+    }
+
+    [TestMethod]
     public void Constructor_NullArguments_ThrowsArgumentNullException()
     {
         Assert.ThrowsExactly<ArgumentNullException>(() => new BasesViewModel(null!, _keys, _injections, _dialogs));

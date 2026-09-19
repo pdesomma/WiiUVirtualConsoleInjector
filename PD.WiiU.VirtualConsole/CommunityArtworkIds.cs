@@ -37,6 +37,8 @@ public static class CommunityArtworkIds
             SourceConsole.GameCube => WithDiscRegions(DiscCode(romPath)),
             _ => Array.Empty<string>(),
         };
+        if (ids.Count == 0)
+            return Array.Empty<string>();
         var folder = Folder(console);
         return ids.Where(id => id.Length > 0).Distinct(StringComparer.Ordinal).Select(id => folder + "/" + id).ToList();
     }

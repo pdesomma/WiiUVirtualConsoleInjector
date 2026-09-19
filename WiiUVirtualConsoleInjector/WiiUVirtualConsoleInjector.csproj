@@ -42,6 +42,7 @@
     <ProjectReference Include="..\PD.WiiU.VirtualConsole.Gba\PD.WiiU.VirtualConsole.Gba.csproj" />
     <ProjectReference Include="..\PD.WiiU.VirtualConsole.Infrastructure\PD.WiiU.VirtualConsole.Infrastructure.csproj" />
     <ProjectReference Include="..\PD.WiiU.VirtualConsole.Retro\PD.WiiU.VirtualConsole.Retro.csproj" />
+    <ProjectReference Include="..\PD.WiiU.VirtualConsole.RetroArch\PD.WiiU.VirtualConsole.RetroArch.csproj" />
     <ProjectReference Include="..\PD.WiiU.VirtualConsole.Wii\PD.WiiU.VirtualConsole.Wii.csproj" />
   </ItemGroup>
 

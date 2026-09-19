@@ -20,6 +20,14 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     public const string WarningTitle = "Warning";
 
     private const string DialogTitle = "Inject";
+    /// <summary>
+    /// Shown on Review for every RetroArch title, since the HOME Menu's Close Software hangs the console.
+    /// </summary>
+    public const string RetroArchQuitHint = "Quit from RetroArch's menu (Main Menu → Quit RetroArch). Closing the software from the HOME Menu hangs on the Wii U Menu; that is a RetroArch bug.";
+    /// <summary>
+    /// Where the signature patch module comes from.
+    /// </summary>
+    public const string SigPatchesUrl = "https://github.com/marco-calautti/SigpatchesModuleWiiU/releases";
     private const string GczWarning = "GCZ images take longer to inject than an ISO or GCM, since they are decoded first.\n\nContinue anyway?";
     private const string NdsWarning = "You can only inject NDS ROMs that are not DSi Enhanced (example for not working: Pokémon Black & White).\n\nIf attempting to inject a DSi Enhanced ROM, we will not give you any support with fixing said injection.\n\nContinue?";
     private const string SnesWarning = "You can only inject SNES ROMs that are not using any Co-Processors (example for not working: Star Fox).\n\nIf attempting to inject a ROM in need of a Co-Processor, we will not give you any support with fixing said injection.\n\nContinue?";
@@ -40,6 +48,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     };
 
     private readonly IBaseService _bases;
+    private readonly IRetroArchCores _cores;
     private readonly IDialogService _dialogs;
     private readonly ICompatibilityLists _compatibility;
     private readonly ICommunityArtwork _communityArtwork;
@@ -92,9 +101,16 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     [NotifyCanExecuteChangedFor(nameof(InjectCommand))]
     private string? _romFitHint;
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanInject), nameof(BaseHint), nameof(ReviewBase))]
+    [NotifyPropertyChangedFor(nameof(CanInject), nameof(BaseHint), nameof(ReviewTemplate))]
     [NotifyCanExecuteChangedFor(nameof(InjectCommand))]
     private BaseChoice? _selectedBase;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanInject), nameof(ReviewTemplate))]
+    [NotifyCanExecuteChangedFor(nameof(InjectCommand))]
+    private RetroArchCore? _selectedCore;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasAromaWarnings))]
+    private IReadOnlyList<string> _aromaWarnings = Array.Empty<string>();
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsGamePadVisible), nameof(IsTurboCd), nameof(SelectedConsoleName), nameof(RomExtensions), nameof(ReviewGame))]
     private SourceConsole _selectedConsole;
@@ -112,6 +128,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     /// Creates a new instance of the <see cref="InjectViewModel"/> class.
     /// </summary>
     /// <param name="bases">Bases known per console and their status.</param>
+    /// <param name="cores">RetroArch cores shipped per console.</param>
     /// <param name="dialogs">Pickers and message boxes.</param>
     /// <param name="injections">Builds the injection service and reports missing keys.</param>
     /// <param name="settings">Work and output folders, suppressed warnings.</param>
@@ -122,10 +139,11 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     /// <param name="history">Remembers finished injects.</param>
     /// <param name="compatibility">Community compatibility pages per console.</param>
     /// <param name="communityArtwork">The community artwork repository.</param>
-    public InjectViewModel(IBaseService bases, IDialogService dialogs, IInjectionServiceFactory injections, ISettingsService settings, INavigationService navigation, ISdCard sdCard, ArtworkBuilderViewModel artwork, ISoundPlayer sounds, IInjectionHistory history, ICompatibilityLists compatibility, ICommunityArtwork communityArtwork)
+    public InjectViewModel(IBaseService bases, IRetroArchCores cores, IDialogService dialogs, IInjectionServiceFactory injections, ISettingsService settings, INavigationService navigation, ISdCard sdCard, ArtworkBuilderViewModel artwork, ISoundPlayer sounds, IInjectionHistory history, ICompatibilityLists compatibility, ICommunityArtwork communityArtwork)
         : base("Inject", "inject-icon.png", "M12 3v11 M7.5 10.5L12 15l4.5-4.5 M4 17.5V19a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5")
     {
         _bases = bases ?? throw new ArgumentNullException(nameof(bases));
+        _cores = cores ?? throw new ArgumentNullException(nameof(cores));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _history = history ?? throw new ArgumentNullException(nameof(history));
         _compatibility = compatibility ?? throw new ArgumentNullException(nameof(compatibility));
@@ -162,15 +180,40 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     }
 
     /// <summary>
-    /// Why the selected base cannot be used, or null when it can.
+    /// Why the selected base cannot be used, or null when it can or the console runs a RetroArch core instead.
     /// </summary>
-    public string? BaseHint => SelectedBase switch
+    public string? BaseHint => IsRetroArch ? null : SelectedBase switch
     {
         null => "No base is selected for this console.",
         { IsPresent: false } => "This base is not downloaded; get it on Bases & Keys.",
         { KeysOk: false } => "A key this base needs is missing; add it on Bases & Keys.",
         _ => null,
     };
+
+    /// <summary>
+    /// RetroArch cores for the selected console; empty for consoles built on a base.
+    /// </summary>
+    public ObservableCollection<RetroArchCore> Cores { get; } = new();
+
+    /// <summary>
+    /// True when a RetroArch title's SD checks found something to say.
+    /// </summary>
+    public bool HasAromaWarnings => AromaWarnings.Count > 0;
+
+    /// <summary>
+    /// True when the selected console is built on a RetroArch core rather than a base.
+    /// </summary>
+    public bool IsRetroArch => Cores.Count > 0;
+
+    /// <summary>
+    /// The quit hint for RetroArch titles, or null for the rest.
+    /// </summary>
+    public string? RetroArchHint => IsRetroArch ? RetroArchQuitHint : null;
+
+    /// <summary>
+    /// Label of the template line of the review summary.
+    /// </summary>
+    public string ReviewTemplateLabel => IsRetroArch ? "Core" : "Base";
 
     /// <summary>
     /// True while a later step exists.
@@ -238,7 +281,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     /// </summary>
     public bool CanInject =>
         !IsRunning
-        && SelectedBase is { IsPresent: true }
+        && HasTemplate
         && !string.IsNullOrWhiteSpace(RomPath)
         && !string.IsNullOrWhiteSpace(Name)
         && IsProductIdValid
@@ -263,6 +306,11 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     /// True once a ROM is picked.
     /// </summary>
     public bool HasRom => !string.IsNullOrWhiteSpace(RomPath);
+
+    /// <summary>
+    /// True when a usable base, or a core, is selected.
+    /// </summary>
+    public bool HasTemplate => IsRetroArch ? SelectedCore is not null : SelectedBase is { IsPresent: true };
 
     /// <summary>
     /// Menu icon.
@@ -316,9 +364,11 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     public string? MissingKeysHint => HasMissingKeys ? $"Missing {string.Join(" and ", MissingKeys)}; add it on Bases & Keys." : null;
 
     /// <summary>
-    /// Base line of the review summary.
+    /// Template line of the review summary: the base, or the core.
     /// </summary>
-    public string ReviewBase => SelectedBase is { } b ? $"{b.Base.Name} ({b.Base.Region})" : "Not selected";
+    public string ReviewTemplate => IsRetroArch
+        ? SelectedCore is { } core ? $"{core.Name} (RetroArch)" : "Not selected"
+        : SelectedBase is { } b ? $"{b.Base.Name} ({b.Base.Region})" : "Not selected";
 
     /// <summary>
     /// Output shapes to choose from.
@@ -403,7 +453,10 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
 
         StartOver();
         SelectedConsole = record.Console;
-        SelectedBase = Bases.FirstOrDefault(b => b.Base.TitleId.Equals(record.BaseTitleId)) ?? SelectedBase;
+        if (record.Template.IsCore)
+            SelectedCore = Cores.FirstOrDefault(c => c.Id == record.Template.CoreId) ?? SelectedCore;
+        else
+            SelectedBase = Bases.FirstOrDefault(b => b.Base.TitleId.Equals(record.Template.BaseTitleId!.Value)) ?? SelectedBase;
         RomPath = record.RomPath;
         Name = record.Name;
         ShortName = record.ShortName;
@@ -483,6 +536,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
             new("Channels", "*.wad"),
         },
         SourceConsole.GameCube => new FileFilter[] { new("GameCube images", "*.iso", "*.gcm", "*.gcz") },
+        SourceConsole.Genesis => new FileFilter[] { new("Sega Genesis ROMs", "*.md", "*.bin", "*.gen", "*.smd", "*.68k", "*.sgd") },
         _ => throw new ArgumentOutOfRangeException(nameof(console), console, "Unknown console."),
     };
 
@@ -495,7 +549,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     };
 
     private Injection BuildInjection() =>
-        new(SelectedBase!.Base, new Rom(RomPath!, SelectedConsole), GameFactory.Create(Name!, ShortName, ClearedProductId(ProductId), IsGamePadVisible && GamePad, identity: _identity))
+        new(IsRetroArch ? SelectedCore! : SelectedBase!.Base, new Rom(RomPath!, SelectedConsole), GameFactory.Create(Name!, ShortName, ClearedProductId(ProductId), IsGamePadVisible && GamePad, identity: _identity))
         {
             Artwork = new Artwork { Icon = Icon.Path, BootTv = BootTv.Path, BootDrc = BootDrc.Path, BootLogo = BootLogo.Path },
             BootSoundPath = BootSound.Path,
@@ -651,7 +705,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     /// <param name="result">What came out.</param>
     private async Task RememberAsync(Injection injection, InjectedTitle result)
     {
-        var record = new InjectionRecord(Guid.NewGuid().ToString("N"), DateTimeOffset.Now, injection.Console, injection.Base.TitleId, injection.Rom.Path, Name!.Trim(), TitleIdentity.Of(result.Game))
+        var record = new InjectionRecord(Guid.NewGuid().ToString("N"), DateTimeOffset.Now, injection.Console, TemplateKey.Of(injection.Template), injection.Rom.Path, Name!.Trim(), TitleIdentity.Of(result.Game))
         {
             Artwork = injection.Artwork,
             BootSoundPath = injection.BootSoundPath,
@@ -868,23 +922,66 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     }
 
     /// <summary>
-    /// Rebuilds the base list and missing keys for the selected console, keeping the selection where it survives.
+    /// Rebuilds the base and core lists and missing keys for the selected console, keeping the selection where it survives.
     /// </summary>
     private void Refresh()
     {
         var previous = SelectedBase?.Base.TitleId;
+        var previousCore = SelectedCore?.Id;
         MissingKeys = _injections.MissingKeys(SelectedConsole, RomPath);
         var step = Step;
         Bases.Clear();
         foreach (var @base in _bases.Available(SelectedConsole))
             Bases.Add(new BaseChoice(@base, _bases.Status(@base), MissingKeys.Count == 0, _bases.HasTitleKey(@base)));
+        Cores.Clear();
+        foreach (var core in _cores.Available(SelectedConsole))
+            Cores.Add(core);
+        OnPropertyChanged(nameof(IsRetroArch));
+        OnPropertyChanged(nameof(RetroArchHint));
+        OnPropertyChanged(nameof(ReviewTemplateLabel));
 
         SelectedBase = Bases.FirstOrDefault(b => previous is { } id && b.Base.TitleId.Equals(id))
                        ?? Bases.FirstOrDefault(b => b.IsPresent && b.Base.IsRecommended)
                        ?? Bases.FirstOrDefault(b => b.IsPresent)
                        ?? Bases.FirstOrDefault(b => b.Base.IsRecommended)
                        ?? Bases.FirstOrDefault();
+        SelectedCore = Cores.FirstOrDefault(c => c.Id == previousCore)
+                       ?? Cores.FirstOrDefault(c => c.IsRecommended)
+                       ?? Cores.FirstOrDefault();
+        AromaWarnings = CheckAroma();
         Step = step;
+    }
+
+    /// <summary>
+    /// What the SD card lacks for a RetroArch title: Aroma itself, or its signature patches. Empty when no card is configured or the console is built on a base.
+    /// </summary>
+    private IReadOnlyList<string> CheckAroma()
+    {
+        var sd = _settings.SdPath;
+        if (!IsRetroArch || string.IsNullOrWhiteSpace(sd) || !Directory.Exists(sd))
+            return Array.Empty<string>();
+
+        AromaEnvironment aroma;
+        try
+        {
+            aroma = AromaEnvironment.Inspect(sd);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return Array.Empty<string>();
+        }
+
+        if (!aroma.IsInstalled)
+            return new[] { $"Aroma was not found on the SD card at {sd} (no {AromaEnvironment.EnvironmentFolder}). RetroArch titles only run under Aroma." };
+        if (!aroma.HasSigPatches)
+            return new[] { $"Aroma on the SD card has no signature patches ({AromaEnvironment.SigPatchesFile} is missing), so installing will fail. Get 01_sigpatches.rpx from {SigPatchesUrl}." };
+        return Array.Empty<string>();
+    }
+
+    partial void OnStepChanged(int value)
+    {
+        if (value == Steps.Count)
+            AromaWarnings = CheckAroma();
     }
 
     private void Report(InjectionProgress progress)

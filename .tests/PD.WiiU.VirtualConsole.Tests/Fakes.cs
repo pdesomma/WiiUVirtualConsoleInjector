@@ -135,3 +135,23 @@ internal sealed class FakeBaseDownloader : IBaseDownloader
         return Task.FromResult(new TitleDirectory(Path.Combine(Root, @base.TitleId.ToString())));
     }
 }
+
+internal sealed class FakeRetroArchCores : IRetroArchCores
+{
+    public const string CosXml = "<app type=\"complex\" access=\"777\"><argstr type=\"string\" length=\"4096\"></argstr></app>";
+
+    public List<RetroArchCore> Cores { get; } = new();
+    public List<(RetroArchCore Core, string Destination)> Staged { get; } = new();
+
+    public IReadOnlyList<RetroArchCore> Available(SourceConsole console) =>
+        Cores.Where(c => c.Console == console).OrderByDescending(c => c.IsRecommended).ToArray();
+
+    public Task<TitleDirectory> StageAsync(RetroArchCore core, string destination, CancellationToken cancellationToken = default)
+    {
+        Staged.Add((core, destination));
+        var title = TestTitle.Populate(destination);
+        File.WriteAllBytes(Path.Combine(title.Code, core.RpxFileName), new byte[] { 0x7F, (byte)'E', (byte)'L', (byte)'F' });
+        File.WriteAllText(Path.Combine(title.Code, "cos.xml"), CosXml);
+        return Task.FromResult(title);
+    }
+}

@@ -14,11 +14,11 @@ public sealed class InjectionRecord
     /// <param name="id">Unique id; also the record's folder name.</param>
     /// <param name="createdAt">When the inject finished.</param>
     /// <param name="console">Console injected.</param>
-    /// <param name="baseTitleId">Base the title was built on.</param>
+    /// <param name="template">Base or core the title was built on.</param>
     /// <param name="romPath">ROM that was injected.</param>
     /// <param name="name">Long name, commas as line breaks.</param>
     /// <param name="identity">IDs the title was given.</param>
-    public InjectionRecord(string id, DateTimeOffset createdAt, SourceConsole console, TitleId baseTitleId, string romPath, string name, TitleIdentity identity)
+    public InjectionRecord(string id, DateTimeOffset createdAt, SourceConsole console, TemplateKey template, string romPath, string name, TitleIdentity identity)
     {
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Id is required.", nameof(id));
@@ -30,7 +30,7 @@ public sealed class InjectionRecord
         Id = id;
         CreatedAt = createdAt;
         Console = console;
-        BaseTitleId = baseTitleId;
+        Template = template ?? throw new ArgumentNullException(nameof(template));
         RomPath = romPath;
         Name = name;
         Identity = identity ?? throw new ArgumentNullException(nameof(identity));
@@ -40,10 +40,6 @@ public sealed class InjectionRecord
     /// Replacement images that were used.
     /// </summary>
     public Artwork Artwork { get; init; } = Artwork.None;
-    /// <summary>
-    /// Base the title was built on.
-    /// </summary>
-    public TitleId BaseTitleId { get; }
     /// <summary>
     /// Boot sound that was used, or null for the base's.
     /// </summary>
@@ -100,6 +96,10 @@ public sealed class InjectionRecord
     /// Short name for the HOME Menu, or null when taken from the long name.
     /// </summary>
     public string? ShortName { get; init; }
+    /// <summary>
+    /// Base or core the title was built on.
+    /// </summary>
+    public TemplateKey Template { get; }
 
     /// <summary>
     /// The first line of the long name; what a tile shows.
