@@ -29,9 +29,9 @@ public sealed class RetroArchSystem
     }
 
     /// <summary>
-    /// File names the core needs under <see cref="SystemFolder"/> on the card; empty when it runs without any.
+    /// BIOS files the core needs under <see cref="SystemFolder"/> on the card; empty when it runs without any.
     /// </summary>
-    public IReadOnlyList<string> BiosFiles { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<BiosFile> BiosFiles { get; init; } = Array.Empty<BiosFile>();
     /// <summary>
     /// The console.
     /// </summary>
@@ -53,15 +53,15 @@ public sealed class RetroArchSystem
     }
 
     /// <summary>
-    /// The BIOS files not yet on the card.
+    /// The BIOS files the card has none of the accepted names for.
     /// </summary>
     /// <param name="sdRoot">Root of the card.</param>
-    public IReadOnlyList<string> MissingBios(string sdRoot)
+    public IReadOnlyList<BiosFile> MissingBios(string sdRoot)
     {
         if (string.IsNullOrWhiteSpace(sdRoot))
             throw new ArgumentException("Card root is required.", nameof(sdRoot));
 
         var folder = Path.Combine(sdRoot, SystemFolder.Replace('/', Path.DirectorySeparatorChar));
-        return BiosFiles.Where(file => !File.Exists(Path.Combine(folder, file))).ToArray();
+        return BiosFiles.Where(file => file.Present(folder) is null).ToArray();
     }
 }

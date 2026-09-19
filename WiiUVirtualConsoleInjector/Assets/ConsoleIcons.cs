@@ -23,7 +23,7 @@ public static class ConsoleIcons
     {
         SourceConsole.Genesis or SourceConsole.MasterSystem or SourceConsole.GameGear or SourceConsole.Sega32X
             or SourceConsole.Atari2600 or SourceConsole.Atari7800 or SourceConsole.AtariLynx or SourceConsole.VirtualBoy
-            or SourceConsole.Arcade or SourceConsole.NeoGeo => "Aroma only",
+            or SourceConsole.PlayStation or SourceConsole.Arcade or SourceConsole.NeoGeo => "Aroma only",
         _ => null,
     };
 
@@ -74,6 +74,7 @@ public static class ConsoleIcons
         SourceConsole.Atari7800 => "Atari 7800",
         SourceConsole.AtariLynx => "Atari Lynx",
         SourceConsole.VirtualBoy => "Virtual Boy",
+        SourceConsole.PlayStation => "PlayStation",
         SourceConsole.Arcade => "Arcade",
         SourceConsole.NeoGeo => "Neo Geo",
         _ => console.ToString(),

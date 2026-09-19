@@ -31,6 +31,7 @@ public static class ConsoleGroups
         new ConsoleTile(Atari, new[] { SourceConsole.Atari2600, SourceConsole.Atari7800, SourceConsole.AtariLynx }),
         new ConsoleTile(SourceConsole.Tg16),
         new ConsoleTile(SourceConsole.Msx),
+        new ConsoleTile(SourceConsole.PlayStation),
         new ConsoleTile(SourceConsole.Arcade),
         new ConsoleTile(SourceConsole.NeoGeo),
     };

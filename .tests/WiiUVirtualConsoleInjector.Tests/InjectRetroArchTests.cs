@@ -10,6 +10,7 @@ namespace WiiUVirtualConsoleInjector.Tests;
 public class InjectRetroArchTests
 {
     private const string GenesisRom = @"C:\sonic.md";
+    private static readonly BiosFile PsxBios = new("PlayStation BIOS", "scph5501.bin", "scph5500.bin", "scph1001.bin");
 
     private InjectBaseService _bases = null!;
     private FakeRetroArchCores _cores = null!;
@@ -84,7 +85,7 @@ public class InjectRetroArchTests
             _settings.Current = _settings.Current with { SdPath = sd };
             WriteAroma(sd, sigPatches: true);
             _cores.Add(Core("handy", "Handy", SourceConsole.AtariLynx, recommended: true));
-            _cores.Systems.Add(new RetroArchSystem(SourceConsole.AtariLynx, ".lnx") { BiosFiles = new[] { "lynxboot.img" } });
+            _cores.Systems.Add(new RetroArchSystem(SourceConsole.AtariLynx, ".lnx") { BiosFiles = new[] { new BiosFile("lynxboot.img") } });
             var vm = Create();
 
             vm.SelectedConsole = SourceConsole.AtariLynx;
@@ -235,6 +236,151 @@ public class InjectRetroArchTests
         var vm = Genesis();
 
         Assert.IsNull(vm.BiosHint);
+    }
+
+    [TestMethod]
+    public void BiosHint_MultiNameBios_ListsTheLabelAndEveryName()
+    {
+        var vm = PlayStation();
+
+        StringAssert.Contains(vm.BiosHint, "PlayStation BIOS (one of scph5501.bin, scph5500.bin, scph1001.bin)");
+        StringAssert.Contains(vm.BiosHint, RetroArchSystem.SystemFolder);
+    }
+
+    [TestMethod]
+    public void BiosFiles_MultiNameBiosOnCardUnderTheSecondName_OnCardAsThatName()
+    {
+        var sd = TempFolder();
+        try
+        {
+            _settings.Current = _settings.Current with { SdPath = sd };
+            WriteAroma(sd, sigPatches: true);
+            Directory.CreateDirectory(Path.Combine(sd, "retroarch", "system"));
+            File.WriteAllBytes(Path.Combine(sd, "retroarch", "system", "scph5500.bin"), new byte[] { 1 });
+
+            var vm = PlayStation();
+            var bios = vm.BiosFiles.Single();
+
+            Assert.IsTrue(bios.IsOnCard);
+            Assert.AreEqual("scph5500.bin", bios.OnCardAs);
+            Assert.IsFalse(bios.IsWanted);
+            Assert.AreEqual(0, vm.AromaWarnings.Count);
+            StringAssert.Contains(bios.Status, "scph5500.bin");
+        }
+        finally
+        {
+            Directory.Delete(sd, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void BiosFiles_MultiNameBiosMissing_WarningNamesTheLabelAndEveryName()
+    {
+        var sd = TempFolder();
+        try
+        {
+            _settings.Current = _settings.Current with { SdPath = sd };
+            WriteAroma(sd, sigPatches: true);
+
+            var vm = PlayStation();
+
+            Assert.IsNull(vm.BiosFiles.Single().OnCardAs);
+            Assert.IsTrue(vm.BiosFiles.Single().IsWanted);
+            StringAssert.Contains(vm.AromaWarnings.Single(), "PlayStation BIOS (one of scph5501.bin, scph5500.bin, scph1001.bin)");
+        }
+        finally
+        {
+            Directory.Delete(sd, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void BiosFiles_PickNamedLikeAnAcceptedName_SelectsThatName()
+    {
+        var vm = PlayStation();
+        var bios = vm.BiosFiles.Single();
+
+        bios.Field.Path = @"C:\dumps\SCPH1001.BIN";
+
+        Assert.AreEqual("scph1001.bin", bios.SelectedName);
+        Assert.AreEqual("retroarch/system/scph1001.bin", vm.CardFiles.Single().CardPath);
+    }
+
+    [TestMethod]
+    public void BiosFiles_PickWithAnUnrelatedName_SelectsThePreferredName()
+    {
+        var vm = PlayStation();
+        var bios = vm.BiosFiles.Single();
+        bios.SelectedName = "scph5500.bin";
+
+        bios.Field.Path = @"C:\dumps\psx-bios-us.bin";
+
+        Assert.AreEqual("scph5501.bin", bios.SelectedName);
+        Assert.AreEqual("retroarch/system/scph5501.bin", vm.CardFiles.Single().CardPath);
+    }
+
+    [TestMethod]
+    public void BiosFiles_SelectedNameChanged_CardPathFollows()
+    {
+        var vm = PlayStation();
+        var bios = vm.BiosFiles.Single();
+        bios.Field.Path = @"C:\dumps\psx-bios-us.bin";
+
+        bios.SelectedName = "scph1001.bin";
+
+        Assert.AreEqual("retroarch/system/scph1001.bin", bios.CardPath);
+        Assert.AreEqual("retroarch/system/scph1001.bin", vm.CardFiles.Single().CardPath);
+        StringAssert.Contains(vm.ReviewExtras.Single(), "SD:/retroarch/system/scph1001.bin");
+    }
+
+    [TestMethod]
+    public void Load_RecordWithABiosUnderAnotherAcceptedName_RestoresThePickAndTheName()
+    {
+        var vm = PlayStation();
+        var record = new InjectionRecord("abc", DateTimeOffset.Now, SourceConsole.PlayStation, TemplateKey.Core("pcsx_rearmed"), @"C:\game.cue", "Crash",
+            new TitleIdentity(new TitleId(TitleType.Demo, 0x31323334), new GroupId(0x3456), new ProductCode(ProductCode.EShop, "CRSH")))
+        {
+            CardFiles = new[] { new CardFile(@"C:\dumps\psx-bios-us.bin", "retroarch/system/SCPH1001.BIN") },
+        };
+
+        vm.Load(record);
+
+        var bios = vm.BiosFiles.Single();
+        Assert.AreEqual(@"C:\dumps\psx-bios-us.bin", bios.Field.Path);
+        Assert.AreEqual("scph1001.bin", bios.SelectedName);
+        Assert.AreEqual("retroarch/system/scph1001.bin", vm.CardFiles.Single().CardPath);
+    }
+
+    [TestMethod]
+    public void Load_RecordWithAForeignCardFile_LeavesTheRowEmpty()
+    {
+        var vm = PlayStation();
+        var record = new InjectionRecord("abc", DateTimeOffset.Now, SourceConsole.PlayStation, TemplateKey.Core("pcsx_rearmed"), @"C:\game.cue", "Crash",
+            new TitleIdentity(new TitleId(TitleType.Demo, 0x31323334), new GroupId(0x3456), new ProductCode(ProductCode.EShop, "CRSH")))
+        {
+            CardFiles = new[] { new CardFile(@"C:\dumps\lynxboot.img", "retroarch/system/lynxboot.img") },
+        };
+
+        vm.Load(record);
+
+        Assert.IsNull(vm.BiosFiles.Single().Field.Path);
+        Assert.AreEqual("scph5501.bin", vm.BiosFiles.Single().SelectedName);
+        Assert.AreEqual(0, vm.CardFiles.Count);
+    }
+
+    [TestMethod]
+    public void Refresh_SameConsoleAgain_KeepsThePickAndTheName()
+    {
+        var vm = PlayStation();
+        var bios = vm.BiosFiles.Single();
+        bios.Field.Path = @"C:\dumps\psx-bios-us.bin";
+        bios.SelectedName = "scph1001.bin";
+
+        vm.ActivateAsync().GetAwaiter().GetResult();
+
+        Assert.AreNotSame(bios, vm.BiosFiles.Single());
+        Assert.AreEqual(@"C:\dumps\psx-bios-us.bin", vm.BiosFiles.Single().Field.Path);
+        Assert.AreEqual("scph1001.bin", vm.BiosFiles.Single().SelectedName);
     }
 
     [TestMethod]
@@ -468,9 +614,18 @@ public class InjectRetroArchTests
     private InjectViewModel Lynx(FakeSdCard? card = null)
     {
         _cores.Add(Core("handy", "Handy", SourceConsole.AtariLynx, recommended: true));
-        _cores.Systems.Add(new RetroArchSystem(SourceConsole.AtariLynx, ".lnx") { BiosFiles = new[] { "lynxboot.img" } });
+        _cores.Systems.Add(new RetroArchSystem(SourceConsole.AtariLynx, ".lnx") { BiosFiles = new[] { new BiosFile("lynxboot.img") } });
         var vm = card is null ? Create() : new InjectViewModel(_bases, _cores, _dialogs, _factory, _settings, _navigation, card, new ArtworkBuilderViewModel(new FakeArtworkComposer(), _dialogs, () => _settings.WorkPath), new FakeSoundPlayer(), _history, new FakeCompatibilityLists(), new FakeCommunityArtwork());
         vm.SelectedConsole = SourceConsole.AtariLynx;
+        return vm;
+    }
+
+    private InjectViewModel PlayStation()
+    {
+        _cores.Add(Core("pcsx_rearmed", "PCSX-ReARMed", SourceConsole.PlayStation, recommended: true));
+        _cores.Systems.Add(new RetroArchSystem(SourceConsole.PlayStation, ".cue", ".chd") { BiosFiles = new[] { PsxBios } });
+        var vm = Create();
+        vm.SelectedConsole = SourceConsole.PlayStation;
         return vm;
     }
 

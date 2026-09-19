@@ -53,6 +53,7 @@ public static class Acknowledgements
         new("ProSystem", "Greg Stanton and the libretro contributors", "The Atari 7800 emulator behind the ProSystem core.", new Uri("https://github.com/libretro/prosystem-libretro"), "GPL"),
         new("Handy", "Keith Wilkins and the libretro contributors", "The Atari Lynx emulator behind the Handy core.", new Uri("https://github.com/libretro/libretro-handy"), "zlib"),
         new("Beetle VB", "Mednafen team and the libretro contributors", "The Virtual Boy emulator behind the Beetle VB core.", new Uri("https://github.com/libretro/beetle-vb-libretro"), "GPL"),
+        new("PCSX-ReARMed", "notaz and the libretro contributors", "The PlayStation emulator behind the PCSX-ReARMed core.", new Uri("https://github.com/libretro/pcsx_rearmed"), "GPL"),
         new("FinalBurn Neo", "FBNeo team", "The arcade and Neo Geo emulator behind the FinalBurn Neo core.", new Uri("https://github.com/libretro/FBNeo"), "FBNeo licence, non-commercial"),
         new("FB Alpha 2012", "FB Alpha team", "The 2012 FB Alpha emulator behind the FB Alpha 2012, CPS-1, CPS-2, CPS-3 and Neo Geo cores.", new Uri("https://github.com/libretro/fbalpha2012"), "non-commercial"),
         new("MAME", "MAMEdev and the libretro contributors", "The arcade emulator behind the MAME 2000, 2003 Midway, 2003-Plus and 2010 cores.", new Uri("https://github.com/libretro/mame2003-plus-libretro"), "MAME licence, GPL-2.0 and BSD-3"),

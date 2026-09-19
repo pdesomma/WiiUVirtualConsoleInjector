@@ -44,8 +44,10 @@ public class ConsoleTilesTests
         Assert.AreEqual(ConsoleGroups.Nintendo, ConsoleGroups.GroupOf(SourceConsole.Nes)!.Label);
         Assert.AreEqual(ConsoleGroups.Sega, ConsoleGroups.GroupOf(SourceConsole.GameGear)!.Label);
         Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.Msx));
+        Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.PlayStation));
         Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.Arcade));
         Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.NeoGeo));
+        Assert.AreEqual(SourceConsole.PlayStation, ConsoleGroups.Top[^3].Console, "PlayStation sits before the arcade tiles");
         Assert.AreEqual(SourceConsole.NeoGeo, ConsoleGroups.Top[^1].Console, "arcade tiles close the top level");
     }
 
@@ -85,6 +87,8 @@ public class ConsoleTilesTests
         Assert.AreEqual("Aroma only", tile.Caption);
         Assert.AreEqual("Genesis", tile.IconName);
         Assert.IsNull(new ConsoleTile(SourceConsole.Nes).Caption);
+        Assert.AreEqual("PlayStation", new ConsoleTile(SourceConsole.PlayStation).Label);
+        Assert.AreEqual("Aroma only", new ConsoleTile(SourceConsole.PlayStation).Caption);
     }
 
     [TestMethod]

@@ -13,6 +13,7 @@ public class ConsoleIconsTests
         Assert.AreEqual("Aroma only", ConsoleIcons.Caption(SourceConsole.Genesis));
         Assert.AreEqual("Aroma only", ConsoleIcons.Caption(SourceConsole.Arcade));
         Assert.AreEqual("Aroma only", ConsoleIcons.Caption(SourceConsole.NeoGeo));
+        Assert.AreEqual("Aroma only", ConsoleIcons.Caption(SourceConsole.PlayStation));
     }
 
     [TestMethod]
@@ -30,6 +31,7 @@ public class ConsoleIconsTests
         Assert.AreEqual("NES", ConsoleIcons.DisplayName(SourceConsole.Nes));
         Assert.AreEqual("Arcade", ConsoleIcons.DisplayName(SourceConsole.Arcade));
         Assert.AreEqual("Neo Geo", ConsoleIcons.DisplayName(SourceConsole.NeoGeo));
+        Assert.AreEqual("PlayStation", ConsoleIcons.DisplayName(SourceConsole.PlayStation));
         foreach (var console in Enum.GetValues<SourceConsole>())
             Assert.IsFalse(string.IsNullOrWhiteSpace(ConsoleIcons.DisplayName(console)), console.ToString());
     }

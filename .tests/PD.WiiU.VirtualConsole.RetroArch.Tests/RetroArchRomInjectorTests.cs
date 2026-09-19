@@ -124,6 +124,91 @@ public class RetroArchRomInjectorTests
     }
 
     [TestMethod]
+    public async Task InjectAsync_Chd_CopiesNothingExtra()
+    {
+        var title = StageFake();
+        var rom = WriteRom("Game (USA).chd", new byte[] { 1, 2 });
+        var messages = new List<string>();
+
+        await new RetroArchRomInjector(SourceConsole.PlayStation).InjectAsync(PlayStationInjection(rom), title, new SyncProgress(messages.Add));
+
+        CollectionAssert.AreEqual(new[] { "Game_USA.chd" }, Directory.GetFiles(title.Content).Select(p => Path.GetFileName(p)).ToArray());
+        Assert.AreEqual(RpxName + " fs:/vol/content/Game_USA.chd", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
+        Assert.AreEqual(2, messages.Count);
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_CueAndBin_CopiesTheBinVerbatimBesideTheSanitisedCue()
+    {
+        var title = StageFake();
+        var cueText = "FILE \"Game (USA) (Track 1).bin\" BINARY\r\n  TRACK 01 MODE2/2352\r\n    INDEX 01 00:00:00\r\n";
+        var rom = WriteText("Game (USA).cue", cueText);
+        WriteRom("Game (USA) (Track 1).bin", new byte[] { 7, 8, 9 });
+        var messages = new List<string>();
+
+        await new RetroArchRomInjector(SourceConsole.PlayStation).InjectAsync(PlayStationInjection(rom), title, new SyncProgress(messages.Add));
+
+        Assert.AreEqual(cueText, File.ReadAllText(Path.Combine(title.Content, "Game_USA.cue")), "flat already, copied as is");
+        CollectionAssert.AreEqual(new byte[] { 7, 8, 9 }, File.ReadAllBytes(Path.Combine(title.Content, "Game (USA) (Track 1).bin")));
+        Assert.AreEqual(2, Directory.GetFiles(title.Content).Length);
+        Assert.AreEqual(RpxName + " fs:/vol/content/Game_USA.cue", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
+        CollectionAssert.AreEqual(
+            new[] { "Copying Game (USA).cue as Game_USA.cue", "Copying Game (USA) (Track 1).bin beside it", "Pointing cos.xml at it" },
+            messages);
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_CueWithSubfolderTrack_FlattensTheCopiedCueAndLandsTheBinFlat()
+    {
+        var title = StageFake();
+        Directory.CreateDirectory(Path.Combine(_root, "subdir"));
+        var rom = WriteText("game.cue", "FILE \"subdir/track.bin\" BINARY\r\n  TRACK 01 MODE2/2352\r\n");
+        WriteRom(Path.Combine("subdir", "track.bin"), new byte[] { 1 });
+
+        await new RetroArchRomInjector(SourceConsole.PlayStation).InjectAsync(PlayStationInjection(rom), title);
+
+        Assert.AreEqual("FILE \"track.bin\" BINARY\r\n  TRACK 01 MODE2/2352\r\n", File.ReadAllText(Path.Combine(title.Content, "game.cue")));
+        Assert.IsTrue(File.Exists(Path.Combine(title.Content, "track.bin")));
+        Assert.AreEqual(2, Directory.GetFiles(title.Content).Length);
+        Assert.AreEqual(0, Directory.GetDirectories(title.Content).Length);
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_CueWithMissingBin_ThrowsFileNotFoundExceptionBeforeTouchingAnything()
+    {
+        var title = StageFake();
+        var rom = WriteText("game.cue", "FILE \"nope.bin\" BINARY\r\n");
+
+        await Assert.ThrowsExactlyAsync<FileNotFoundException>(() => new RetroArchRomInjector(SourceConsole.PlayStation).InjectAsync(PlayStationInjection(rom), title));
+
+        Assert.AreEqual(0, Directory.GetFiles(title.Content).Length);
+        Assert.AreEqual(EmptyCos, File.ReadAllText(Path.Combine(title.Code, CosXml.FileName)));
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_M3uOfTwoDiscs_LandsCuesAndBins()
+    {
+        var title = StageFake();
+        WriteRom("Game (Disc 1).bin", new byte[] { 1 });
+        WriteRom("Game (Disc 2).bin", new byte[] { 2 });
+        WriteText("Game (Disc 1).cue", "FILE \"Game (Disc 1).bin\" BINARY\n  TRACK 01 MODE2/2352\n");
+        WriteText("Game (Disc 2).cue", "FILE \"Game (Disc 2).bin\" BINARY\n  TRACK 01 MODE2/2352\n");
+        var rom = WriteText("Game (USA).m3u", "Game (Disc 1).cue\nGame (Disc 2).cue\n");
+        var messages = new List<string>();
+
+        await new RetroArchRomInjector(SourceConsole.PlayStation).InjectAsync(PlayStationInjection(rom), title, new SyncProgress(messages.Add));
+
+        CollectionAssert.AreEquivalent(
+            new[] { "Game_USA.m3u", "Game (Disc 1).cue", "Game (Disc 1).bin", "Game (Disc 2).cue", "Game (Disc 2).bin" },
+            Directory.GetFiles(title.Content).Select(p => Path.GetFileName(p)).ToArray());
+        Assert.AreEqual("Game (Disc 1).cue\nGame (Disc 2).cue\n", File.ReadAllText(Path.Combine(title.Content, "Game_USA.m3u")));
+        Assert.AreEqual(RpxName + " fs:/vol/content/Game_USA.m3u", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
+        CollectionAssert.AreEqual(
+            new[] { "Copying Game (USA).m3u as Game_USA.m3u", "Copying Game (Disc 1).cue beside it", "Copying Game (Disc 1).bin beside it", "Copying Game (Disc 2).cue beside it", "Copying Game (Disc 2).bin beside it", "Pointing cos.xml at it" },
+            messages);
+    }
+
+    [TestMethod]
     public async Task InjectAsync_HappyPath_CopiesRomAndPointsCosAtIt()
     {
         var title = StageFake();
@@ -208,6 +293,9 @@ public class RetroArchRomInjectorTests
     private static Injection Injection(string romPath) =>
         new(new RetroArchCore("genesis_plus_gx", "Genesis Plus GX", SourceConsole.Genesis, "d"), new Rom(romPath, SourceConsole.Genesis), Game());
 
+    private static Injection PlayStationInjection(string romPath) =>
+        new(new RetroArchCore("pcsx_rearmed", "PCSX-ReARMed", SourceConsole.PlayStation, "d"), new Rom(romPath, SourceConsole.PlayStation), Game());
+
     private TitleDirectory StageFake()
     {
         var title = TitleDirectory.Create(Path.Combine(_root, "title"));
@@ -220,6 +308,13 @@ public class RetroArchRomInjectorTests
     {
         var path = Path.Combine(_root, name);
         File.WriteAllBytes(path, bytes);
+        return path;
+    }
+
+    private string WriteText(string name, string text)
+    {
+        var path = Path.Combine(_root, name);
+        File.WriteAllText(path, text, new UTF8Encoding(false));
         return path;
     }
 

@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.RegularExpressions;
 using PD.WiiU.VirtualConsole.Options;
 using PD.WiiU.VirtualConsole.Ports;
@@ -5,7 +6,7 @@ using PD.WiiU.VirtualConsole.Ports;
 namespace PD.WiiU.VirtualConsole.RetroArch;
 
 /// <summary>
-/// Puts a ROM into a staged RetroArch core title: the file goes under content and the core is told to load it through cos.xml's argument string. Arcade companions (parent and BIOS sets) go beside it under their own names.
+/// Puts a ROM into a staged RetroArch core title: the file goes under content and the core is told to load it through cos.xml's argument string. Arcade companions (parent and BIOS sets) and the tracks and discs a cue or m3u points at go beside it under their own names, the cue or m3u rewritten to find them there.
 /// </summary>
 public sealed class RetroArchRomInjector : IRomInjector
 {
@@ -15,6 +16,7 @@ public sealed class RetroArchRomInjector : IRomInjector
     public const string FallbackStem = "game";
 
     private static readonly Regex Underscores = new("_+", RegexOptions.CultureInvariant);
+    private static readonly UTF8Encoding Utf8 = new(false);
 
     /// <summary>
     /// Creates a new instance of the <see cref="RetroArchRomInjector"/> class.
@@ -58,7 +60,7 @@ public sealed class RetroArchRomInjector : IRomInjector
     }
 
     /// <inheritdoc/>
-    /// <exception cref="FileNotFoundException">The title has no core executable, or a companion file is missing.</exception>
+    /// <exception cref="FileNotFoundException">The title has no core executable, or a companion or referenced file is missing.</exception>
     public Task InjectAsync(Injection injection, TitleDirectory title, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
         if (injection is null)
@@ -71,11 +73,14 @@ public sealed class RetroArchRomInjector : IRomInjector
         var rpx = Directory.GetFiles(title.Code, "*" + RetroArchCore.RpxSuffix).OrderBy(p => p, StringComparer.Ordinal).FirstOrDefault()
             ?? throw new FileNotFoundException($"No core executable in {title.Code}.");
         var fileName = ContentFileName(injection.Rom.Path);
+        var references = DiscReferences.Of(injection.Rom.Path);
 
         progress?.Report($"Copying {Path.GetFileName(injection.Rom.Path)} as {fileName}");
-        File.Copy(injection.Rom.Path, Path.Combine(title.Content, fileName), overwrite: true);
+        CopyFlat(injection.Rom.Path, Path.Combine(title.Content, fileName));
         cancellationToken.ThrowIfCancellationRequested();
 
+        if (references.Count > 0)
+            CopyReferences(references, title, progress, cancellationToken);
         if (injection.Options is ArcadeOptions { CompanionPaths: { Count: > 0 } companions })
             CopyCompanions(companions, fileName, title, progress, cancellationToken);
 
@@ -108,6 +113,44 @@ public sealed class RetroArchRomInjector : IRomInjector
 
             progress?.Report($"Copying {name} beside it");
             File.Copy(companion, Path.Combine(title.Content, name), overwrite: true);
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+    }
+
+    /// <summary>
+    /// Copies a file; a cue or m3u whose references carry folders is written with them cut to bare names, since everything lands flat under content.
+    /// </summary>
+    /// <param name="source">File to copy.</param>
+    /// <param name="destination">Where it goes.</param>
+    private static void CopyFlat(string source, string destination)
+    {
+        if (DiscReferences.Refers(source))
+        {
+            var text = File.ReadAllText(source);
+            var flat = DiscReferences.Flatten(text, Path.GetExtension(source));
+            if (!string.Equals(flat, text, StringComparison.Ordinal))
+            {
+                File.WriteAllText(destination, flat, Utf8);
+                return;
+            }
+        }
+        File.Copy(source, destination, overwrite: true);
+    }
+
+    /// <summary>
+    /// Copies each referenced track and disc beside the ROM under its own name, which is how the cue or m3u names it.
+    /// </summary>
+    /// <param name="references">Files to copy, full paths.</param>
+    /// <param name="title">Title being built.</param>
+    /// <param name="progress">Where to report each copy.</param>
+    /// <param name="cancellationToken">Cancels between copies.</param>
+    private static void CopyReferences(IReadOnlyList<string> references, TitleDirectory title, IProgress<string>? progress, CancellationToken cancellationToken)
+    {
+        foreach (var reference in references)
+        {
+            var name = Path.GetFileName(reference);
+            progress?.Report($"Copying {name} beside it");
+            CopyFlat(reference, Path.Combine(title.Content, name));
             cancellationToken.ThrowIfCancellationRequested();
         }
     }

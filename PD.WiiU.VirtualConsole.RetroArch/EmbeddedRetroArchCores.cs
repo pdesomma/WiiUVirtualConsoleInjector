@@ -40,6 +40,7 @@ public sealed class EmbeddedRetroArchCores : IRetroArchCores
         new RetroArchCore("fbalpha2012_cps3", "FB Alpha 2012 CPS-3", SourceConsole.Arcade, "FB Alpha 2012, CPS-3 only."),
         new RetroArchCore("fbalpha2012_neogeo", "FB Alpha 2012 Neo Geo", SourceConsole.Arcade, "FB Alpha 2012, Neo Geo only."),
         new RetroArchCore("fbneo", "FinalBurn Neo", SourceConsole.NeoGeo, "FinalBurn Neo; needs neogeo.zip beside the game."),
+        new RetroArchCore("pcsx_rearmed", "PCSX-ReARMed", SourceConsole.PlayStation, "The PlayStation emulator; a BIOS on the card is strongly advised, HLE otherwise."),
     };
 
     /// <summary>
@@ -53,10 +54,11 @@ public sealed class EmbeddedRetroArchCores : IRetroArchCores
         new RetroArchSystem(SourceConsole.Sega32X, ".32x", ".bin"),
         new RetroArchSystem(SourceConsole.Atari2600, ".a26", ".bin"),
         new RetroArchSystem(SourceConsole.Atari7800, ".a78", ".bin"),
-        new RetroArchSystem(SourceConsole.AtariLynx, ".lnx") { BiosFiles = new[] { "lynxboot.img" } },
+        new RetroArchSystem(SourceConsole.AtariLynx, ".lnx") { BiosFiles = new[] { new BiosFile("lynxboot.img") } },
         new RetroArchSystem(SourceConsole.VirtualBoy, ".vb", ".vboy"),
         new RetroArchSystem(SourceConsole.Arcade, ".zip", ".7z"),
         new RetroArchSystem(SourceConsole.NeoGeo, ".zip", ".7z"),
+        new RetroArchSystem(SourceConsole.PlayStation, ".cue", ".chd", ".pbp", ".m3u", ".iso", ".img") { BiosFiles = new[] { new BiosFile("PlayStation BIOS", "scph5501.bin", "scph5500.bin", "scph5502.bin", "scph1001.bin", "psxonpsp660.bin") } },
     };
 
     /// <inheritdoc/>

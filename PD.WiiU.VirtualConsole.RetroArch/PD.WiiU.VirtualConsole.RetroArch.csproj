@@ -27,6 +27,7 @@
     <EmbeddedResource Include="Assets\Cores\Arcade\fbalpha2012_cps2_libretro.rpx" LogicalName="cores/fbalpha2012_cps2_libretro.rpx" />
     <EmbeddedResource Include="Assets\Cores\Arcade\fbalpha2012_cps3_libretro.rpx" LogicalName="cores/fbalpha2012_cps3_libretro.rpx" />
     <EmbeddedResource Include="Assets\Cores\Arcade\fbalpha2012_neogeo_libretro.rpx" LogicalName="cores/fbalpha2012_neogeo_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\PlayStation\pcsx_rearmed_libretro.rpx" LogicalName="cores/pcsx_rearmed_libretro.rpx" />
     <EmbeddedResource Include="Assets\Template\app.xml" LogicalName="template/code/app.xml" />
     <EmbeddedResource Include="Assets\Template\cos.xml" LogicalName="template/code/cos.xml" />
     <EmbeddedResource Include="Assets\Template\meta.xml" LogicalName="template/meta/meta.xml" />

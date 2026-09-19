@@ -24,4 +24,5 @@ public enum SourceConsole
     VirtualBoy,
     Arcade,
     NeoGeo,
+    PlayStation,
 }

@@ -39,18 +39,40 @@ public sealed class RetroArchSystemTests
     public void MissingBios_FilesPresentOrAbsent_ListsTheAbsentOnes()
     {
         var sd = Path.Combine(Path.GetTempPath(), "PD.WiiU.VirtualConsole.Tests", Guid.NewGuid().ToString("N"));
-        var system = new RetroArchSystem(SourceConsole.AtariLynx, ".lnx") { BiosFiles = new[] { "lynxboot.img", "extra.bin" } };
+        var system = new RetroArchSystem(SourceConsole.AtariLynx, ".lnx") { BiosFiles = new[] { new BiosFile("lynxboot.img"), new BiosFile("extra.bin") } };
         try
         {
             Directory.CreateDirectory(sd);
-            CollectionAssert.AreEqual(new[] { "lynxboot.img", "extra.bin" }, system.MissingBios(sd).ToArray(), "nothing on the card yet");
+            CollectionAssert.AreEqual(new[] { "lynxboot.img", "extra.bin" }, system.MissingBios(sd).Select(b => b.Label).ToArray(), "nothing on the card yet");
 
             var folder = Path.Combine(sd, "retroarch", "system");
             Directory.CreateDirectory(folder);
             File.WriteAllBytes(Path.Combine(folder, "lynxboot.img"), new byte[] { 1 });
 
-            CollectionAssert.AreEqual(new[] { "extra.bin" }, system.MissingBios(sd).ToArray());
+            CollectionAssert.AreEqual(new[] { "extra.bin" }, system.MissingBios(sd).Select(b => b.Label).ToArray());
             Assert.AreEqual(0, new RetroArchSystem(SourceConsole.Genesis, ".md").MissingBios(sd).Count, "no BIOS needed, nothing missing");
+        }
+        finally
+        {
+            Directory.Delete(sd, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void MissingBios_SecondAcceptedNamePresent_IsSatisfied()
+    {
+        var sd = Path.Combine(Path.GetTempPath(), "PD.WiiU.VirtualConsole.Tests", Guid.NewGuid().ToString("N"));
+        var bios = new BiosFile("PlayStation BIOS", "scph5501.bin", "scph1001.bin");
+        var system = new RetroArchSystem(SourceConsole.PlayStation, ".cue") { BiosFiles = new[] { bios } };
+        try
+        {
+            var folder = Path.Combine(sd, "retroarch", "system");
+            Directory.CreateDirectory(folder);
+            Assert.AreSame(bios, system.MissingBios(sd).Single(), "neither name on the card");
+
+            File.WriteAllBytes(Path.Combine(folder, "scph1001.bin"), new byte[] { 1 });
+
+            Assert.AreEqual(0, system.MissingBios(sd).Count, "the second name satisfies it");
         }
         finally
         {

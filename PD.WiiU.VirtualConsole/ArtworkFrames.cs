@@ -79,6 +79,7 @@ public static class ArtworkFrames
         Boot("vb-homebrew", "Homebrew, Virtual Boy", SourceConsole.VirtualBoy, "homebrew.png", BootWii),
         Boot("arcade-homebrew", "Homebrew, Arcade", SourceConsole.Arcade, "homebrew.png", BootWii),
         Boot("neogeo-homebrew", "Homebrew, Neo Geo", SourceConsole.NeoGeo, "homebrew.png", BootWii),
+        Boot("psx-homebrew", "Homebrew, PlayStation", SourceConsole.PlayStation, "homebrew.png", BootWii),
         Boot("boot-plain", "None", null, null, BootFull),
 
         // Icons
@@ -116,6 +117,7 @@ public static class ArtworkFrames
         Icon("icon-vb-homebrew", "Homebrew, Virtual Boy", SourceConsole.VirtualBoy, "HBICON.png", IconBadged),
         Icon("icon-arcade-homebrew", "Homebrew, Arcade", SourceConsole.Arcade, "HBICON.png", IconBadged),
         Icon("icon-neogeo-homebrew", "Homebrew, Neo Geo", SourceConsole.NeoGeo, "HBICON.png", IconBadged),
+        Icon("icon-psx-homebrew", "Homebrew, PlayStation", SourceConsole.PlayStation, "HBICON.png", IconBadged),
         Icon("icon-plain", "None", null, null, IconFull),
 
         // Boot logos

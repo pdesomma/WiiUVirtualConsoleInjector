@@ -219,7 +219,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     /// The BIOS files the selected console's core needs on the card, or null when it needs none.
     /// </summary>
     public string? BiosHint => BiosFiles.Count > 0
-        ? $"Needs {string.Join(" and ", BiosFiles.Select(b => b.FileName))} in {RetroArchSystem.SystemFolder} on the SD card. Not shipped; dump it from your own hardware."
+        ? $"Needs {string.Join(" and ", BiosFiles.Select(b => Describe(b.Bios)))} in {RetroArchSystem.SystemFolder} on the SD card. Not shipped; dump it from your own hardware."
         : null;
 
     /// <summary>
@@ -527,7 +527,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         BootLogo.Path = record.Artwork.BootLogo;
         BootSound.Path = record.BootSoundPath;
         foreach (var bios in BiosFiles)
-            bios.Field.Path = record.CardFiles.FirstOrDefault(f => string.Equals(f.CardPath, bios.CardPath, StringComparison.OrdinalIgnoreCase))?.SourcePath;
+            RestorePick(bios, record.CardFiles);
         CurrentOptions.Load(record.Options);
         _identity = record.Identity;
         Step = Steps.Count;
@@ -624,6 +624,14 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
 
     private static string? ClearedProductId(string? productId) =>
         string.IsNullOrWhiteSpace(productId) ? null : productId.Trim();
+
+    /// <summary>
+    /// A BIOS for a hint: its one name, or the label with every accepted name.
+    /// </summary>
+    /// <param name="bios">The BIOS.</param>
+    private static string Describe(BiosFile bios) => bios.Names.Count == 1
+        ? bios.Names[0]
+        : $"{bios.Label} (one of {string.Join(", ", bios.Names)})";
 
     private static void DeleteWork(string work)
     {
@@ -1086,14 +1094,18 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         Cores.Clear();
         foreach (var core in _cores.Available(SelectedConsole))
             Cores.Add(core);
-        var kept = BiosFiles.ToDictionary(b => b.FileName, b => b.Field.Path, StringComparer.OrdinalIgnoreCase);
+        var kept = BiosFiles.ToDictionary(b => b.Label, b => (b.Field.Path, b.SelectedName), StringComparer.OrdinalIgnoreCase);
         BiosFiles.Clear();
-        foreach (var file in _cores.System(SelectedConsole)?.BiosFiles ?? Array.Empty<string>())
+        foreach (var file in _cores.System(SelectedConsole)?.BiosFiles ?? Array.Empty<BiosFile>())
         {
             var bios = new BiosFileViewModel(_dialogs, file);
             bios.PropertyChanged += (_, _) => NotifyExtrasChanged();
-            if (kept.TryGetValue(file, out var path))
-                bios.Field.Path = path;
+            if (kept.TryGetValue(file.Label, out var pick))
+            {
+                bios.Field.Path = pick.Path;
+                if (bios.Names.Contains(pick.SelectedName, StringComparer.OrdinalIgnoreCase))
+                    bios.SelectedName = pick.SelectedName;
+            }
             BiosFiles.Add(bios);
         }
         OnPropertyChanged(nameof(IsRetroArch));
@@ -1136,10 +1148,10 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
             warnings.Add($"Aroma was not found on the SD card at {sd} (no {AromaEnvironment.EnvironmentFolder}). RetroArch titles only run under Aroma.");
         else if (!aroma.HasSigPatches)
             warnings.Add($"Aroma on the SD card has no signature patches ({AromaEnvironment.SigPatchesFile} is missing), so installing will fail. Get 01_sigpatches.rpx from {SigPatchesUrl}.");
-        var missing = _cores.System(SelectedConsole)?.MissingBios(sd) ?? Array.Empty<string>();
+        var systemFolder = Path.Combine(sd, RetroArchSystem.SystemFolder.Replace('/', Path.DirectorySeparatorChar));
         foreach (var bios in BiosFiles)
-            bios.IsOnCard = !missing.Contains(bios.FileName, StringComparer.OrdinalIgnoreCase);
-        var wanted = BiosFiles.Where(b => b.IsWanted).Select(b => b.FileName).ToArray();
+            bios.OnCardAs = bios.Bios.Present(systemFolder);
+        var wanted = BiosFiles.Where(b => b.IsWanted).Select(b => Describe(b.Bios)).ToArray();
         if (wanted.Length > 0)
             warnings.Add($"{SelectedConsoleName} needs {string.Join(" and ", wanted)} in {RetroArchSystem.SystemFolder} on the SD card; the core will not start without it. Pick your own copy on the Game step and it is copied with the title.");
         return warnings;
@@ -1167,5 +1179,18 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     {
         CurrentStep = progress.Step.ToString();
         Log.Add($"{progress.Step}: {progress.Message}");
+    }
+
+    /// <summary>
+    /// Puts an earlier inject's copy back on a BIOS row: the card file saved under any accepted name, with that name selected.
+    /// </summary>
+    /// <param name="bios">Row to fill.</param>
+    /// <param name="cardFiles">Copies the earlier inject made.</param>
+    private static void RestorePick(BiosFileViewModel bios, IReadOnlyList<CardFile> cardFiles)
+    {
+        var match = cardFiles.FirstOrDefault(f => bios.Names.Contains(Path.GetFileName(f.CardPath), StringComparer.OrdinalIgnoreCase));
+        bios.Field.Path = match?.SourcePath;
+        if (match is not null)
+            bios.SelectedName = bios.Names.First(n => string.Equals(n, Path.GetFileName(match.CardPath), StringComparison.OrdinalIgnoreCase));
     }
 }

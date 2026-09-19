@@ -87,7 +87,9 @@ public class EmbeddedRetroArchCoresTests
     {
         var cores = new EmbeddedRetroArchCores();
 
-        CollectionAssert.AreEqual(new[] { "lynxboot.img" }, cores.System(SourceConsole.AtariLynx)!.BiosFiles.ToArray());
+        var lynx = cores.System(SourceConsole.AtariLynx)!.BiosFiles.Single();
+        Assert.AreEqual("lynxboot.img", lynx.Label);
+        CollectionAssert.AreEqual(new[] { "lynxboot.img" }, lynx.Names.ToArray());
         Assert.AreEqual(0, cores.System(SourceConsole.Atari2600)!.BiosFiles.Count);
         Assert.AreEqual(0, cores.System(SourceConsole.Atari7800)!.BiosFiles.Count);
         CollectionAssert.AreEqual(new[] { "stella2023" }, cores.Available(SourceConsole.Atari2600).Select(c => c.Id).ToArray());
@@ -95,6 +97,24 @@ public class EmbeddedRetroArchCoresTests
         CollectionAssert.AreEqual(new[] { "handy" }, cores.Available(SourceConsole.AtariLynx).Select(c => c.Id).ToArray());
         CollectionAssert.AreEqual(new[] { "mednafen_vb" }, cores.Available(SourceConsole.VirtualBoy).Select(c => c.Id).ToArray());
         CollectionAssert.AreEqual(new[] { ".vb", ".vboy" }, cores.System(SourceConsole.VirtualBoy)!.Extensions.ToArray());
+    }
+
+    [TestMethod]
+    public void System_PlayStation_TakesDiscImagesAndWantsAnyOneBios()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        var playStation = cores.Available(SourceConsole.PlayStation);
+        Assert.AreEqual(1, playStation.Count);
+        Assert.AreEqual("pcsx_rearmed", playStation[0].Id);
+        Assert.AreEqual("PCSX-ReARMed", playStation[0].Name);
+        Assert.AreEqual("pcsx_rearmed_libretro.rpx", playStation[0].RpxFileName);
+        StringAssert.Contains(playStation[0].Description, "BIOS");
+        var system = cores.System(SourceConsole.PlayStation)!;
+        CollectionAssert.AreEqual(new[] { ".cue", ".chd", ".pbp", ".m3u", ".iso", ".img" }, system.Extensions.ToArray());
+        var bios = system.BiosFiles.Single();
+        Assert.AreEqual("PlayStation BIOS", bios.Label);
+        CollectionAssert.AreEqual(new[] { "scph5501.bin", "scph5500.bin", "scph5502.bin", "scph1001.bin", "psxonpsp660.bin" }, bios.Names.ToArray());
     }
 
     [TestMethod]
@@ -109,7 +129,7 @@ public class EmbeddedRetroArchCoresTests
     }
 
     [TestMethod]
-    public void All_ArcadeCores_AreEmbeddedAtTheCatalogedSizes()
+    public void All_ArcadeAndPlayStationCores_AreEmbeddedAtTheCatalogedSizes()
     {
         var sizes = new Dictionary<string, long>
         {
@@ -123,9 +143,10 @@ public class EmbeddedRetroArchCoresTests
             ["fbalpha2012_cps2"] = 5944447,
             ["fbalpha2012_cps3"] = 5506159,
             ["fbalpha2012_neogeo"] = 6099616,
+            ["pcsx_rearmed"] = 6231138,
         };
 
-        foreach (var core in EmbeddedRetroArchCores.All.Where(core => core.Console == SourceConsole.Arcade))
+        foreach (var core in EmbeddedRetroArchCores.All.Where(core => core.Console is SourceConsole.Arcade or SourceConsole.PlayStation))
         {
             using var stream = typeof(EmbeddedRetroArchCores).Assembly.GetManifestResourceStream(EmbeddedRetroArchCores.ResourceName(core));
             Assert.IsNotNull(stream, core.Id);
