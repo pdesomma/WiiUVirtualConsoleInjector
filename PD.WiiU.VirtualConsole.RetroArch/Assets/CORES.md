@@ -36,5 +36,12 @@ libretro cores built for Aroma, unmodified, from the community alpha `Aroma-RA-T
 | `Odyssey2/o2em_libretro.rpx` | 5,520,131 | `3caaf56cacb45b89b70cf65f77d228732c4a0175e036e541a03d6c2c5b97c251` | [O2EM](https://github.com/libretro/libretro-o2em) | Artistic License 2.0 |
 | `Vectrex/vecx_libretro.rpx` | 5,467,604 | `f57b1b54fe4525a731fab8815e468fd935f2ac9e780174098edc84a33370e241` | [vecx](https://github.com/libretro/libretro-vecx) | GPL-3.0 |
 | `NeoGeoCd/neocd_libretro.rpx` | 6,419,656 | `4f46f914205425ad3fe5ba0f023c4419905a13af12db4fccf521a1c9aca704a6` | [NeoCD](https://github.com/libretro/neocd_libretro) | LGPL-3.0 |
+| `Dos/dosbox_pure_libretro.rpx` | 7,414,602 | `79ad634d120621fc1f26b18e5f274cdec0ec23fd02d40d9e8471bd309beebbc3` | [DOSBox Pure](https://github.com/schellingb/dosbox-pure) | GPL-2.0 |
+| `Commodore64/vice_x64_libretro.rpx` | 7,577,989 | `67ff5ceb49066cd312d59ce2b258350273b510c774d87554da85d2facc6c9f80` | [VICE x64](https://github.com/libretro/vice-libretro) | GPL-2.0 |
+| `Commodore128/vice_x128_libretro.rpx` | 7,903,418 | `9b7c683ef241041bd1dd4f924ba66d0af75dca4365922774cfe5d650a0993132` | [VICE x128](https://github.com/libretro/vice-libretro) | GPL-2.0 |
+| `AmstradCpc/cap32_libretro.rpx` | 5,806,774 | `938186419b8b7d5b96a3e06a66749a42d5cf13a1b10d93699d3c2f7df16efc00` | [Caprice32](https://github.com/libretro/libretro-cap32) | GPL-2.0 |
+| `AmstradCpc/crocods_libretro.rpx` | 5,694,943 | `864566c2b065915687d0a8ebdb4968e2f9f5a7b83ac1bcd37c4faaa7b5e065e9` | [CrocoDS](https://github.com/libretro/libretro-crocods) | MIT |
+| `ZxSpectrum/fuse_libretro.rpx` | 6,533,579 | `194c4ff9c2a83bd05b1859c7ea4334d3cdbf6b1ccbbc0eeaae6ec8a210087dc1` | [Fuse](https://github.com/libretro/fuse-libretro) | GPL-3.0 |
+| `AtariSt/hatari_libretro.rpx` | 7,079,134 | `c1549c867f87b5df3c1e325c3e21a42a4c386669d96bf619aae112991fc71755` | [Hatari](https://github.com/libretro/hatari) | GPL-2.0 |
 
 The injector writes one of them under `code/` as the title's executable and passes the ROM through cos.xml's `argstr` (`<rpx> fs:/vol/content/<rom>`). On the console the core reads and writes its settings, saves and states under `sd:/retroarch/`, so an Aroma card with the RetroArch data folder works as usual; nothing else from the zip is shipped. Titles built this way only run under Aroma (the cores use its Mocha and rpx loader modules) and need the signature-patch module to install.

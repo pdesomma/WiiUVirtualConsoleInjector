@@ -91,6 +91,12 @@ public static class ArtworkFrames
         Boot("vectrex-homebrew", "Homebrew, Vectrex", SourceConsole.Vectrex, "homebrew.png", BootWii),
         Boot("segacd-homebrew", "Homebrew, Sega CD", SourceConsole.SegaCd, "homebrew.png", BootWii),
         Boot("neocd-homebrew", "Homebrew, Neo Geo CD", SourceConsole.NeoGeoCd, "homebrew.png", BootWii),
+        Boot("dos-homebrew", "Homebrew, DOS", SourceConsole.Dos, "homebrew.png", BootWii),
+        Boot("c64-homebrew", "Homebrew, Commodore 64", SourceConsole.Commodore64, "homebrew.png", BootWii),
+        Boot("c128-homebrew", "Homebrew, Commodore 128", SourceConsole.Commodore128, "homebrew.png", BootWii),
+        Boot("cpc-homebrew", "Homebrew, Amstrad CPC", SourceConsole.AmstradCpc, "homebrew.png", BootWii),
+        Boot("zx-homebrew", "Homebrew, ZX Spectrum", SourceConsole.ZxSpectrum, "homebrew.png", BootWii),
+        Boot("st-homebrew", "Homebrew, Atari ST", SourceConsole.AtariSt, "homebrew.png", BootWii),
         Boot("boot-plain", "None", null, null, BootFull),
 
         // Icons
@@ -140,6 +146,12 @@ public static class ArtworkFrames
         Icon("icon-vectrex-homebrew", "Homebrew, Vectrex", SourceConsole.Vectrex, "HBICON.png", IconBadged),
         Icon("icon-segacd-homebrew", "Homebrew, Sega CD", SourceConsole.SegaCd, "HBICON.png", IconBadged),
         Icon("icon-neocd-homebrew", "Homebrew, Neo Geo CD", SourceConsole.NeoGeoCd, "HBICON.png", IconBadged),
+        Icon("icon-dos-homebrew", "Homebrew, DOS", SourceConsole.Dos, "HBICON.png", IconBadged),
+        Icon("icon-c64-homebrew", "Homebrew, Commodore 64", SourceConsole.Commodore64, "HBICON.png", IconBadged),
+        Icon("icon-c128-homebrew", "Homebrew, Commodore 128", SourceConsole.Commodore128, "HBICON.png", IconBadged),
+        Icon("icon-cpc-homebrew", "Homebrew, Amstrad CPC", SourceConsole.AmstradCpc, "HBICON.png", IconBadged),
+        Icon("icon-zx-homebrew", "Homebrew, ZX Spectrum", SourceConsole.ZxSpectrum, "HBICON.png", IconBadged),
+        Icon("icon-st-homebrew", "Homebrew, Atari ST", SourceConsole.AtariSt, "HBICON.png", IconBadged),
         Icon("icon-plain", "None", null, null, IconFull),
 
         // Boot logos

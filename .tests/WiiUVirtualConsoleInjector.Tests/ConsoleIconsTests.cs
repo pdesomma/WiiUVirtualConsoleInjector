@@ -24,6 +24,13 @@ public class ConsoleIconsTests
     }
 
     [TestMethod]
+    public void Caption_Computers_SayAromaOnly()
+    {
+        foreach (var console in new[] { SourceConsole.Dos, SourceConsole.Commodore64, SourceConsole.Commodore128, SourceConsole.AmstradCpc, SourceConsole.ZxSpectrum, SourceConsole.AtariSt })
+            Assert.AreEqual("Aroma only", ConsoleIcons.Caption(console), console.ToString());
+    }
+
+    [TestMethod]
     public void Caption_BaseConsoles_Null()
     {
         var cores = new EmbeddedRetroArchCores();
@@ -62,6 +69,17 @@ public class ConsoleIconsTests
     {
         Assert.AreEqual("Sega CD", ConsoleIcons.DisplayName(SourceConsole.SegaCd));
         Assert.AreEqual("Neo Geo CD", ConsoleIcons.DisplayName(SourceConsole.NeoGeoCd));
+    }
+
+    [TestMethod]
+    public void DisplayName_Computers_UseTheirMarketNames()
+    {
+        Assert.AreEqual("DOS", ConsoleIcons.DisplayName(SourceConsole.Dos));
+        Assert.AreEqual("Commodore 64", ConsoleIcons.DisplayName(SourceConsole.Commodore64));
+        Assert.AreEqual("Commodore 128", ConsoleIcons.DisplayName(SourceConsole.Commodore128));
+        Assert.AreEqual("Amstrad CPC", ConsoleIcons.DisplayName(SourceConsole.AmstradCpc));
+        Assert.AreEqual("ZX Spectrum", ConsoleIcons.DisplayName(SourceConsole.ZxSpectrum));
+        Assert.AreEqual("Atari ST", ConsoleIcons.DisplayName(SourceConsole.AtariSt));
     }
 
     [TestMethod]

@@ -13,6 +13,10 @@ public static class ConsoleGroups
     /// </summary>
     public const string Atari = "Atari";
     /// <summary>
+    /// Name of the tile gathering the home computers.
+    /// </summary>
+    public const string Computers = "Computers";
+    /// <summary>
     /// Company name of the Nintendo tile.
     /// </summary>
     public const string Nintendo = "Nintendo";
@@ -44,9 +48,10 @@ public static class ConsoleGroups
     {
         new ConsoleTile(Nintendo, new[] { SourceConsole.Nes, SourceConsole.Snes, SourceConsole.N64, SourceConsole.Gba, SourceConsole.Nds, SourceConsole.VirtualBoy, SourceConsole.PokemonMini, SourceConsole.GameCube, SourceConsole.Wii }),
         new ConsoleTile(Sega, new[] { SourceConsole.Genesis, SourceConsole.SegaCd, SourceConsole.MasterSystem, SourceConsole.GameGear, SourceConsole.Sega32X }),
-        new ConsoleTile(Atari, new[] { SourceConsole.Atari2600, SourceConsole.Atari7800, SourceConsole.AtariLynx }),
+        new ConsoleTile(Atari, new[] { SourceConsole.Atari2600, SourceConsole.Atari7800, SourceConsole.AtariLynx, SourceConsole.AtariSt }),
         new ConsoleTile(OtherHandhelds, new[] { SourceConsole.NeoGeoPocket, SourceConsole.WonderSwan, SourceConsole.Supervision, SourceConsole.GameAndWatch }, OtherHandheldsIcon),
         new ConsoleTile(Other, new[] { SourceConsole.ColecoVision, SourceConsole.Intellivision, SourceConsole.Odyssey2, SourceConsole.Vectrex }, OtherConsolesIcon),
+        new ConsoleTile(Computers, new[] { SourceConsole.Dos, SourceConsole.Commodore64, SourceConsole.Commodore128, SourceConsole.AmstradCpc, SourceConsole.ZxSpectrum }),
         new ConsoleTile(SourceConsole.Tg16),
         new ConsoleTile(SourceConsole.Msx),
         new ConsoleTile(SourceConsole.PlayStation),

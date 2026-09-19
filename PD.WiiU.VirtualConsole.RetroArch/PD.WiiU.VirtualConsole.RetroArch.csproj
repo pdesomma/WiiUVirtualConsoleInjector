@@ -39,6 +39,13 @@
     <EmbeddedResource Include="Assets\Cores\Odyssey2\o2em_libretro.rpx" LogicalName="cores/o2em_libretro.rpx" />
     <EmbeddedResource Include="Assets\Cores\Vectrex\vecx_libretro.rpx" LogicalName="cores/vecx_libretro.rpx" />
     <EmbeddedResource Include="Assets\Cores\NeoGeoCd\neocd_libretro.rpx" LogicalName="cores/neocd_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Dos\dosbox_pure_libretro.rpx" LogicalName="cores/dosbox_pure_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Commodore64\vice_x64_libretro.rpx" LogicalName="cores/vice_x64_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Commodore128\vice_x128_libretro.rpx" LogicalName="cores/vice_x128_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\AmstradCpc\cap32_libretro.rpx" LogicalName="cores/cap32_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\AmstradCpc\crocods_libretro.rpx" LogicalName="cores/crocods_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\ZxSpectrum\fuse_libretro.rpx" LogicalName="cores/fuse_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\AtariSt\hatari_libretro.rpx" LogicalName="cores/hatari_libretro.rpx" />
     <EmbeddedResource Include="Assets\Template\app.xml" LogicalName="template/code/app.xml" />
     <EmbeddedResource Include="Assets\Template\cos.xml" LogicalName="template/code/cos.xml" />
     <EmbeddedResource Include="Assets\Template\meta.xml" LogicalName="template/meta/meta.xml" />

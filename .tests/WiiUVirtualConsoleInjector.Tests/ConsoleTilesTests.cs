@@ -47,6 +47,9 @@ public class ConsoleTilesTests
         Assert.AreEqual(ConsoleGroups.Sega, ConsoleGroups.GroupOf(SourceConsole.SegaCd)!.Label);
         Assert.AreEqual(ConsoleGroups.OtherHandhelds, ConsoleGroups.GroupOf(SourceConsole.WonderSwan)!.Label);
         Assert.AreEqual(ConsoleGroups.Other, ConsoleGroups.GroupOf(SourceConsole.Vectrex)!.Label);
+        Assert.AreEqual(ConsoleGroups.Atari, ConsoleGroups.GroupOf(SourceConsole.AtariSt)!.Label);
+        Assert.AreEqual(ConsoleGroups.Computers, ConsoleGroups.GroupOf(SourceConsole.Dos)!.Label);
+        Assert.AreEqual(ConsoleGroups.Computers, ConsoleGroups.GroupOf(SourceConsole.ZxSpectrum)!.Label);
         Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.Msx));
         Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.PlayStation));
         Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.Arcade));
@@ -72,8 +75,31 @@ public class ConsoleTilesTests
     {
         var groups = ConsoleGroups.Top.TakeWhile(t => t.IsGroup).Select(t => t.Label).ToArray();
 
-        CollectionAssert.AreEqual(new[] { ConsoleGroups.Nintendo, ConsoleGroups.Sega, ConsoleGroups.Atari, ConsoleGroups.OtherHandhelds, ConsoleGroups.Other }, groups);
+        CollectionAssert.AreEqual(new[] { ConsoleGroups.Nintendo, ConsoleGroups.Sega, ConsoleGroups.Atari, ConsoleGroups.OtherHandhelds, ConsoleGroups.Other, ConsoleGroups.Computers }, groups);
         Assert.IsTrue(ConsoleGroups.Top.Skip(groups.Length).All(t => !t.IsGroup), "loose consoles follow the companies");
+        CollectionAssert.AreEqual(new[] { SourceConsole.Tg16, SourceConsole.Msx, SourceConsole.PlayStation, SourceConsole.Arcade, SourceConsole.NeoGeo, SourceConsole.NeoGeoCd }, ConsoleGroups.Top.Skip(groups.Length).Select(t => t.Console).ToArray(), "the loose tail is unchanged");
+    }
+
+    [TestMethod]
+    public void ConsoleGroups_Top_AtariTileEndsWithTheSt()
+    {
+        var atari = ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.Atari).Consoles.ToArray();
+
+        CollectionAssert.AreEqual(new[] { SourceConsole.Atari2600, SourceConsole.Atari7800, SourceConsole.AtariLynx, SourceConsole.AtariSt }, atari);
+        Assert.AreEqual(4, atari.Length);
+        Assert.AreEqual(SourceConsole.AtariSt, atari[^1]);
+    }
+
+    [TestMethod]
+    public void ConsoleGroups_Top_ComputersTileHoldsTheHomeComputers()
+    {
+        var tile = ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.Computers);
+
+        CollectionAssert.AreEqual(new[] { SourceConsole.Dos, SourceConsole.Commodore64, SourceConsole.Commodore128, SourceConsole.AmstradCpc, SourceConsole.ZxSpectrum }, tile.Consoles.ToArray());
+        Assert.AreEqual("Computers", tile.Label);
+        Assert.AreEqual("Computers", tile.IconName);
+        Assert.AreEqual("Aroma only", tile.Caption);
+        Assert.AreEqual(5, ConsoleGroups.Members(tile).Count);
     }
 
     [TestMethod]

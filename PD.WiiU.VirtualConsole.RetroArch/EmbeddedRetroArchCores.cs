@@ -54,6 +54,13 @@ public sealed class EmbeddedRetroArchCores : IRetroArchCores
         new RetroArchCore("genesis_plus_gx", "Genesis Plus GX", SourceConsole.SegaCd, "Sega CD through Genesis Plus GX; needs the region BIOS on the card."),
         new RetroArchCore("picodrive", "PicoDrive", SourceConsole.SegaCd, "Faster and lighter; less accurate. Needs the same region BIOS."),
         new RetroArchCore("neocd", "NeoCD", SourceConsole.NeoGeoCd, "Neo Geo CD emulator; needs the system ROMs under retroarch/system/neocd."),
+        new RetroArchCore("dosbox_pure", "DOSBox-pure", SourceConsole.Dos, "DOSBox Pure; a zip of the game folder, an exe, or a cue/iso."),
+        new RetroArchCore("vice_x64", "VICE x64", SourceConsole.Commodore64, "VICE x64, the Commodore 64."),
+        new RetroArchCore("vice_x128", "VICE x128", SourceConsole.Commodore128, "VICE x128, the Commodore 128; runs C64 titles too."),
+        new RetroArchCore("cap32", "Caprice32", SourceConsole.AmstradCpc, "Caprice32, the usual Amstrad CPC core."),
+        new RetroArchCore("crocods", "CrocoDS", SourceConsole.AmstradCpc, "CrocoDS; lighter Amstrad CPC core."),
+        new RetroArchCore("fuse", "Fuse", SourceConsole.ZxSpectrum, "Fuse, the ZX Spectrum emulator."),
+        new RetroArchCore("hatari", "Hatari", SourceConsole.AtariSt, "Hatari, the Atari ST; needs tos.img on the card."),
     };
 
     /// <summary>
@@ -90,6 +97,12 @@ public sealed class EmbeddedRetroArchCores : IRetroArchCores
                 new BiosFile("Neo Geo CD BIOS", "neocd/neocd_z.rom", "neocd/neocd_f.rom", "neocd/neocd_sf.rom", "neocd/front-sp1.bin", "neocd/neocd_t.rom", "neocd/neocd_st.rom", "neocd/top-sp1.bin", "neocd/neocd_sz.rom", "neocd/neocd.bin", "neocd/uni-bioscd.rom"),
             },
         },
+        new RetroArchSystem(SourceConsole.Dos, ".zip", ".dosz", ".exe", ".com", ".bat", ".iso", ".cue", ".ins", ".img", ".ima", ".vhd", ".jrc", ".tc", ".m3u", ".m3u8", ".conf"),
+        new RetroArchSystem(SourceConsole.Commodore64, ".d64", ".d71", ".d80", ".d81", ".d82", ".g64", ".g41", ".x64", ".t64", ".tap", ".prg", ".p00", ".crt", ".bin", ".d6z", ".d7z", ".d8z", ".g6z", ".g4z", ".x6z", ".cmd", ".m3u", ".vfl", ".vsf", ".nib", ".nbz", ".d2m", ".d4m"),
+        new RetroArchSystem(SourceConsole.Commodore128, ".d64", ".d71", ".d80", ".d81", ".d82", ".g64", ".g41", ".x64", ".t64", ".tap", ".prg", ".p00", ".crt", ".bin", ".d6z", ".d7z", ".d8z", ".g6z", ".g4z", ".x6z", ".cmd", ".m3u", ".vfl", ".vsf", ".nib", ".nbz", ".d2m", ".d4m"),
+        new RetroArchSystem(SourceConsole.AmstradCpc, ".dsk", ".sna", ".tap", ".cdt", ".voc", ".cpr", ".m3u", ".kcr"),
+        new RetroArchSystem(SourceConsole.ZxSpectrum, ".tzx", ".tap", ".z80", ".rzx", ".scl", ".trd", ".dsk"),
+        new RetroArchSystem(SourceConsole.AtariSt, ".st", ".msa", ".stx", ".dim", ".ipf", ".vhd", ".gem", ".ide", ".m3u") { BiosFiles = new[] { new BiosFile("tos.img") } },
     };
 
     /// <inheritdoc/>

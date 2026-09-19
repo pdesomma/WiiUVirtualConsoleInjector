@@ -36,4 +36,10 @@ public enum SourceConsole
     Vectrex,
     SegaCd,
     NeoGeoCd,
+    Dos,
+    Commodore64,
+    Commodore128,
+    AmstradCpc,
+    ZxSpectrum,
+    AtariSt,
 }

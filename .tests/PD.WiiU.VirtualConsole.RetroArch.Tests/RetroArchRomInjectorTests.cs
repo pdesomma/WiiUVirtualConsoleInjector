@@ -209,6 +209,30 @@ public class RetroArchRomInjectorTests
     }
 
     [TestMethod]
+    public async Task InjectAsync_Commodore64M3uOfTwoDisks_LandsBothD64sBesideIt()
+    {
+        var title = StageFake();
+        WriteRom("Game (Disk 1).d64", new byte[] { 1 });
+        WriteRom("Game (Disk 2).d64", new byte[] { 2 });
+        var rom = WriteText("Game (Europe).m3u", "Game (Disk 1).d64\nGame (Disk 2).d64\n");
+        var injection = new Injection(new RetroArchCore("vice_x64", "VICE x64", SourceConsole.Commodore64, "d"), new Rom(rom, SourceConsole.Commodore64), Game());
+        var messages = new List<string>();
+
+        await new RetroArchRomInjector(SourceConsole.Commodore64).InjectAsync(injection, title, new SyncProgress(messages.Add));
+
+        CollectionAssert.AreEquivalent(
+            new[] { "Game_Europe.m3u", "Game (Disk 1).d64", "Game (Disk 2).d64" },
+            Directory.GetFiles(title.Content).Select(p => Path.GetFileName(p)).ToArray());
+        CollectionAssert.AreEqual(new byte[] { 1 }, File.ReadAllBytes(Path.Combine(title.Content, "Game (Disk 1).d64")));
+        CollectionAssert.AreEqual(new byte[] { 2 }, File.ReadAllBytes(Path.Combine(title.Content, "Game (Disk 2).d64")));
+        Assert.AreEqual("Game (Disk 1).d64\nGame (Disk 2).d64\n", File.ReadAllText(Path.Combine(title.Content, "Game_Europe.m3u")));
+        Assert.AreEqual(RpxName + " fs:/vol/content/Game_Europe.m3u", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
+        CollectionAssert.AreEqual(
+            new[] { "Copying Game (Europe).m3u as Game_Europe.m3u", "Copying Game (Disk 1).d64 beside it", "Copying Game (Disk 2).d64 beside it", "Pointing cos.xml at it" },
+            messages);
+    }
+
+    [TestMethod]
     public async Task InjectAsync_HappyPath_CopiesRomAndPointsCosAtIt()
     {
         var title = StageFake();

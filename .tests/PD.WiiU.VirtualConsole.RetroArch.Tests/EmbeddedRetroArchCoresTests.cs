@@ -246,6 +246,86 @@ public class EmbeddedRetroArchCoresTests
     }
 
     [TestMethod]
+    public void System_Dos_TakesZipsExecutablesAndDiscImagesWithNoCardBios()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        var dos = cores.Available(SourceConsole.Dos);
+        Assert.AreEqual(1, dos.Count);
+        Assert.AreEqual("dosbox_pure", dos[0].Id);
+        Assert.AreEqual("DOSBox-pure", dos[0].Name);
+        Assert.AreEqual("dosbox_pure_libretro.rpx", dos[0].RpxFileName);
+        var system = cores.System(SourceConsole.Dos)!;
+        CollectionAssert.AreEqual(
+            new[] { ".zip", ".dosz", ".exe", ".com", ".bat", ".iso", ".cue", ".ins", ".img", ".ima", ".vhd", ".jrc", ".tc", ".m3u", ".m3u8", ".conf" },
+            system.Extensions.ToArray());
+        Assert.AreEqual(0, system.BiosFiles.Count);
+        Assert.IsTrue(system.Accepts(@"C:\games\Prince of Persia.zip"));
+    }
+
+    [TestMethod]
+    public void System_Commodore_TakesTheSameViceImagesOnBothMachinesWithNoCardBios()
+    {
+        var cores = new EmbeddedRetroArchCores();
+        var expected = new[] { ".d64", ".d71", ".d80", ".d81", ".d82", ".g64", ".g41", ".x64", ".t64", ".tap", ".prg", ".p00", ".crt", ".bin", ".d6z", ".d7z", ".d8z", ".g6z", ".g4z", ".x6z", ".cmd", ".m3u", ".vfl", ".vsf", ".nib", ".nbz", ".d2m", ".d4m" };
+
+        CollectionAssert.AreEqual(new[] { "vice_x64" }, cores.Available(SourceConsole.Commodore64).Select(core => core.Id).ToArray());
+        Assert.AreEqual("VICE x64", cores.Available(SourceConsole.Commodore64)[0].Name);
+        CollectionAssert.AreEqual(expected, cores.System(SourceConsole.Commodore64)!.Extensions.ToArray());
+        Assert.AreEqual(0, cores.System(SourceConsole.Commodore64)!.BiosFiles.Count);
+
+        CollectionAssert.AreEqual(new[] { "vice_x128" }, cores.Available(SourceConsole.Commodore128).Select(core => core.Id).ToArray());
+        Assert.AreEqual("VICE x128", cores.Available(SourceConsole.Commodore128)[0].Name);
+        CollectionAssert.AreEqual(expected, cores.System(SourceConsole.Commodore128)!.Extensions.ToArray());
+        Assert.AreEqual(0, cores.System(SourceConsole.Commodore128)!.BiosFiles.Count);
+        Assert.IsFalse(cores.System(SourceConsole.Commodore64)!.Accepts("game.zip"), "archives are not disk images");
+    }
+
+    [TestMethod]
+    public void Available_AmstradCpc_ListsCaprice32ThenCrocoDsAndTakesBothTheirFormats()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        var cpc = cores.Available(SourceConsole.AmstradCpc);
+        CollectionAssert.AreEqual(new[] { "cap32", "crocods" }, cpc.Select(core => core.Id).ToArray());
+        Assert.AreEqual("Caprice32", cpc[0].Name);
+        Assert.AreEqual("CrocoDS", cpc[1].Name);
+        Assert.AreEqual("crocods_libretro.rpx", cpc[1].RpxFileName);
+        var system = cores.System(SourceConsole.AmstradCpc)!;
+        CollectionAssert.AreEqual(new[] { ".dsk", ".sna", ".tap", ".cdt", ".voc", ".cpr", ".m3u", ".kcr" }, system.Extensions.ToArray());
+        Assert.AreEqual(0, system.BiosFiles.Count);
+    }
+
+    [TestMethod]
+    public void System_ZxSpectrum_TakesTapesSnapshotsAndDisksWithNoCardBios()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        CollectionAssert.AreEqual(new[] { "fuse" }, cores.Available(SourceConsole.ZxSpectrum).Select(core => core.Id).ToArray());
+        Assert.AreEqual("Fuse", cores.Available(SourceConsole.ZxSpectrum)[0].Name);
+        var system = cores.System(SourceConsole.ZxSpectrum)!;
+        CollectionAssert.AreEqual(new[] { ".tzx", ".tap", ".z80", ".rzx", ".scl", ".trd", ".dsk" }, system.Extensions.ToArray());
+        Assert.AreEqual(0, system.BiosFiles.Count);
+    }
+
+    [TestMethod]
+    public void System_AtariSt_TakesDiskImagesAndNeedsTos()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        var atariSt = cores.Available(SourceConsole.AtariSt);
+        Assert.AreEqual(1, atariSt.Count);
+        Assert.AreEqual("hatari", atariSt[0].Id);
+        Assert.AreEqual("Hatari", atariSt[0].Name);
+        StringAssert.Contains(atariSt[0].Description, "tos.img");
+        var system = cores.System(SourceConsole.AtariSt)!;
+        CollectionAssert.AreEqual(new[] { ".st", ".msa", ".stx", ".dim", ".ipf", ".vhd", ".gem", ".ide", ".m3u" }, system.Extensions.ToArray());
+        var bios = system.BiosFiles.Single();
+        Assert.AreEqual("tos.img", bios.Label);
+        CollectionAssert.AreEqual(new[] { "tos.img" }, bios.Names.ToArray());
+    }
+
+    [TestMethod]
     public void System_KnownAndUnknown()
     {
         var cores = new EmbeddedRetroArchCores();
@@ -291,6 +371,13 @@ public class EmbeddedRetroArchCoresTests
             ["o2em"] = 5520131,
             ["vecx"] = 5467604,
             ["neocd"] = 6419656,
+            ["dosbox_pure"] = 7414602,
+            ["vice_x64"] = 7577989,
+            ["vice_x128"] = 7903418,
+            ["cap32"] = 5806774,
+            ["crocods"] = 5694943,
+            ["fuse"] = 6533579,
+            ["hatari"] = 7079134,
         };
 
         foreach (var core in EmbeddedRetroArchCores.All)
