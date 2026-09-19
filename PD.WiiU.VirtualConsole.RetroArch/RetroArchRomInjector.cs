@@ -86,10 +86,13 @@ public sealed class RetroArchRomInjector : IRomInjector
         if (injection.Options is ArcadeOptions { CompanionPaths: { Count: > 0 } companions })
             CopyCompanions(companions, fileName, title, progress, cancellationToken);
 
+        progress?.Report("Writing " + RetroArchTitleConfig.FileName);
+        RetroArchTitleConfig.Write(title);
+
         progress?.Report("Pointing " + CosXml.FileName + " at it");
         var cosPath = Path.Combine(title.Code, CosXml.FileName);
         var cos = CosXml.Load(cosPath);
-        cos.Arguments = Path.GetFileName(rpx) + " " + RetroArchTemplate.ContentMount + fileName;
+        cos.Arguments = Path.GetFileName(rpx) + " " + RetroArchTitleConfig.Switch + " " + RetroArchTemplate.ContentMount + RetroArchTitleConfig.FileName + " " + RetroArchTemplate.ContentMount + fileName;
         cos.Save(cosPath);
         return Task.CompletedTask;
     }

@@ -45,6 +45,6 @@ public class RetroArchTitleTests
         Assert.AreEqual(game.TitleId.ToString(), AppXml.Load(title.AppXmlPath).ReadTitleId().ToString());
         Assert.AreEqual(game.TitleId, MetaXml.Load(title.MetaXmlPath).Read().TitleId);
         CollectionAssert.AreEqual(bytes, File.ReadAllBytes(Path.Combine(title.Content, "Sonic_U.md")));
-        Assert.AreEqual(core.RpxFileName + " " + RetroArchTemplate.ContentMount + "Sonic_U.md", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
+        Assert.AreEqual(core.RpxFileName + " --appendconfig " + RetroArchTemplate.ContentMount + "retroarch.cfg " + RetroArchTemplate.ContentMount + "Sonic_U.md", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
     }
 }

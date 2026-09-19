@@ -75,9 +75,9 @@ public class RetroArchRomInjectorTests
         CollectionAssert.AreEqual(new byte[] { 1, 2, 3 }, File.ReadAllBytes(Path.Combine(title.Content, "mslug.zip")));
         CollectionAssert.AreEqual(new byte[] { 4, 5 }, File.ReadAllBytes(Path.Combine(title.Content, "neogeo.zip")));
         CollectionAssert.AreEqual(new byte[] { 6 }, File.ReadAllBytes(Path.Combine(title.Content, "parent set (rev A).zip")), "name kept verbatim, space and all");
-        Assert.AreEqual(RpxName + " fs:/vol/content/mslug.zip", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
+        Assert.AreEqual(RpxName + " --appendconfig fs:/vol/content/retroarch.cfg fs:/vol/content/mslug.zip", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
         CollectionAssert.AreEqual(
-            new[] { "Copying mslug.zip as mslug.zip", "Copying neogeo.zip beside it", "Copying parent set (rev A).zip beside it", "Pointing cos.xml at it" },
+            new[] { "Copying mslug.zip as mslug.zip", "Copying neogeo.zip beside it", "Copying parent set (rev A).zip beside it", "Writing retroarch.cfg", "Pointing cos.xml at it" },
             messages);
     }
 
@@ -95,8 +95,8 @@ public class RetroArchRomInjectorTests
         await new RetroArchRomInjector(SourceConsole.Arcade).InjectAsync(ArcadeInjection(rom, SourceConsole.Arcade, duplicate), title, new SyncProgress(messages.Add));
 
         CollectionAssert.AreEqual(new byte[] { 1, 2, 3 }, File.ReadAllBytes(Path.Combine(title.Content, "mslug.zip")));
-        Assert.AreEqual(1, Directory.GetFiles(title.Content).Length);
-        Assert.AreEqual(2, messages.Count);
+        Assert.AreEqual(2, Directory.GetFiles(title.Content).Length, "rom and retroarch.cfg");
+        Assert.AreEqual(3, messages.Count);
     }
 
     [TestMethod]
@@ -119,8 +119,8 @@ public class RetroArchRomInjectorTests
 
         await new RetroArchRomInjector(SourceConsole.Arcade).InjectAsync(injection, title, new SyncProgress(messages.Add));
 
-        Assert.AreEqual(1, Directory.GetFiles(title.Content).Length);
-        Assert.AreEqual(2, messages.Count);
+        Assert.AreEqual(2, Directory.GetFiles(title.Content).Length, "rom and retroarch.cfg");
+        Assert.AreEqual(3, messages.Count);
     }
 
     [TestMethod]
@@ -132,9 +132,9 @@ public class RetroArchRomInjectorTests
 
         await new RetroArchRomInjector(SourceConsole.PlayStation).InjectAsync(PlayStationInjection(rom), title, new SyncProgress(messages.Add));
 
-        CollectionAssert.AreEqual(new[] { "Game_USA.chd" }, Directory.GetFiles(title.Content).Select(p => Path.GetFileName(p)).ToArray());
-        Assert.AreEqual(RpxName + " fs:/vol/content/Game_USA.chd", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
-        Assert.AreEqual(2, messages.Count);
+        CollectionAssert.AreEqual(new[] { "Game_USA.chd", "retroarch.cfg" }, Directory.GetFiles(title.Content).Select(p => Path.GetFileName(p)).ToArray());
+        Assert.AreEqual(RpxName + " --appendconfig fs:/vol/content/retroarch.cfg fs:/vol/content/Game_USA.chd", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
+        Assert.AreEqual(3, messages.Count);
     }
 
     [TestMethod]
@@ -150,10 +150,10 @@ public class RetroArchRomInjectorTests
 
         Assert.AreEqual(cueText, File.ReadAllText(Path.Combine(title.Content, "Game_USA.cue")), "flat already, copied as is");
         CollectionAssert.AreEqual(new byte[] { 7, 8, 9 }, File.ReadAllBytes(Path.Combine(title.Content, "Game (USA) (Track 1).bin")));
-        Assert.AreEqual(2, Directory.GetFiles(title.Content).Length);
-        Assert.AreEqual(RpxName + " fs:/vol/content/Game_USA.cue", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
+        Assert.AreEqual(3, Directory.GetFiles(title.Content).Length, "rom, track and retroarch.cfg");
+        Assert.AreEqual(RpxName + " --appendconfig fs:/vol/content/retroarch.cfg fs:/vol/content/Game_USA.cue", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
         CollectionAssert.AreEqual(
-            new[] { "Copying Game (USA).cue as Game_USA.cue", "Copying Game (USA) (Track 1).bin beside it", "Pointing cos.xml at it" },
+            new[] { "Copying Game (USA).cue as Game_USA.cue", "Copying Game (USA) (Track 1).bin beside it", "Writing retroarch.cfg", "Pointing cos.xml at it" },
             messages);
     }
 
@@ -169,7 +169,7 @@ public class RetroArchRomInjectorTests
 
         Assert.AreEqual("FILE \"track.bin\" BINARY\r\n  TRACK 01 MODE2/2352\r\n", File.ReadAllText(Path.Combine(title.Content, "game.cue")));
         Assert.IsTrue(File.Exists(Path.Combine(title.Content, "track.bin")));
-        Assert.AreEqual(2, Directory.GetFiles(title.Content).Length);
+        Assert.AreEqual(3, Directory.GetFiles(title.Content).Length, "rom, track and retroarch.cfg");
         Assert.AreEqual(0, Directory.GetDirectories(title.Content).Length);
     }
 
@@ -199,12 +199,12 @@ public class RetroArchRomInjectorTests
         await new RetroArchRomInjector(SourceConsole.PlayStation).InjectAsync(PlayStationInjection(rom), title, new SyncProgress(messages.Add));
 
         CollectionAssert.AreEquivalent(
-            new[] { "Game_USA.m3u", "Game (Disc 1).cue", "Game (Disc 1).bin", "Game (Disc 2).cue", "Game (Disc 2).bin" },
+            new[] { "Game_USA.m3u", "Game (Disc 1).cue", "Game (Disc 1).bin", "Game (Disc 2).cue", "Game (Disc 2).bin", "retroarch.cfg" },
             Directory.GetFiles(title.Content).Select(p => Path.GetFileName(p)).ToArray());
         Assert.AreEqual("Game (Disc 1).cue\nGame (Disc 2).cue\n", File.ReadAllText(Path.Combine(title.Content, "Game_USA.m3u")));
-        Assert.AreEqual(RpxName + " fs:/vol/content/Game_USA.m3u", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
+        Assert.AreEqual(RpxName + " --appendconfig fs:/vol/content/retroarch.cfg fs:/vol/content/Game_USA.m3u", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
         CollectionAssert.AreEqual(
-            new[] { "Copying Game (USA).m3u as Game_USA.m3u", "Copying Game (Disc 1).cue beside it", "Copying Game (Disc 1).bin beside it", "Copying Game (Disc 2).cue beside it", "Copying Game (Disc 2).bin beside it", "Pointing cos.xml at it" },
+            new[] { "Copying Game (USA).m3u as Game_USA.m3u", "Copying Game (Disc 1).cue beside it", "Copying Game (Disc 1).bin beside it", "Copying Game (Disc 2).cue beside it", "Copying Game (Disc 2).bin beside it", "Writing retroarch.cfg", "Pointing cos.xml at it" },
             messages);
     }
 
@@ -221,14 +221,14 @@ public class RetroArchRomInjectorTests
         await new RetroArchRomInjector(SourceConsole.Commodore64).InjectAsync(injection, title, new SyncProgress(messages.Add));
 
         CollectionAssert.AreEquivalent(
-            new[] { "Game_Europe.m3u", "Game (Disk 1).d64", "Game (Disk 2).d64" },
+            new[] { "Game_Europe.m3u", "Game (Disk 1).d64", "Game (Disk 2).d64", "retroarch.cfg" },
             Directory.GetFiles(title.Content).Select(p => Path.GetFileName(p)).ToArray());
         CollectionAssert.AreEqual(new byte[] { 1 }, File.ReadAllBytes(Path.Combine(title.Content, "Game (Disk 1).d64")));
         CollectionAssert.AreEqual(new byte[] { 2 }, File.ReadAllBytes(Path.Combine(title.Content, "Game (Disk 2).d64")));
         Assert.AreEqual("Game (Disk 1).d64\nGame (Disk 2).d64\n", File.ReadAllText(Path.Combine(title.Content, "Game_Europe.m3u")));
-        Assert.AreEqual(RpxName + " fs:/vol/content/Game_Europe.m3u", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
+        Assert.AreEqual(RpxName + " --appendconfig fs:/vol/content/retroarch.cfg fs:/vol/content/Game_Europe.m3u", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
         CollectionAssert.AreEqual(
-            new[] { "Copying Game (Europe).m3u as Game_Europe.m3u", "Copying Game (Disk 1).d64 beside it", "Copying Game (Disk 2).d64 beside it", "Pointing cos.xml at it" },
+            new[] { "Copying Game (Europe).m3u as Game_Europe.m3u", "Copying Game (Disk 1).d64 beside it", "Copying Game (Disk 2).d64 beside it", "Writing retroarch.cfg", "Pointing cos.xml at it" },
             messages);
     }
 
@@ -245,8 +245,8 @@ public class RetroArchRomInjectorTests
         var copied = Path.Combine(title.Content, "My_Game_U.bin");
         Assert.IsTrue(File.Exists(copied), "ROM copied under content");
         CollectionAssert.AreEqual(bytes, File.ReadAllBytes(copied));
-        Assert.AreEqual(RpxName + " fs:/vol/content/My_Game_U.bin", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
-        Assert.AreEqual(2, messages.Count);
+        Assert.AreEqual(RpxName + " --appendconfig fs:/vol/content/retroarch.cfg fs:/vol/content/My_Game_U.bin", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
+        Assert.AreEqual(3, messages.Count);
     }
 
     [TestMethod]
