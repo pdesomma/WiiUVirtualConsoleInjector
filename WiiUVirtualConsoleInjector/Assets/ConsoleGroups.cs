@@ -40,6 +40,14 @@ public static class ConsoleGroups
     /// Company name of the Sega tile.
     /// </summary>
     public const string Sega = "Sega";
+    /// <summary>
+    /// Company name of the SNK tile.
+    /// </summary>
+    public const string Snk = "SNK";
+    /// <summary>
+    /// Logo file name of the <see cref="Snk"/> tile.
+    /// </summary>
+    public const string SnkIcon = "Snk";
 
     /// <summary>
     /// The top level, in the order shown.
@@ -49,15 +57,14 @@ public static class ConsoleGroups
         new ConsoleTile(Nintendo, new[] { SourceConsole.Nes, SourceConsole.Snes, SourceConsole.N64, SourceConsole.Gba, SourceConsole.Nds, SourceConsole.VirtualBoy, SourceConsole.PokemonMini, SourceConsole.GameCube, SourceConsole.Wii }),
         new ConsoleTile(Sega, new[] { SourceConsole.Genesis, SourceConsole.SegaCd, SourceConsole.MasterSystem, SourceConsole.GameGear, SourceConsole.Sega32X }),
         new ConsoleTile(Atari, new[] { SourceConsole.Atari2600, SourceConsole.Atari7800, SourceConsole.AtariLynx, SourceConsole.AtariSt }),
-        new ConsoleTile(OtherHandhelds, new[] { SourceConsole.NeoGeoPocket, SourceConsole.WonderSwan, SourceConsole.Supervision, SourceConsole.GameAndWatch }, OtherHandheldsIcon),
+        new ConsoleTile(Snk, new[] { SourceConsole.NeoGeo, SourceConsole.NeoGeoCd, SourceConsole.NeoGeoPocket }, SnkIcon),
+        new ConsoleTile(OtherHandhelds, new[] { SourceConsole.WonderSwan, SourceConsole.Supervision, SourceConsole.GameAndWatch }, OtherHandheldsIcon),
         new ConsoleTile(Other, new[] { SourceConsole.ColecoVision, SourceConsole.Intellivision, SourceConsole.Odyssey2, SourceConsole.Vectrex }, OtherConsolesIcon),
         new ConsoleTile(Computers, new[] { SourceConsole.Dos, SourceConsole.Commodore64, SourceConsole.Commodore128, SourceConsole.AmstradCpc, SourceConsole.ZxSpectrum }),
         new ConsoleTile(SourceConsole.Tg16),
         new ConsoleTile(SourceConsole.Msx),
         new ConsoleTile(SourceConsole.PlayStation),
         new ConsoleTile(SourceConsole.Arcade),
-        new ConsoleTile(SourceConsole.NeoGeo),
-        new ConsoleTile(SourceConsole.NeoGeoCd),
     };
 
     /// <summary>

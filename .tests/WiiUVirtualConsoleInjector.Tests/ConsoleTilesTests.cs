@@ -53,12 +53,20 @@ public class ConsoleTilesTests
         Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.Msx));
         Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.PlayStation));
         Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.Arcade));
-        Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.NeoGeo));
-        Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.NeoGeoCd));
-        Assert.AreEqual(SourceConsole.PlayStation, ConsoleGroups.Top[^4].Console, "PlayStation sits before the arcade tiles");
-        Assert.AreEqual(SourceConsole.Arcade, ConsoleGroups.Top[^3].Console);
-        Assert.AreEqual(SourceConsole.NeoGeo, ConsoleGroups.Top[^2].Console);
-        Assert.AreEqual(SourceConsole.NeoGeoCd, ConsoleGroups.Top[^1].Console, "Neo Geo CD closes the top level, right after Neo Geo");
+        Assert.AreEqual(ConsoleGroups.Snk, ConsoleGroups.GroupOf(SourceConsole.NeoGeo)!.Label);
+        Assert.AreEqual(ConsoleGroups.Snk, ConsoleGroups.GroupOf(SourceConsole.NeoGeoPocket)!.Label);
+        Assert.AreEqual(SourceConsole.PlayStation, ConsoleGroups.Top[^2].Console, "PlayStation sits before the arcade tile");
+        Assert.AreEqual(SourceConsole.Arcade, ConsoleGroups.Top[^1].Console, "Arcade closes the top level");
+    }
+
+    [TestMethod]
+    public void ConsoleGroups_Top_SnkTileHoldsTheNeoGeoFamily()
+    {
+        var tile = ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.Snk);
+
+        CollectionAssert.AreEqual(new[] { SourceConsole.NeoGeo, SourceConsole.NeoGeoCd, SourceConsole.NeoGeoPocket }, tile.Consoles.ToArray());
+        Assert.AreEqual("Snk", tile.IconName);
+        Assert.AreEqual("Aroma only", tile.Caption);
     }
 
     [TestMethod]
@@ -75,9 +83,9 @@ public class ConsoleTilesTests
     {
         var groups = ConsoleGroups.Top.TakeWhile(t => t.IsGroup).Select(t => t.Label).ToArray();
 
-        CollectionAssert.AreEqual(new[] { ConsoleGroups.Nintendo, ConsoleGroups.Sega, ConsoleGroups.Atari, ConsoleGroups.OtherHandhelds, ConsoleGroups.Other, ConsoleGroups.Computers }, groups);
+        CollectionAssert.AreEqual(new[] { ConsoleGroups.Nintendo, ConsoleGroups.Sega, ConsoleGroups.Atari, ConsoleGroups.Snk, ConsoleGroups.OtherHandhelds, ConsoleGroups.Other, ConsoleGroups.Computers }, groups);
         Assert.IsTrue(ConsoleGroups.Top.Skip(groups.Length).All(t => !t.IsGroup), "loose consoles follow the companies");
-        CollectionAssert.AreEqual(new[] { SourceConsole.Tg16, SourceConsole.Msx, SourceConsole.PlayStation, SourceConsole.Arcade, SourceConsole.NeoGeo, SourceConsole.NeoGeoCd }, ConsoleGroups.Top.Skip(groups.Length).Select(t => t.Console).ToArray(), "the loose tail is unchanged");
+        CollectionAssert.AreEqual(new[] { SourceConsole.Tg16, SourceConsole.Msx, SourceConsole.PlayStation, SourceConsole.Arcade }, ConsoleGroups.Top.Skip(groups.Length).Select(t => t.Console).ToArray(), "the loose tail");
     }
 
     [TestMethod]
@@ -118,7 +126,7 @@ public class ConsoleTilesTests
     {
         var tile = ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.OtherHandhelds);
 
-        CollectionAssert.AreEqual(new[] { SourceConsole.NeoGeoPocket, SourceConsole.WonderSwan, SourceConsole.Supervision, SourceConsole.GameAndWatch }, tile.Consoles.ToArray());
+        CollectionAssert.AreEqual(new[] { SourceConsole.WonderSwan, SourceConsole.Supervision, SourceConsole.GameAndWatch }, tile.Consoles.ToArray());
         Assert.AreEqual("Other Handhelds", tile.Label);
         Assert.AreEqual("OtherHandhelds", tile.IconName);
         Assert.AreEqual("Aroma only", tile.Caption);
