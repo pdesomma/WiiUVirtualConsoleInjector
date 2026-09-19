@@ -31,11 +31,22 @@ public class ConsoleIconsTests
     }
 
     [TestMethod]
-    public void Caption_BaseConsoles_Null()
+    public void Caption_AromaOnly_ExactlyWhenTheConsoleHasCoresAndNoBase()
     {
         var cores = new EmbeddedRetroArchCores();
+        var catalog = BaseCatalog.Bundled();
         foreach (var console in Enum.GetValues<SourceConsole>())
-            Assert.AreEqual(cores.System(console) is null ? null : "Aroma only", ConsoleIcons.Caption(console), console.ToString());
+        {
+            var coreOnly = cores.System(console) is not null && catalog.For(console).Count == 0;
+            Assert.AreEqual(coreOnly ? "Aroma only" : null, ConsoleIcons.Caption(console), console.ToString());
+        }
+    }
+
+    [TestMethod]
+    public void Caption_ConsolesWithABase_Null()
+    {
+        foreach (var console in new[] { SourceConsole.Nes, SourceConsole.Snes, SourceConsole.Gba, SourceConsole.GameBoy, SourceConsole.Tg16, SourceConsole.Msx })
+            Assert.IsNull(ConsoleIcons.Caption(console), console + " can still be built on its base");
     }
 
     [TestMethod]
@@ -43,6 +54,8 @@ public class ConsoleIconsTests
     {
         Assert.AreEqual("Sega Genesis", ConsoleIcons.DisplayName(SourceConsole.Genesis));
         Assert.AreEqual("NES", ConsoleIcons.DisplayName(SourceConsole.Nes));
+        Assert.AreEqual("Game Boy / Color", ConsoleIcons.DisplayName(SourceConsole.GameBoy));
+        Assert.AreEqual("Game Boy Advance", ConsoleIcons.DisplayName(SourceConsole.Gba));
         Assert.AreEqual("Arcade", ConsoleIcons.DisplayName(SourceConsole.Arcade));
         Assert.AreEqual("Neo Geo", ConsoleIcons.DisplayName(SourceConsole.NeoGeo));
         Assert.AreEqual("PlayStation", ConsoleIcons.DisplayName(SourceConsole.PlayStation));

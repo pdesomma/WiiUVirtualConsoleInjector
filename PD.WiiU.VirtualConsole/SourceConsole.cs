@@ -9,6 +9,7 @@ public enum SourceConsole
     Snes,
     N64,
     Gba,
+    GameBoy,
     Nds,
     Tg16,
     Msx,

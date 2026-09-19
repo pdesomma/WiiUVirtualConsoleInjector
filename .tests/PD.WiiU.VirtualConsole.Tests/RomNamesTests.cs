@@ -69,6 +69,28 @@ public class RomNamesTests
     }
 
     [TestMethod]
+    public void Suggest_GameBoy_ReadsTheHeaderTitleAndDropsTheColorFlag()
+    {
+        var gb = Write("game.gb", 0x200, (0x134, "TETRIS"));
+        var gbc = Path.Combine(_root, "game.gbc");
+        var bytes = new byte[0x200];
+        Encoding.ASCII.GetBytes("ZELDA DX").CopyTo(bytes, 0x134);
+        bytes[0x143] = 0x80;
+        File.WriteAllBytes(gbc, bytes);
+        var sixteen = Write("full.gb", 0x200, (0x134, "SUPER MARIO LAND"));
+        var flagOnly = Path.Combine(_root, "flag.gbc");
+        var flagged = new byte[0x200];
+        flagged[0x143] = 0xC0;
+        File.WriteAllBytes(flagOnly, flagged);
+
+        Assert.AreEqual("Tetris", RomNames.Suggest(SourceConsole.GameBoy, gb));
+        Assert.AreEqual("Zelda Dx", RomNames.Suggest(SourceConsole.GameBoy, gbc), "the CGB flag after the NUL padding is ignored");
+        Assert.AreEqual("Super Mario Land", RomNames.Suggest(SourceConsole.GameBoy, sixteen), "all sixteen bytes are read");
+        Assert.IsNull(RomNames.Suggest(SourceConsole.GameBoy, flagOnly), "a flag with no title is nothing");
+        Assert.IsNull(RomNames.Suggest(SourceConsole.GameBoy, Write("short.gb", 0x100, (0, "X"))), "too short for the header");
+    }
+
+    [TestMethod]
     public void Suggest_SuperNintendo_TakesTheHeaderWhoseChecksumChecksOut()
     {
         var lorom = Snes(0x7FC0, "ANIMANIACS", copierHeader: false);

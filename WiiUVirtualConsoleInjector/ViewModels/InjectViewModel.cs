@@ -132,6 +132,9 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     [NotifyPropertyChangedFor(nameof(CurrentWizardStep), nameof(SelectedStep), nameof(CanGoNext), nameof(CanGoPrevious), nameof(IsConsoleStep), nameof(IsGameStep), nameof(IsArtworkStep), nameof(IsOptionsStep), nameof(IsReviewStep))]
     [NotifyCanExecuteChangedFor(nameof(NextStepCommand), nameof(PreviousStepCommand))]
     private int _step = 1;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(UseVirtualConsole))]
+    private bool _useRetroArch;
 
     /// <summary>
     /// Creates a new instance of the <see cref="InjectViewModel"/> class.
@@ -183,10 +186,10 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         };
 
         _selectedConsole = SourceConsole.Nes;
-        _currentOptions = CreateOptions(_selectedConsole);
         ArtworkBuilder.Refresh(_selectedConsole, Name, ShortName);
         ShowTiles(null);
         Refresh();
+        _currentOptions = CreateOptions(_selectedConsole, IsRetroArch);
     }
 
     /// <summary>
@@ -211,9 +214,23 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     public bool HasAromaWarnings => AromaWarnings.Count > 0;
 
     /// <summary>
-    /// True when the selected console is built on a RetroArch core rather than a base.
+    /// True when the selected console offers both a base and a core, so the user picks.
     /// </summary>
-    public bool IsRetroArch => Cores.Count > 0;
+    public bool HasBothModes => Bases.Count > 0 && Cores.Count > 0;
+
+    /// <summary>
+    /// True when the title is built on a RetroArch core rather than a base: the console has no base, or the user chose the core.
+    /// </summary>
+    public bool IsRetroArch => Cores.Count > 0 && (Bases.Count == 0 || UseRetroArch);
+
+    /// <summary>
+    /// The Virtual Console side of the mode picker; mirrors <see cref="UseRetroArch"/>.
+    /// </summary>
+    public bool UseVirtualConsole
+    {
+        get => !UseRetroArch;
+        set => UseRetroArch = !value;
+    }
 
     /// <summary>
     /// The BIOS files the selected console's core needs on the card, or null when it needs none.
@@ -228,9 +245,11 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     public ObservableCollection<BiosFileViewModel> BiosFiles { get; } = new();
 
     /// <summary>
-    /// The files that will go onto the card beside the title.
+    /// The files that will go onto the card beside the title; none for a title built on a base.
     /// </summary>
-    public IReadOnlyList<CardFile> CardFiles => BiosFiles.Select(b => b.CardFile).Where(f => f is not null).ToArray()!;
+    public IReadOnlyList<CardFile> CardFiles => IsRetroArch
+        ? BiosFiles.Select(b => b.CardFile).OfType<CardFile>().ToArray()
+        : Array.Empty<CardFile>();
 
     /// <summary>
     /// True when something goes onto the card beside the title.
@@ -511,6 +530,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         StartOver();
         SelectedConsole = record.Console;
         ShowTiles(Assets.ConsoleGroups.GroupOf(record.Console));
+        UseRetroArch = record.Template.IsCore;
         if (record.Template.IsCore)
             SelectedCore = Cores.FirstOrDefault(c => c.Id == record.Template.CoreId) ?? SelectedCore;
         else
@@ -555,10 +575,11 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         Status = null;
         CurrentStep = null;
         SelectedConsole = SourceConsole.Nes;
-        CurrentOptions = CreateOptions(SelectedConsole);
+        UseRetroArch = false;
         ArtworkBuilder.Refresh(SelectedConsole, Name, ShortName);
         ShowTiles(null, highlight: false);
         Refresh();
+        CurrentOptions = CreateOptions(SelectedConsole, IsRetroArch);
         Step = 1;
     }
 
@@ -649,17 +670,28 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     }
 
     /// <summary>
-    /// File types a console accepts: from the core catalog for RetroArch consoles, fixed for the rest.
+    /// File types a console accepts in the current mode: the core catalog's when built on a core (or when the console has no base), fixed Virtual Console ones otherwise.
     /// </summary>
     /// <param name="console">Console the ROM is for.</param>
-    private FileFilter[] RomFilters(SourceConsole console) => _cores.System(console) is { } system
-        ? new FileFilter[] { new(Assets.ConsoleIcons.DisplayName(console) + " ROMs", system.Extensions.Select(e => "*" + e).ToArray()) }
-        : console switch
+    private FileFilter[] RomFilters(SourceConsole console)
+    {
+        var fixedFilters = VirtualConsoleFilters(console);
+        if (_cores.System(console) is { } system && (IsRetroArch || fixedFilters is null))
+            return new FileFilter[] { new(Assets.ConsoleIcons.DisplayName(console) + " ROMs", system.Extensions.Select(e => "*" + e).ToArray()) };
+        return fixedFilters ?? throw new ArgumentOutOfRangeException(nameof(console), console, "Unknown console.");
+    }
+
+    /// <summary>
+    /// File types a console's Virtual Console base takes, or null for a console without one.
+    /// </summary>
+    /// <param name="console">Console the ROM is for.</param>
+    private static FileFilter[]? VirtualConsoleFilters(SourceConsole console) => console switch
     {
         SourceConsole.Nes => new FileFilter[] { new("NES ROMs", "*.nes") },
         SourceConsole.Snes => new FileFilter[] { new("SNES ROMs", "*.sfc", "*.smc") },
         SourceConsole.N64 => new FileFilter[] { new("Nintendo 64 ROMs", "*.z64", "*.n64", "*.v64") },
-        SourceConsole.Gba => new FileFilter[] { new("Game Boy ROMs", "*.gba", "*.gb", "*.gbc", "*.sgb") },
+        SourceConsole.Gba => new FileFilter[] { new("Game Boy Advance ROMs", "*.gba") },
+        SourceConsole.GameBoy => new FileFilter[] { new("Game Boy ROMs", "*.gb", "*.gbc", "*.sgb") },
         SourceConsole.Nds => new FileFilter[] { new("Nintendo DS ROMs", "*.nds") },
         SourceConsole.Tg16 => new FileFilter[] { new("TurboGrafx-16 ROMs", "*.pce") },
         SourceConsole.Msx => new FileFilter[] { new("MSX ROMs", "*.rom", "*.mx1", "*.mx2") },
@@ -671,13 +703,19 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
             new("Channels", "*.wad"),
         },
         SourceConsole.GameCube => new FileFilter[] { new("GameCube images", "*.iso", "*.gcm", "*.gcz") },
-        _ => throw new ArgumentOutOfRangeException(nameof(console), console, "Unknown console."),
+        _ => null,
     };
 
-    private static (InjectionWarning Warning, string Message)? WarningFor(SourceConsole console, string romPath) => console switch
+    /// <summary>
+    /// The warning an inject deserves, or null; the emulator limits only apply on a base.
+    /// </summary>
+    /// <param name="console">Console the ROM is for.</param>
+    /// <param name="romPath">The ROM.</param>
+    /// <param name="retroArch">True when the title is built on a core.</param>
+    private static (InjectionWarning Warning, string Message)? WarningFor(SourceConsole console, string romPath, bool retroArch) => console switch
     {
-        SourceConsole.Nds => (InjectionWarning.NdsDsiEnhanced, NdsWarning),
-        SourceConsole.Snes => (InjectionWarning.SnesCoProcessor, SnesWarning),
+        SourceConsole.Nds when !retroArch => (InjectionWarning.NdsDsiEnhanced, NdsWarning),
+        SourceConsole.Snes when !retroArch => (InjectionWarning.SnesCoProcessor, SnesWarning),
         SourceConsole.GameCube when string.Equals(Path.GetExtension(romPath), ".gcz", StringComparison.OrdinalIgnoreCase) => (InjectionWarning.GameCubeGcz, GczWarning),
         _ => null,
     };
@@ -708,7 +746,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     /// </summary>
     private async Task<bool> ConfirmWarningAsync()
     {
-        if (WarningFor(SelectedConsole, RomPath!) is not { } warning || _settings.Current.IsSuppressed(warning.Warning))
+        if (WarningFor(SelectedConsole, RomPath!, IsRetroArch) is not { } warning || _settings.Current.IsSuppressed(warning.Warning))
             return true;
 
         return await _dialogs.ConfirmAsync(WarningTitle, warning.Message).ConfigureAwait(true);
@@ -725,16 +763,22 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
             Step = step.Number;
     }
 
-    private ConsoleOptionsViewModel CreateOptions(SourceConsole console) => console switch
+    /// <summary>
+    /// The options panel for a console: the base's own settings on a base, none on a core except the arcade companion files.
+    /// </summary>
+    /// <param name="console">Console the ROM is for.</param>
+    /// <param name="retroArch">True when the title is built on a core.</param>
+    private ConsoleOptionsViewModel CreateOptions(SourceConsole console, bool retroArch) => console switch
     {
+        SourceConsole.Arcade or SourceConsole.NeoGeo => new ArcadeOptionsViewModel(_dialogs, console),
+        _ when retroArch => new NoOptionsViewModel(console),
         SourceConsole.Nes => new NesOptionsViewModel(),
         SourceConsole.Snes => new SnesOptionsViewModel(),
         SourceConsole.N64 => new N64OptionsViewModel(_dialogs, () => _settings.WorkPath),
-        SourceConsole.Gba => new GbaOptionsViewModel(),
+        SourceConsole.Gba or SourceConsole.GameBoy => new GbaOptionsViewModel(console),
         SourceConsole.Nds => new NdsOptionsViewModel(_dialogs),
         SourceConsole.Wii => new WiiOptionsViewModel(_dialogs),
         SourceConsole.GameCube => new GameCubeOptionsViewModel(_dialogs),
-        SourceConsole.Arcade or SourceConsole.NeoGeo => new ArcadeOptionsViewModel(_dialogs, console),
         _ => new NoOptionsViewModel(console),
     };
 
@@ -981,13 +1025,13 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     private Task ShowImageAsync(string? path) => string.IsNullOrWhiteSpace(path) ? Task.CompletedTask : _dialogs.ShowImageAsync("Community artwork", path!);
 
     /// <summary>
-    /// Asks whether the ROM fits the base off the UI thread and shows why when it does not.
+    /// Asks whether the ROM fits the base off the UI thread and shows why when it does not; a core has no such limit.
     /// </summary>
     private async Task CheckRomFitAsync()
     {
         var @base = SelectedBase;
         var rom = RomPath;
-        if (@base is not { IsPresent: true } || string.IsNullOrWhiteSpace(rom))
+        if (IsRetroArch || @base is not { IsPresent: true } || string.IsNullOrWhiteSpace(rom))
         {
             RomFitHint = null;
             return;
@@ -1044,11 +1088,46 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     partial void OnSelectedConsoleChanged(SourceConsole value)
     {
         RomPath = null;
-        CurrentOptions = CreateOptions(value);
+        UseRetroArch = false;
         ArtworkBuilder.Refresh(value, Name, ShortName);
         Refresh();
+        CurrentOptions = CreateOptions(value, IsRetroArch);
         if (Step == 1)
             Step = 2;
+    }
+
+    /// <summary>
+    /// The mode switched: the options panel, the key and card checks and every mode-dependent line follow.
+    /// </summary>
+    /// <param name="value">True for the core.</param>
+    partial void OnUseRetroArchChanged(bool value)
+    {
+        CurrentOptions = CreateOptions(SelectedConsole, IsRetroArch);
+        MissingKeys = _injections.MissingKeys(SelectedConsole, RomPath);
+        NotifyModeChanged();
+        RomFitCheck = CheckRomFitAsync();
+        AromaWarnings = CheckAroma();
+    }
+
+    /// <summary>
+    /// Raises everything that reads <see cref="IsRetroArch"/>.
+    /// </summary>
+    private void NotifyModeChanged()
+    {
+        OnPropertyChanged(nameof(HasBothModes));
+        OnPropertyChanged(nameof(IsRetroArch));
+        OnPropertyChanged(nameof(HasTemplate));
+        OnPropertyChanged(nameof(CanInject));
+        OnPropertyChanged(nameof(BaseHint));
+        OnPropertyChanged(nameof(RetroArchHint));
+        OnPropertyChanged(nameof(BiosHint));
+        OnPropertyChanged(nameof(ReviewTemplateLabel));
+        OnPropertyChanged(nameof(ReviewTemplate));
+        OnPropertyChanged(nameof(RomExtensions));
+        OnPropertyChanged(nameof(CardFiles));
+        OnPropertyChanged(nameof(ReviewExtras));
+        OnPropertyChanged(nameof(HasReviewExtras));
+        InjectCommand.NotifyCanExecuteChanged();
     }
 
     /// <summary>
@@ -1108,10 +1187,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
             }
             BiosFiles.Add(bios);
         }
-        OnPropertyChanged(nameof(IsRetroArch));
-        OnPropertyChanged(nameof(RetroArchHint));
-        OnPropertyChanged(nameof(BiosHint));
-        OnPropertyChanged(nameof(ReviewTemplateLabel));
+        NotifyModeChanged();
 
         SelectedBase = Bases.FirstOrDefault(b => previous is { } id && b.Base.TitleId.Equals(id))
                        ?? Bases.FirstOrDefault(b => b.IsPresent && b.Base.IsRecommended)

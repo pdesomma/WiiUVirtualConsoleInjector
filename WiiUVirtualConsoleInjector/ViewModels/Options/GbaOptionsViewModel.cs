@@ -5,7 +5,7 @@ using PD.WiiU.VirtualConsole.Options;
 namespace WiiUVirtualConsoleInjector.ViewModels.Options;
 
 /// <summary>
-/// Editable <see cref="GbaOptions"/>.
+/// Editable <see cref="GbaOptions"/>, for the Game Boy Advance or the Game Boy on its base.
 /// </summary>
 public sealed partial class GbaOptionsViewModel : ConsoleOptionsViewModel
 {
@@ -17,13 +17,14 @@ public sealed partial class GbaOptionsViewModel : ConsoleOptionsViewModel
     /// <summary>
     /// Creates a new instance of the <see cref="GbaOptionsViewModel"/> class.
     /// </summary>
-    public GbaOptionsViewModel()
-        : base(SourceConsole.Gba)
+    /// <param name="console">Game Boy Advance, or Game Boy for a Goomba inject.</param>
+    public GbaOptionsViewModel(SourceConsole console = SourceConsole.Gba)
+        : base(console)
     {
     }
 
     /// <inheritdoc/>
-    public override IConsoleOptions? Build() => new GbaOptions { PokemonPatch = PokemonPatch, RemoveDarkFilter = RemoveDarkFilter };
+    public override IConsoleOptions? Build() => new GbaOptions { Console = Console, PokemonPatch = PokemonPatch, RemoveDarkFilter = RemoveDarkFilter };
 
     /// <inheritdoc/>
     public override void Load(IConsoleOptions? options)

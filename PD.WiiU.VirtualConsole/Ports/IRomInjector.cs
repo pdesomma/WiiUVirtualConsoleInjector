@@ -1,7 +1,7 @@
 namespace PD.WiiU.VirtualConsole.Ports;
 
 /// <summary>
-/// Puts a ROM into a staged base for one console.
+/// Puts a ROM into a staged template for one console, built on a base or on a core.
 /// </summary>
 public interface IRomInjector
 {
@@ -9,6 +9,11 @@ public interface IRomInjector
     /// Console this injector handles.
     /// </summary>
     SourceConsole Console { get; }
+
+    /// <summary>
+    /// Which template kind it fills.
+    /// </summary>
+    TitleKind Kind { get; }
 
     /// <summary>
     /// Lists what the base lacks for this console; empty when it can be injected.

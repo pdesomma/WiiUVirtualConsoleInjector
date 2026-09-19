@@ -62,15 +62,27 @@ public sealed class BaseCatalog
     public BaseTitle? Find(TitleId titleId) => _byId.TryGetValue(titleId, out var title) ? title : null;
 
     /// <summary>
-    /// Bases usable for a console. GameCube injects ride on Wii bases, so those come back retagged.
+    /// Bases usable for a console. GameCube injects ride on Wii bases and Game Boy injects on GBA bases, so those come back retagged.
     /// </summary>
     /// <param name="console">Console the ROM is for.</param>
     public IReadOnlyList<BaseTitle> For(SourceConsole console)
     {
-        if (console == SourceConsole.GameCube)
-            return Titles.Where(t => t.Console == SourceConsole.Wii).Select(t => new BaseTitle(t.TitleId, t.Name, t.Region, SourceConsole.GameCube) { IsRecommended = t.IsRecommended }).ToArray();
+        var host = HostConsole(console);
+        if (host != console)
+            return Titles.Where(t => t.Console == host).Select(t => new BaseTitle(t.TitleId, t.Name, t.Region, console) { IsRecommended = t.IsRecommended }).ToArray();
         return Titles.Where(t => t.Console == console).ToArray();
     }
+
+    /// <summary>
+    /// The console whose bases a console borrows: Wii for GameCube, GBA for Game Boy, otherwise its own.
+    /// </summary>
+    /// <param name="console">Console the ROM is for.</param>
+    public static SourceConsole HostConsole(SourceConsole console) => console switch
+    {
+        SourceConsole.GameCube => SourceConsole.Wii,
+        SourceConsole.GameBoy => SourceConsole.Gba,
+        _ => console,
+    };
 
     /// <summary>
     /// Reads a catalog file.

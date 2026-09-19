@@ -10,6 +10,8 @@ public sealed class SnesRomInjector : IRomInjector, IRomCapacity
 {
     /// <inheritdoc/>
     public SourceConsole Console => SourceConsole.Snes;
+    /// <inheritdoc/>
+    public TitleKind Kind => TitleKind.VirtualConsole;
 
     /// <inheritdoc/>
     public long Capacity(TitleDirectory title)

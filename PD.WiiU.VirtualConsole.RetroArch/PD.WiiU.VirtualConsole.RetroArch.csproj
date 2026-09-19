@@ -46,6 +46,28 @@
     <EmbeddedResource Include="Assets\Cores\AmstradCpc\crocods_libretro.rpx" LogicalName="cores/crocods_libretro.rpx" />
     <EmbeddedResource Include="Assets\Cores\ZxSpectrum\fuse_libretro.rpx" LogicalName="cores/fuse_libretro.rpx" />
     <EmbeddedResource Include="Assets\Cores\AtariSt\hatari_libretro.rpx" LogicalName="cores/hatari_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Nes\fceumm_libretro.rpx" LogicalName="cores/fceumm_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Nes\nestopia_libretro.rpx" LogicalName="cores/nestopia_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Nes\quicknes_libretro.rpx" LogicalName="cores/quicknes_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Nes\fixnes_libretro.rpx" LogicalName="cores/fixnes_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Snes\snes9x_libretro.rpx" LogicalName="cores/snes9x_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Snes\snes9x2010_libretro.rpx" LogicalName="cores/snes9x2010_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Snes\snes9x2005_plus_libretro.rpx" LogicalName="cores/snes9x2005_plus_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Snes\snes9x2005_libretro.rpx" LogicalName="cores/snes9x2005_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Snes\snes9x2002_libretro.rpx" LogicalName="cores/snes9x2002_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Snes\chimerasnes_libretro.rpx" LogicalName="cores/chimerasnes_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\GameBoy\gambatte_libretro.rpx" LogicalName="cores/gambatte_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\GameBoy\gearboy_libretro.rpx" LogicalName="cores/gearboy_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\GameBoy\fixgb_libretro.rpx" LogicalName="cores/fixgb_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Gba\mgba_libretro.rpx" LogicalName="cores/mgba_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Gba\vbam_libretro.rpx" LogicalName="cores/vbam_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Gba\vba_next_libretro.rpx" LogicalName="cores/vba_next_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Gba\gpsp_libretro.rpx" LogicalName="cores/gpsp_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Tg16\mednafen_pce_libretro.rpx" LogicalName="cores/mednafen_pce_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Tg16\mednafen_pce_fast_libretro.rpx" LogicalName="cores/mednafen_pce_fast_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Tg16\mednafen_supergrafx_libretro.rpx" LogicalName="cores/mednafen_supergrafx_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Msx\bluemsx_libretro.rpx" LogicalName="cores/bluemsx_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Msx\fmsx_libretro.rpx" LogicalName="cores/fmsx_libretro.rpx" />
     <EmbeddedResource Include="Assets\Template\app.xml" LogicalName="template/code/app.xml" />
     <EmbeddedResource Include="Assets\Template\cos.xml" LogicalName="template/code/cos.xml" />
     <EmbeddedResource Include="Assets\Template\meta.xml" LogicalName="template/meta/meta.xml" />

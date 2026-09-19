@@ -112,6 +112,7 @@ public class InjectViewModelTests
             [SourceConsole.Snes] = typeof(SnesOptionsViewModel),
             [SourceConsole.N64] = typeof(N64OptionsViewModel),
             [SourceConsole.Gba] = typeof(GbaOptionsViewModel),
+            [SourceConsole.GameBoy] = typeof(GbaOptionsViewModel),
             [SourceConsole.Nds] = typeof(NdsOptionsViewModel),
             [SourceConsole.Tg16] = typeof(NoOptionsViewModel),
             [SourceConsole.Msx] = typeof(NoOptionsViewModel),
@@ -560,6 +561,23 @@ public class InjectViewModelTests
         await vm.PickRomCommand.ExecuteAsync(null);
         var patterns = _dialogs.FilePicks[1].Filters.SelectMany(f => f.Patterns).Distinct().ToArray();
         CollectionAssert.AreEquivalent(new[] { "*.iso", "*.wbfs", "*.dol", "*.wad" }, patterns);
+    }
+
+    [TestMethod]
+    public async Task PickRom_GbaAndGameBoy_SplitTheGoombaFilters()
+    {
+        var vm = Create();
+
+        vm.SelectedConsole = SourceConsole.Gba;
+        await vm.PickRomCommand.ExecuteAsync(null);
+        CollectionAssert.AreEqual(new[] { "*.gba" }, _dialogs.FilePicks[0].Filters.Single().Patterns);
+        Assert.AreEqual(".gba", vm.RomExtensions);
+
+        vm.SelectedConsole = SourceConsole.GameBoy;
+        await vm.PickRomCommand.ExecuteAsync(null);
+        CollectionAssert.AreEqual(new[] { "*.gb", "*.gbc", "*.sgb" }, _dialogs.FilePicks[1].Filters.Single().Patterns);
+        Assert.AreEqual(".gb, .gbc, .sgb", vm.RomExtensions);
+        Assert.AreEqual("Game Boy / Color", vm.SelectedConsoleName);
     }
 
     [TestMethod]

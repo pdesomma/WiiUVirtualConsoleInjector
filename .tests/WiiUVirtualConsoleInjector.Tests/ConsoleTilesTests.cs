@@ -141,6 +141,16 @@ public class ConsoleTilesTests
     }
 
     [TestMethod]
+    public void ConsoleGroups_Top_GameBoySitsAfterGbaUnderNintendo()
+    {
+        var nintendo = ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.Nintendo).Consoles.ToList();
+
+        CollectionAssert.AreEqual(new[] { SourceConsole.Nes, SourceConsole.Snes, SourceConsole.N64, SourceConsole.Gba, SourceConsole.GameBoy, SourceConsole.Nds, SourceConsole.VirtualBoy, SourceConsole.PokemonMini, SourceConsole.GameCube, SourceConsole.Wii }, nintendo);
+        Assert.IsNull(new ConsoleTile(SourceConsole.GameBoy).Caption, "its base is the GBA one");
+        Assert.AreEqual("Game Boy / Color", new ConsoleTile(SourceConsole.GameBoy).Label);
+    }
+
+    [TestMethod]
     public void ConsoleGroups_Members_RequiresACompany()
     {
         Assert.ThrowsExactly<ArgumentNullException>(() => ConsoleGroups.Members(null!));

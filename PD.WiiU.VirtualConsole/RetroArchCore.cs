@@ -47,6 +47,8 @@ public sealed class RetroArchCore : ITitleTemplate
     /// </summary>
     public bool IsRecommended { get; init; }
     /// <inheritdoc/>
+    public TitleKind Kind => TitleKind.RetroArch;
+    /// <inheritdoc/>
     public string Name { get; }
     /// <summary>
     /// File name of the executable, e.g. genesis_plus_gx_libretro.rpx.

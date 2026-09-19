@@ -89,6 +89,8 @@ public class CommunityArtworkIdsTests
 
         Assert.AreEqual(0, CommunityArtworkIds.Candidates(SourceConsole.Nes, tiny).Count, "too short to hash");
         Assert.AreEqual(0, CommunityArtworkIds.Candidates(SourceConsole.Gba, gb).Count, "Game Boy ROMs carry no code");
+        Assert.AreEqual(0, CommunityArtworkIds.Candidates(SourceConsole.GameBoy, gb).Count, "nor when injected as Game Boy");
+        Assert.AreEqual("gba", CommunityArtworkIds.Folder(SourceConsole.GameBoy), "Game Boy shares the GBA folder");
         Assert.AreEqual(0, CommunityArtworkIds.Candidates(SourceConsole.Nds, blank).Count, "an all-zero code is nothing");
         Assert.ThrowsExactly<ArgumentNullException>(() => CommunityArtworkIds.Candidates(SourceConsole.Nes, null!));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => CommunityArtworkIds.Folder((SourceConsole)99));

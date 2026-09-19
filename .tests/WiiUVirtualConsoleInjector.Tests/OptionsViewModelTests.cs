@@ -56,7 +56,21 @@ public class OptionsViewModelTests
 
         var built = (GbaOptions)vm.Build()!;
 
+        Assert.AreEqual(SourceConsole.Gba, vm.Console);
+        Assert.AreEqual(SourceConsole.Gba, built.Console);
         Assert.IsTrue(built.PokemonPatch);
+        Assert.IsTrue(built.RemoveDarkFilter);
+    }
+
+    [TestMethod]
+    public void Gba_GameBoyConsole_BuildsOptionsForTheGameBoy()
+    {
+        var vm = new GbaOptionsViewModel(SourceConsole.GameBoy) { RemoveDarkFilter = true };
+
+        var built = (GbaOptions)vm.Build()!;
+
+        Assert.AreEqual(SourceConsole.GameBoy, vm.Console);
+        Assert.AreEqual(SourceConsole.GameBoy, built.Console);
         Assert.IsTrue(built.RemoveDarkFilter);
     }
 

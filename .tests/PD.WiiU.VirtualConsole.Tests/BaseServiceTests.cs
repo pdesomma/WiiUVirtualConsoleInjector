@@ -61,6 +61,22 @@ public class BaseServiceTests
     }
 
     [TestMethod]
+    public void Available_CustomGbaBase_ServesGameBoyRetagged()
+    {
+        var gba = new BaseTitle(new TitleId(TitleType.Game, 0x10199902), "My GBA Base", Region.UnitedStates, SourceConsole.Gba);
+        _service.AddCustom(gba);
+
+        var forGameBoy = _service.Available(SourceConsole.GameBoy);
+
+        Assert.AreEqual(1, forGameBoy.Count);
+        Assert.AreEqual(gba.TitleId, forGameBoy[0].TitleId);
+        Assert.AreEqual("My GBA Base", forGameBoy[0].Name);
+        Assert.AreEqual(SourceConsole.GameBoy, forGameBoy[0].Console);
+        Assert.IsTrue(forGameBoy[0].IsCustom);
+        Assert.AreEqual(SourceConsole.Gba, _service.Available(SourceConsole.Gba).Single().Console);
+    }
+
+    [TestMethod]
     public void Available_CustomWithACatalogTitleId_YieldsToTheCatalog()
     {
         var clash = new BaseTitle(TestTitle.Base().TitleId, "Impostor", Region.Japan, SourceConsole.N64);

@@ -15,7 +15,9 @@ Turns a ROM or disc image into an installable Wii U title, using a stock Virtual
 
 ## Consoles
 
-NES, SNES, Nintendo 64, Game Boy Advance (and Game Boy / Game Boy Color through Goomba), Nintendo DS, TurboGrafx-16 (HuCard and TurboCD), MSX, Wii, GameCube (through Nintendont).
+NES, SNES, Nintendo 64, Game Boy Advance, Game Boy / Color, Nintendo DS, TurboGrafx-16 (HuCard and TurboCD), MSX, Wii, GameCube (through Nintendont).
+
+**Virtual Console or RetroArch.** NES, SNES, Game Boy, Game Boy Advance, TurboGrafx-16 and MSX can be built either way, and the Game step has the switch: a **Virtual Console base** is Nintendo's own emulator and needs the base title and its key; a **RetroArch core** (FCEUmm, Nestopia UE, QuickNES, fixNES, Snes9x, ChimeraSNES, Gambatte, Gearboy, fixGB, mGBA, VBA-M, VBA Next, gpSP, Beetle PCE, PCE Fast, SuperGrafx, blueMSX or fMSX) needs neither but runs under Aroma only, like the consoles below. Game Boy / Color is its own tile: on the Virtual Console side it rides the GBA base with Goomba in front of the ROM, on the RetroArch side it gets Gambatte and friends. The Game Boy Advance tile takes `.gba` only.
 
 **Sega Genesis, Sega CD, Master System, Game Gear, 32X, Atari 2600, 7800, Lynx, ST, Virtual Boy, PlayStation, Pokémon Mini, the SNK tile (Neo Geo, Neo Geo CD, Neo Geo Pocket), the Other Handhelds tile (WonderSwan, Watara Supervision, Game & Watch), the Other consoles tile (ColecoVision, Intellivision, Odyssey², Vectrex), the Computers tile (DOS, Commodore 64, Commodore 128, Amstrad CPC, ZX Spectrum), Arcade, Neo Geo and Neo Geo CD** titles are different: there is no Virtual Console base, so the title carries a libretro core (Genesis Plus GX, its widescreen build, PicoDrive, Gearsystem, Stella, ProSystem, Handy, Hatari, Beetle VB, PCSX-ReARMed, NeoCD, PokeMini, Beetle NeoPop, RACE, Beetle Cygne, Potator, GW, Gearcoleco, FreeIntv, O2EM, vecx, DOSBox Pure, VICE x64, VICE x128, Caprice32, CrocoDS, Fuse, FinalBurn Neo, FB Alpha 2012 or MAME 2000/2003/2010) as its emulator with the ROM beside it. They run under **Aroma only**, read and write settings and saves under `sd:/retroarch/`, and need Aroma's signature patch module ([01_sigpatches.rpx](https://github.com/marco-calautti/SigpatchesModuleWiiU/releases) in `wiiu/environments/aroma/modules/setup/`) to install; the Review step checks the card for both. Quit from RetroArch's own menu — closing the software from the HOME Menu hangs on the Wii U Menu, a RetroArch bug.
 
@@ -37,7 +39,7 @@ DOS games go in as a zip of the game folder (or an exe / cue); Commodore, Amstra
 
 ## How it goes
 
-1. **Inject**: pick the console, the base (or the RetroArch core), the ROM, artwork and options, then inject. The finished title lands in the output folder and, if a card is set, under `install/` on the SD card.
+1. **Inject**: pick the console, the base or the RetroArch core, the ROM, artwork and options, then inject. The finished title lands in the output folder and, if a card is set, under `install/` on the SD card.
 2. Install it on the console with WUP Installer.
 
 The picker lands on the base the community found works best for each console; NES and SNES ROMs are checked against the base's size before injecting, since those overwrite the base game's own ROM in place. Community artwork is looked up by the game's code, or boot screens and icons are built from a screenshot. Every inject is kept on **History** and can be reloaded with one click.

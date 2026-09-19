@@ -24,6 +24,16 @@ public class OptionsTests
     }
 
     [TestMethod]
+    public void GbaTakesGameBoyOnInit()
+    {
+        var options = new GbaOptions { Console = SourceConsole.GameBoy, RemoveDarkFilter = true };
+
+        Assert.AreEqual(SourceConsole.GameBoy, options.Console);
+        Assert.IsTrue(options.RemoveDarkFilter);
+        Assert.AreEqual(SourceConsole.Gba, new GbaOptions().Console);
+    }
+
+    [TestMethod]
     public void EachOptionsTypeNamesItsConsole()
     {
         Assert.AreEqual(SourceConsole.Arcade, new ArcadeOptions().Console);

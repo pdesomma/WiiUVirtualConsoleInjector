@@ -4,7 +4,7 @@ using PD.WiiU.VirtualConsole.Ports;
 namespace PD.WiiU.VirtualConsole.Gba;
 
 /// <summary>
-/// Injects a GBA ROM, or a Game Boy ROM via Goomba, into the alldata archive of a GBA Virtual Console base.
+/// Injects a GBA ROM, or a Game Boy ROM via Goomba, into the alldata archive of a GBA Virtual Console base. One instance serves either the GBA or the Game Boy console; both ride on the same bases.
 /// </summary>
 public sealed class GbaRomInjector : IRomInjector
 {
@@ -14,13 +14,30 @@ public sealed class GbaRomInjector : IRomInjector
     /// Creates a new instance of the <see cref="GbaRomInjector"/> class.
     /// </summary>
     /// <param name="goombaPath">Goomba build to wrap Game Boy ROMs with; the embedded one when null.</param>
-    public GbaRomInjector(string? goombaPath = null)
+    /// <param name="console">Console this instance serves: <see cref="SourceConsole.Gba"/> or <see cref="SourceConsole.GameBoy"/>.</param>
+    /// <exception cref="ArgumentOutOfRangeException">A console the GBA base cannot run.</exception>
+    public GbaRomInjector(string? goombaPath = null, SourceConsole console = SourceConsole.Gba)
     {
+        if (console is not (SourceConsole.Gba or SourceConsole.GameBoy))
+            throw new ArgumentOutOfRangeException(nameof(console), console, "A GBA base takes GBA and Game Boy ROMs only.");
+
         _goomba = goombaPath is null ? null : File.ReadAllBytes(goombaPath);
+        Console = console;
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="GbaRomInjector"/> class for a console, with the embedded Goomba.
+    /// </summary>
+    /// <param name="console">Console this instance serves: <see cref="SourceConsole.Gba"/> or <see cref="SourceConsole.GameBoy"/>.</param>
+    public GbaRomInjector(SourceConsole console)
+        : this(null, console)
+    {
     }
 
     /// <inheritdoc/>
-    public SourceConsole Console => SourceConsole.Gba;
+    public SourceConsole Console { get; }
+    /// <inheritdoc/>
+    public TitleKind Kind => TitleKind.VirtualConsole;
 
     /// <inheritdoc/>
     public IReadOnlyList<BaseIssue> Inspect(TitleDirectory title)
@@ -42,10 +59,10 @@ public sealed class GbaRomInjector : IRomInjector
             throw new ArgumentNullException(nameof(injection));
         if (title is null)
             throw new ArgumentNullException(nameof(title));
-        if (injection.Console != SourceConsole.Gba)
+        if (injection.Console != Console)
             throw new ArgumentException($"Injection is for {injection.Console}.", nameof(injection));
 
-        var options = injection.Options as GbaOptions ?? new GbaOptions();
+        var options = injection.Options as GbaOptions ?? new GbaOptions { Console = Console };
         var rom = File.ReadAllBytes(injection.Rom.Path);
         if (GoombaRom.IsGameBoy(injection.Rom.Path))
         {

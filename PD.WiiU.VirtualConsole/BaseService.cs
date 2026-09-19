@@ -42,10 +42,11 @@ public sealed class BaseService : IBaseService
     /// <inheritdoc/>
     public IReadOnlyList<BaseTitle> Available(SourceConsole console)
     {
-        // a custom Wii base serves GameCube too, as the catalog's Wii bases do
+        // a custom Wii base serves GameCube and a custom GBA base serves Game Boy, as the catalog's do
         var custom = _custom.All().Where(t => t.Console == console).ToList();
-        if (console == SourceConsole.GameCube)
-            custom.AddRange(_custom.All().Where(t => t.Console == SourceConsole.Wii).Select(t => new BaseTitle(t.TitleId, t.Name, t.Region, SourceConsole.GameCube) { IsCustom = true }));
+        var host = BaseCatalog.HostConsole(console);
+        if (host != console)
+            custom.AddRange(_custom.All().Where(t => t.Console == host).Select(t => new BaseTitle(t.TitleId, t.Name, t.Region, console) { IsCustom = true }));
         var catalog = _catalog.For(console);
         return catalog.Concat(custom.Where(c => catalog.All(k => k.TitleId != c.TitleId))).ToList();
     }

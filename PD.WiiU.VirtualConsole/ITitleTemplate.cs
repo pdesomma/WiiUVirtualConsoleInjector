@@ -11,6 +11,11 @@ public interface ITitleTemplate
     SourceConsole Console { get; }
 
     /// <summary>
+    /// Whether this is a Virtual Console base or a RetroArch core.
+    /// </summary>
+    TitleKind Kind { get; }
+
+    /// <summary>
     /// Display name.
     /// </summary>
     string Name { get; }

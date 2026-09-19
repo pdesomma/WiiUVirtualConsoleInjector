@@ -33,6 +33,8 @@ public sealed class BaseTitle : ITitleTemplate
     /// </summary>
     public bool IsRecommended { get; init; }
     /// <inheritdoc/>
+    public TitleKind Kind => TitleKind.VirtualConsole;
+    /// <inheritdoc/>
     public string Name { get; }
     /// <summary>
     /// Release region.

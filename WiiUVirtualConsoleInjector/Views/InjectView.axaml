@@ -152,6 +152,14 @@
                     <!-- 2. Game: base, then the ROM and its names -->
                     <StackPanel IsVisible="{Binding IsGameStep}">
                         <TextBlock Classes="section" Text="{Binding SelectedConsoleName, StringFormat='{}{0} game'}" Margin="0,0,0,4" />
+                        <StackPanel IsVisible="{Binding HasBothModes}" Margin="0,8,0,6">
+                            <TextBlock Classes="label" Text="Built on" Margin="0,0,0,2" />
+                            <StackPanel Orientation="Horizontal" Spacing="18" Margin="0,2,0,4">
+                                <RadioButton GroupName="TemplateKind" Content="Virtual Console base" IsChecked="{Binding UseVirtualConsole, Mode=TwoWay}" IsEnabled="{Binding !IsRunning}" />
+                                <RadioButton GroupName="TemplateKind" Content="RetroArch core" IsChecked="{Binding UseRetroArch, Mode=TwoWay}" IsEnabled="{Binding !IsRunning}" />
+                            </StackPanel>
+                            <TextBlock Classes="hint" FontSize="12" TextWrapping="Wrap" MaxWidth="680" HorizontalAlignment="Left" Text="A Virtual Console base is Nintendo's own emulator and needs the base title and its key; a RetroArch core needs neither but runs under Aroma only." />
+                        </StackPanel>
                         <StackPanel IsVisible="{Binding IsRetroArch}">
                             <TextBlock Classes="label" Text="RetroArch core" Margin="0,8,0,2" />
                             <TextBlock Classes="hint" FontSize="12" Text="The core is the emulator; it is packed into the title with your ROM. The title runs under Aroma only and uses the retroarch folder on the SD card for settings and saves." Margin="0,0,0,14" />

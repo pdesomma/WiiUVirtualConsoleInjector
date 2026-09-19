@@ -25,6 +25,8 @@ public sealed class NdsRomInjector : IRomInjector
 
     /// <inheritdoc/>
     public SourceConsole Console => SourceConsole.Nds;
+    /// <inheritdoc/>
+    public TitleKind Kind => TitleKind.VirtualConsole;
 
     /// <inheritdoc/>
     public IReadOnlyList<BaseIssue> Inspect(TitleDirectory title)

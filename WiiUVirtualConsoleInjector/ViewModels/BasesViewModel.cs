@@ -70,8 +70,8 @@ public sealed partial class BasesViewModel : PageViewModel
             () => _keys.WiiCommonKey = null,
             _dialogs,
             RefreshStatuses);
-        // consoles that run a bundled RetroArch core instead of a base have nothing to manage here
-        Consoles = Enum.GetValues<SourceConsole>().Where(c => _bases.Available(c).Count > 0).ToArray();
+        // consoles on a bundled core have nothing to manage here; Game Boy borrows the GBA bases
+        Consoles =Enum.GetValues<SourceConsole>().Where(c => c != SourceConsole.GameBoy && _bases.Available(c).Count > 0).ToArray();
         Regions = Enum.GetValues<Region>();
         LoadBases();
     }
@@ -92,7 +92,7 @@ public sealed partial class BasesViewModel : PageViewModel
     /// </summary>
     public ObservableCollection<BaseRowViewModel> Bases { get; }
     /// <summary>
-    /// Consoles to choose from.
+    /// Consoles with bases to manage; Game Boy is left out since its bases are the GBA ones.
     /// </summary>
     public IReadOnlyList<SourceConsole> Consoles { get; }
     /// <summary>

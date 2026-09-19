@@ -49,6 +49,8 @@ public sealed class WiiRomInjector : IRomInjector
 
     /// <inheritdoc/>
     public SourceConsole Console => SourceConsole.Wii;
+    /// <inheritdoc/>
+    public TitleKind Kind => TitleKind.VirtualConsole;
 
     /// <inheritdoc/>
     public IReadOnlyList<BaseIssue> Inspect(TitleDirectory title)

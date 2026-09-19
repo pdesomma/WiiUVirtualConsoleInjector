@@ -34,14 +34,14 @@ public sealed class UwuvciCompatibilityLists : ICompatibilityLists
     public Task<bool> OpenAsync(SourceConsole console) => _links.OpenAsync(For(console));
 
     /// <summary>
-    /// Folder name the site uses for a console.
+    /// Folder name the site uses for a console; Game Boy games ride on the GBA base, so they share its page.
     /// </summary>
     private static string Page(SourceConsole console) => console switch
     {
         SourceConsole.Nes => "nes",
         SourceConsole.Snes => "snes",
         SourceConsole.N64 => "n64",
-        SourceConsole.Gba => "gba",
+        SourceConsole.Gba or SourceConsole.GameBoy => "gba",
         SourceConsole.Nds => "nds",
         SourceConsole.Tg16 => "tgfx",
         SourceConsole.Msx => "msx",

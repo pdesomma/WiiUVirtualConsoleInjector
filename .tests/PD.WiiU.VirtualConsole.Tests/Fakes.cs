@@ -68,13 +68,15 @@ internal sealed class FakeRomInjector : IRomInjector
 {
     private readonly Func<Injection, TitleDirectory, Task>? _action;
 
-    public FakeRomInjector(SourceConsole console, Func<Injection, TitleDirectory, Task>? action = null)
+    public FakeRomInjector(SourceConsole console, Func<Injection, TitleDirectory, Task>? action = null, TitleKind kind = TitleKind.VirtualConsole)
     {
         Console = console;
+        Kind = kind;
         _action = action;
     }
 
     public SourceConsole Console { get; }
+    public TitleKind Kind { get; }
     public List<BaseIssue> Issues { get; } = new();
     public List<TitleDirectory> Inspected { get; } = new();
     public List<TitleDirectory> Titles { get; } = new();

@@ -19,6 +19,8 @@ public sealed class N64RomInjector : IRomInjector
 
     /// <inheritdoc/>
     public SourceConsole Console => SourceConsole.N64;
+    /// <inheritdoc/>
+    public TitleKind Kind => TitleKind.VirtualConsole;
 
     /// <inheritdoc/>
     public IReadOnlyList<BaseIssue> Inspect(TitleDirectory title)

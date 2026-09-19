@@ -19,11 +19,56 @@ public class InjectionServiceTests
     }
 
     [TestMethod]
-    public void Constructor_DuplicateInjectorConsole_ThrowsArgumentException()
+    public void Constructor_DuplicateInjectorConsoleAndKind_ThrowsArgumentException()
     {
-        var injectors = new[] { new FakeRomInjector(SourceConsole.N64), new FakeRomInjector(SourceConsole.N64) };
+        var bases = new[] { new FakeRomInjector(SourceConsole.N64), new FakeRomInjector(SourceConsole.N64) };
+        var cores = new[] { new FakeRomInjector(SourceConsole.Nes, kind: TitleKind.RetroArch), new FakeRomInjector(SourceConsole.Nes, kind: TitleKind.RetroArch) };
 
-        Assert.ThrowsExactly<ArgumentException>(() => new InjectionService(new FakeBaseStore(), new FakeRetroArchCores(), injectors, new FakeImageConverter(), new FakeBootSoundConverter(), new FakeTitlePacker()));
+        var error = Assert.ThrowsExactly<ArgumentException>(() => new InjectionService(new FakeBaseStore(), new FakeRetroArchCores(), bases, new FakeImageConverter(), new FakeBootSoundConverter(), new FakeTitlePacker()));
+        StringAssert.Contains(error.Message, "More than one VirtualConsole injector for N64.");
+        Assert.ThrowsExactly<ArgumentException>(() => new InjectionService(new FakeBaseStore(), new FakeRetroArchCores(), cores, new FakeImageConverter(), new FakeBootSoundConverter(), new FakeTitlePacker()));
+    }
+
+    [TestMethod]
+    public void Constructor_SameConsoleBothKinds_IsAccepted()
+    {
+        var service = Service(new FakeRomInjector(SourceConsole.Nes), new FakeRomInjector(SourceConsole.Nes, kind: TitleKind.RetroArch));
+
+        CollectionAssert.AreEqual(new[] { SourceConsole.Nes }, service.SupportedConsoles.ToArray(), "the console is listed once");
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_SameConsoleBothKinds_RoutesByTheTemplateKind()
+    {
+        var core = new RetroArchCore("fceumm", "FCEUmm", SourceConsole.Nes, "x");
+        var rpxSeen = false;
+        var vc = new FakeRomInjector(SourceConsole.Nes);
+        var retroArch = new FakeRomInjector(SourceConsole.Nes, (_, title) =>
+        {
+            rpxSeen = File.Exists(Path.Combine(title.Code, core.RpxFileName));
+            return Task.CompletedTask;
+        }, TitleKind.RetroArch);
+        var service = Service(vc, retroArch);
+        var rom = new Rom(@"C:\roms\game.nes", SourceConsole.Nes);
+
+        await service.InjectAsync(new Injection(TestTitle.Base(SourceConsole.Nes), rom, TestTitle.Game()), Work(), Output());
+        await service.InjectAsync(new Injection(core, rom, TestTitle.Game()), Work(), Output());
+
+        Assert.AreEqual(1, vc.Titles.Count, "the base went to the Virtual Console injector");
+        Assert.AreEqual(1, retroArch.Titles.Count, "the core went to the RetroArch injector");
+        Assert.IsTrue(rpxSeen, "the RetroArch injector got the staged core");
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_ConsoleKnownOnlyForTheOtherKind_ThrowsNotSupportedException()
+    {
+        var service = Service(new FakeRomInjector(SourceConsole.Nes, kind: TitleKind.RetroArch));
+        var rom = new Rom(@"C:\roms\game.nes", SourceConsole.Nes);
+
+        var error = await Assert.ThrowsExactlyAsync<NotSupportedException>(() => service.InjectAsync(new Injection(TestTitle.Base(SourceConsole.Nes), rom, TestTitle.Game()), Work(), Output()));
+
+        StringAssert.Contains(error.Message, "No VirtualConsole injector for Nes.");
+        Assert.ThrowsExactly<NotSupportedException>(() => service.InspectBase(TestTitle.Base(SourceConsole.Nes)));
     }
 
     [TestMethod]
@@ -109,7 +154,7 @@ public class InjectionServiceTests
         {
             rpxSeen = File.Exists(Path.Combine(title.Code, core.RpxFileName));
             return Task.CompletedTask;
-        });
+        }, TitleKind.RetroArch);
         var packer = new FakeTitlePacker();
         var reports = new List<InjectionProgress>();
         var service = new InjectionService(bases, cores, new[] { injector }, new FakeImageConverter(), new FakeBootSoundConverter(), packer);

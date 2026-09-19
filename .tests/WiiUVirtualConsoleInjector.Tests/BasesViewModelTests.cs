@@ -58,6 +58,19 @@ public class BasesViewModelTests
     }
 
     [TestMethod]
+    public void Constructor_GameBoyWithTheGbaBases_IsLeftOutOfConsoles()
+    {
+        var gba = TitleId.Parse("0005000010137100");
+        _bases.Titles.Add(new BaseTitle(gba, "Mario & Luigi", Region.UnitedStates, SourceConsole.Gba));
+        _bases.Titles.Add(new BaseTitle(gba, "Mario & Luigi", Region.UnitedStates, SourceConsole.GameBoy));
+
+        var vm = Create();
+
+        CollectionAssert.Contains(vm.Consoles.ToArray(), SourceConsole.Gba);
+        CollectionAssert.DoesNotContain(vm.Consoles.ToArray(), SourceConsole.GameBoy, "its bases are the GBA ones, already listed");
+    }
+
+    [TestMethod]
     public void Constructor_NullArguments_ThrowsArgumentNullException()
     {
         Assert.ThrowsExactly<ArgumentNullException>(() => new BasesViewModel(null!, _keys, _injections, _dialogs));

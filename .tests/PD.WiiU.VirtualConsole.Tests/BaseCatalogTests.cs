@@ -6,7 +6,7 @@ namespace PD.WiiU.VirtualConsole.Tests;
 [TestClass]
 public class BaseCatalogTests
 {
-    private const string Json = "[{\"titleId\":\"00050000101BAF00\",\"name\":\"Majora\",\"region\":\"UnitedStates\",\"console\":\"N64\"},{\"titleId\":\"000500001019D800\",\"name\":\"Xenoblade\",\"region\":\"UnitedStates\",\"console\":\"Wii\",\"recommended\":true}]";
+    private const string Json = "[{\"titleId\":\"00050000101BAF00\",\"name\":\"Majora\",\"region\":\"UnitedStates\",\"console\":\"N64\"},{\"titleId\":\"000500001019D800\",\"name\":\"Xenoblade\",\"region\":\"UnitedStates\",\"console\":\"Wii\",\"recommended\":true},{\"titleId\":\"00050000101C3400\",\"name\":\"Advance Wars\",\"region\":\"Europe\",\"console\":\"Gba\",\"recommended\":true}]";
 
     [TestMethod]
     public void Bundled_Always_ListsEveryConsoleWithUniqueIds()
@@ -15,7 +15,7 @@ public class BaseCatalogTests
 
         Assert.IsTrue(catalog.Titles.Count >= 120, catalog.Titles.Count.ToString());
         Assert.AreEqual(catalog.Titles.Count, catalog.Titles.Select(t => t.TitleId).Distinct().Count());
-        foreach (var console in new[] { SourceConsole.Nes, SourceConsole.Snes, SourceConsole.N64, SourceConsole.Gba, SourceConsole.Nds, SourceConsole.Tg16, SourceConsole.Msx, SourceConsole.Wii, SourceConsole.GameCube })
+        foreach (var console in new[] { SourceConsole.Nes, SourceConsole.Snes, SourceConsole.N64, SourceConsole.Gba, SourceConsole.GameBoy, SourceConsole.Nds, SourceConsole.Tg16, SourceConsole.Msx, SourceConsole.Wii, SourceConsole.GameCube })
             Assert.IsTrue(catalog.For(console).Count > 0, console.ToString());
         Assert.IsTrue(catalog.Titles.All(t => t.TitleId.Type == TitleType.Game));
         Assert.IsTrue(catalog.Titles.All(t => t.Region is Region.Japan or Region.UnitedStates or Region.Europe));
@@ -58,6 +58,34 @@ public class BaseCatalogTests
     }
 
     [TestMethod]
+    public void For_GameBoy_RetagsGbaBasesAndKeepsTheRecommendation()
+    {
+        var catalog = BaseCatalog.Parse(Stream(Json));
+
+        var gameBoy = catalog.For(SourceConsole.GameBoy);
+
+        Assert.AreEqual(1, gameBoy.Count);
+        Assert.AreEqual(SourceConsole.GameBoy, gameBoy[0].Console);
+        Assert.AreEqual(TitleId.Parse("00050000101C3400"), gameBoy[0].TitleId);
+        Assert.AreEqual("Advance Wars", gameBoy[0].Name);
+        Assert.AreEqual(Region.Europe, gameBoy[0].Region);
+        Assert.IsTrue(gameBoy[0].IsRecommended);
+        Assert.AreEqual(SourceConsole.Gba, catalog.For(SourceConsole.Gba).Single().Console, "the GBA entry itself is untouched");
+        var bundled = BaseCatalog.Bundled();
+        CollectionAssert.AreEqual(bundled.For(SourceConsole.Gba).Select(t => t.TitleId).ToArray(), bundled.For(SourceConsole.GameBoy).Select(t => t.TitleId).ToArray(), "the bundled catalog offers every GBA base");
+        Assert.IsTrue(bundled.For(SourceConsole.GameBoy).All(t => t.Console == SourceConsole.GameBoy));
+    }
+
+    [TestMethod]
+    public void HostConsole_BorrowersAndOthers_NamesTheConsoleWhoseBasesAreUsed()
+    {
+        Assert.AreEqual(SourceConsole.Wii, BaseCatalog.HostConsole(SourceConsole.GameCube));
+        Assert.AreEqual(SourceConsole.Gba, BaseCatalog.HostConsole(SourceConsole.GameBoy));
+        Assert.AreEqual(SourceConsole.Nes, BaseCatalog.HostConsole(SourceConsole.Nes));
+        Assert.AreEqual(SourceConsole.Genesis, BaseCatalog.HostConsole(SourceConsole.Genesis));
+    }
+
+    [TestMethod]
     public void Find_KnownAndUnknownIds_ReturnsEntryOrNull()
     {
         var catalog = BaseCatalog.Parse(Stream(Json));
@@ -74,7 +102,7 @@ public class BaseCatalogTests
         File.WriteAllText(path, Json);
         try
         {
-            Assert.AreEqual(2, BaseCatalog.Load(path).Titles.Count);
+            Assert.AreEqual(3, BaseCatalog.Load(path).Titles.Count);
             Assert.ThrowsExactly<ArgumentException>(() => BaseCatalog.Load(" "));
         }
         finally

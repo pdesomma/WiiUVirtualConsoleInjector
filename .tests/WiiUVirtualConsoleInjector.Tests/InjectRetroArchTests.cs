@@ -2,6 +2,7 @@ using PD.WiiU.VirtualConsole;
 using WiiUSharp;
 using WiiUVirtualConsoleInjector.Services;
 using WiiUVirtualConsoleInjector.ViewModels;
+using WiiUVirtualConsoleInjector.ViewModels.Options;
 using static WiiUVirtualConsoleInjector.Tests.InjectFakes;
 
 namespace WiiUVirtualConsoleInjector.Tests;
@@ -585,9 +586,284 @@ public class InjectRetroArchTests
         var vm = Genesis();
 
         Assert.IsFalse(vm.IsRetroArch);
+        Assert.IsFalse(vm.HasBothModes);
         Assert.IsNull(vm.SelectedCore);
         Assert.IsFalse(vm.HasTemplate);
         StringAssert.Contains(vm.BaseHint, "No base");
+    }
+
+    [TestMethod]
+    public void SelectedConsole_Genesis_HasOnlyTheCoreMode()
+    {
+        var vm = Genesis();
+
+        Assert.IsTrue(vm.IsRetroArch);
+        Assert.IsFalse(vm.HasBothModes);
+        Assert.IsFalse(vm.UseRetroArch, "nothing to switch; the core is the only way");
+        Assert.AreEqual(0, vm.Bases.Count);
+    }
+
+    [TestMethod]
+    public void SelectedConsole_NesWithABaseAndCores_DefaultsToTheBase()
+    {
+        var vm = NesWithCores();
+
+        Assert.IsFalse(vm.UseRetroArch);
+        Assert.IsTrue(vm.UseVirtualConsole);
+        Assert.IsFalse(vm.IsRetroArch);
+        Assert.IsTrue(vm.HasBothModes);
+        Assert.AreEqual(1, vm.Bases.Count);
+        Assert.AreEqual(2, vm.Cores.Count);
+        Assert.IsNotNull(vm.SelectedBase);
+        Assert.IsNotNull(vm.SelectedCore);
+        Assert.AreEqual("Base", vm.ReviewTemplateLabel);
+        Assert.AreEqual("Nes Base (UnitedStates)", vm.ReviewTemplate);
+        Assert.IsNull(vm.RetroArchHint);
+        Assert.AreEqual(".nes", vm.RomExtensions);
+        Assert.IsInstanceOfType<NesOptionsViewModel>(vm.CurrentOptions);
+        Assert.IsTrue(vm.HasTemplate);
+    }
+
+    [TestMethod]
+    public void UseRetroArch_NesSwitchedToTheCore_EverythingFollows()
+    {
+        var vm = NesWithCores();
+        var changed = new List<string>();
+        vm.PropertyChanged += (_, e) => changed.Add(e.PropertyName!);
+
+        vm.UseRetroArch = true;
+
+        Assert.IsTrue(vm.IsRetroArch);
+        Assert.IsFalse(vm.UseVirtualConsole);
+        Assert.IsTrue(vm.HasBothModes);
+        Assert.AreEqual("Core", vm.ReviewTemplateLabel);
+        StringAssert.Contains(vm.ReviewTemplate, "FCEUmm");
+        StringAssert.Contains(vm.ReviewTemplate, "RetroArch");
+        Assert.AreEqual(InjectViewModel.RetroArchQuitHint, vm.RetroArchHint);
+        Assert.IsNull(vm.BaseHint);
+        Assert.AreEqual(".nes, .fds", vm.RomExtensions, "the core's own list");
+        Assert.IsInstanceOfType<NoOptionsViewModel>(vm.CurrentOptions);
+        Assert.AreEqual(SourceConsole.Nes, vm.CurrentOptions.Console);
+        Assert.IsTrue(vm.HasTemplate);
+        foreach (var name in new[] { nameof(vm.IsRetroArch), nameof(vm.HasTemplate), nameof(vm.CanInject), nameof(vm.BaseHint), nameof(vm.RetroArchHint), nameof(vm.BiosHint), nameof(vm.ReviewTemplateLabel), nameof(vm.ReviewTemplate), nameof(vm.RomExtensions), nameof(vm.UseVirtualConsole), nameof(vm.CurrentOptions) })
+            CollectionAssert.Contains(changed, name, name);
+
+        vm.SelectedCore = null;
+        Assert.IsFalse(vm.HasTemplate, "on the core side the base no longer counts");
+        Assert.IsFalse(vm.CanInject);
+    }
+
+    [TestMethod]
+    public void UseRetroArch_NesSwitchedBack_ReturnsToTheBase()
+    {
+        var vm = NesWithCores();
+        vm.UseRetroArch = true;
+
+        vm.UseVirtualConsole = true;
+
+        Assert.IsFalse(vm.UseRetroArch);
+        Assert.IsFalse(vm.IsRetroArch);
+        Assert.AreEqual("Base", vm.ReviewTemplateLabel);
+        Assert.AreEqual(".nes", vm.RomExtensions);
+        Assert.IsInstanceOfType<NesOptionsViewModel>(vm.CurrentOptions);
+        Assert.IsTrue(vm.HasTemplate);
+    }
+
+    [TestMethod]
+    public async Task Inject_NesOnTheCore_PassesTheCoreForNesWithoutOptions()
+    {
+        var vm = NesWithCores();
+        vm.UseRetroArch = true;
+        vm.RomPath = @"C:\game.nes";
+        vm.Name = "Mario";
+
+        await vm.InjectCommand.ExecuteAsync(null);
+
+        var injection = _factory.Service.Received!;
+        Assert.IsNotNull(injection.Core);
+        Assert.AreSame(injection.Core, injection.Template);
+        Assert.AreEqual("fceumm", injection.Core!.Id);
+        Assert.AreEqual(SourceConsole.Nes, injection.Core.Console);
+        Assert.AreEqual(SourceConsole.Nes, injection.Console);
+        Assert.IsNull(injection.Base);
+        Assert.IsNull(injection.Options);
+        var record = _history.Added.Single().Record;
+        Assert.IsTrue(record.Template.IsCore);
+        Assert.AreEqual("fceumm", record.Template.CoreId);
+        Assert.AreEqual(SourceConsole.Nes, record.Console);
+        Assert.AreEqual(0, _dialogs.Confirms.Count);
+    }
+
+    [TestMethod]
+    public async Task Inject_NesOnTheBaseWithCoresAround_StillPassesTheBase()
+    {
+        var vm = NesWithCores();
+        vm.RomPath = @"C:\game.nes";
+        vm.Name = "Mario";
+
+        await vm.InjectCommand.ExecuteAsync(null);
+
+        var injection = _factory.Service.Received!;
+        Assert.IsNull(injection.Core);
+        Assert.AreSame(vm.SelectedBase!.Base, injection.Base);
+        Assert.IsInstanceOfType<PD.WiiU.VirtualConsole.Options.NesOptions>(injection.Options);
+        Assert.IsFalse(_history.Added.Single().Record.Template.IsCore);
+    }
+
+    [TestMethod]
+    public async Task RomFitHint_SwitchingToTheCore_ClearsAndComesBackWithTheBase()
+    {
+        _factory.Fit = (b, r) => b.Console == SourceConsole.Nes ? "too big" : null;
+        var vm = NesWithCores();
+        vm.RomPath = @"C:\game.nes";
+        vm.Name = "Mario";
+        await vm.RomFitCheck;
+        Assert.IsTrue(vm.HasRomFitHint);
+        Assert.IsFalse(vm.CanInject);
+
+        vm.UseRetroArch = true;
+        await vm.RomFitCheck;
+
+        Assert.IsFalse(vm.HasRomFitHint, "a core has no size limit");
+        Assert.IsTrue(vm.CanInject);
+
+        vm.UseRetroArch = false;
+        await vm.RomFitCheck;
+
+        Assert.IsTrue(vm.HasRomFitHint);
+        Assert.IsFalse(vm.CanInject);
+    }
+
+    [TestMethod]
+    public async Task Inject_SnesOnTheCore_SkipsTheCoProcessorWarning()
+    {
+        _bases.Add(Base(SourceConsole.Snes, 0x2000, "Snes Base"));
+        _cores.Add(Core("snes9x2010", "Snes9x 2010", SourceConsole.Snes, recommended: true));
+        var vm = Create();
+
+        vm.SelectedConsole = SourceConsole.Snes;
+        vm.RomPath = @"C:\game.sfc";
+        vm.Name = "Star Fox";
+        vm.UseRetroArch = true;
+        await vm.InjectCommand.ExecuteAsync(null);
+        Assert.AreEqual(0, _dialogs.Confirms.Count, "Snes9x handles the co-processors");
+
+        // a success starts over, so set the SNES up again
+        vm.SelectedConsole = SourceConsole.Snes;
+        vm.RomPath = @"C:\game.sfc";
+        vm.Name = "Star Fox";
+        await vm.InjectCommand.ExecuteAsync(null);
+        Assert.AreEqual(1, _dialogs.Confirms.Count, "the base does not");
+        StringAssert.Contains(_dialogs.Confirms[0].Message, "Co-Processors");
+    }
+
+    [TestMethod]
+    public void Load_NesCoreRecord_SwitchesToTheCoreAndSelectsIt()
+    {
+        var vm = NesWithCores();
+        var record = new InjectionRecord("abc", DateTimeOffset.Now, SourceConsole.Nes, TemplateKey.Core("nestopia"), @"C:\game.nes", "Mario",
+            new TitleIdentity(new TitleId(TitleType.Demo, 0x31323334), new GroupId(0x3456), new ProductCode(ProductCode.EShop, "MARI")));
+
+        vm.Load(record);
+
+        Assert.IsTrue(vm.UseRetroArch);
+        Assert.IsTrue(vm.IsRetroArch);
+        Assert.AreEqual("nestopia", vm.SelectedCore!.Id);
+        Assert.IsInstanceOfType<NoOptionsViewModel>(vm.CurrentOptions);
+        Assert.IsTrue(vm.CanInject);
+        Assert.AreEqual(InjectViewModel.Steps.Count, vm.Step);
+    }
+
+    [TestMethod]
+    public void Load_NesBaseRecord_SwitchesBackToTheBase()
+    {
+        var vm = NesWithCores();
+        vm.UseRetroArch = true;
+        var record = new InjectionRecord("abc", DateTimeOffset.Now, SourceConsole.Nes, TemplateKey.Base(_bases.Bases[0].TitleId), @"C:\game.nes", "Mario",
+            new TitleIdentity(new TitleId(TitleType.Demo, 0x31323334), new GroupId(0x3456), new ProductCode(ProductCode.EShop, "MARI")));
+
+        vm.Load(record);
+
+        Assert.IsFalse(vm.UseRetroArch);
+        Assert.IsFalse(vm.IsRetroArch);
+        Assert.AreEqual(_bases.Bases[0].TitleId, vm.SelectedBase!.Base.TitleId);
+        Assert.IsInstanceOfType<NesOptionsViewModel>(vm.CurrentOptions);
+        Assert.IsTrue(vm.CanInject);
+    }
+
+    [TestMethod]
+    public void SelectedConsole_ChangedWhileOnTheCore_ResetsToTheBase()
+    {
+        var vm = NesWithCores();
+        vm.UseRetroArch = true;
+
+        vm.SelectedConsole = SourceConsole.Genesis;
+        Assert.IsFalse(vm.UseRetroArch);
+        Assert.IsTrue(vm.IsRetroArch, "Genesis has no base");
+        Assert.IsFalse(vm.HasBothModes);
+
+        vm.SelectedConsole = SourceConsole.Nes;
+        Assert.IsFalse(vm.UseRetroArch);
+        Assert.IsFalse(vm.IsRetroArch);
+        Assert.IsTrue(vm.HasBothModes);
+        Assert.IsInstanceOfType<NesOptionsViewModel>(vm.CurrentOptions);
+    }
+
+    [TestMethod]
+    public void StartOver_OnTheCore_ResetsToTheBase()
+    {
+        var vm = NesWithCores();
+        vm.UseRetroArch = true;
+
+        vm.StartOver();
+
+        Assert.IsFalse(vm.UseRetroArch);
+        Assert.IsFalse(vm.IsRetroArch);
+        Assert.IsInstanceOfType<NesOptionsViewModel>(vm.CurrentOptions);
+    }
+
+    [TestMethod]
+    public void BiosFiles_Tg16OnTheBase_NotCheckedOrCopiedUntilTheCoreIsPicked()
+    {
+        var sd = TempFolder();
+        try
+        {
+            _settings.Current = _settings.Current with { SdPath = sd };
+            _bases.Add(Base(SourceConsole.Tg16, 0x3000, "Tg16 Base"));
+            _cores.Add(Core("mednafen_pce", "Beetle PCE", SourceConsole.Tg16, recommended: true));
+            _cores.Systems.Add(new RetroArchSystem(SourceConsole.Tg16, ".pce", ".cue") { BiosFiles = new[] { new BiosFile("syscard3.pce") } });
+            var vm = Create();
+            vm.SelectedConsole = SourceConsole.Tg16;
+            var dump = Path.Combine(sd, "syscard3.pce");
+            File.WriteAllBytes(dump, new byte[16]);
+            vm.BiosFiles.Single().Field.Path = dump;
+            vm.Step = InjectViewModel.Steps.Count;
+
+            Assert.AreEqual(0, vm.AromaWarnings.Count, "no Aroma needed on the base");
+            Assert.AreEqual(0, vm.CardFiles.Count);
+            Assert.IsFalse(vm.HasReviewExtras);
+            Assert.AreEqual(".pce", vm.RomExtensions);
+
+            vm.UseRetroArch = true;
+
+            Assert.AreEqual(1, vm.AromaWarnings.Count, "now Aroma is missing");
+            Assert.AreEqual(1, vm.CardFiles.Count);
+            Assert.IsTrue(vm.HasReviewExtras);
+            Assert.AreEqual(".pce, .cue", vm.RomExtensions);
+            StringAssert.Contains(vm.BiosHint, "syscard3.pce");
+        }
+        finally
+        {
+            Directory.Delete(sd, recursive: true);
+        }
+    }
+
+    private InjectViewModel NesWithCores()
+    {
+        _cores.Add(Core("fceumm", "FCEUmm", SourceConsole.Nes, recommended: true));
+        _cores.Add(Core("nestopia", "Nestopia UE", SourceConsole.Nes));
+        _cores.Systems.Add(new RetroArchSystem(SourceConsole.Nes, ".nes", ".fds"));
+        return Create();
     }
 
     private static string TempFolder()

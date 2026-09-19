@@ -31,6 +31,8 @@ public static class CommunityArtworkIds
             SourceConsole.Msx => Single(Hashed(romPath, "SX")),
             SourceConsole.Tg16 => Single(Hashed(romPath, "TG")),
             SourceConsole.Gba => IsGba(romPath) ? WithRegions(HeaderCode(romPath, 0xAC, 4)) : Array.Empty<string>(),
+            // Game Boy carts carry no game code; the gba folder only ever held GBA codes
+            SourceConsole.GameBoy => Array.Empty<string>(),
             SourceConsole.N64 => WithSwap(HeaderCode(romPath, 0x3A, 6)),
             SourceConsole.Nds => WithRegions(HeaderCode(romPath, 0xC, 4)),
             SourceConsole.Wii => WithDiscRegions(DiscCode(romPath)),
@@ -44,7 +46,7 @@ public static class CommunityArtworkIds
     }
 
     /// <summary>
-    /// Repository folder for a console.
+    /// Repository folder for a console; Game Boy shares the GBA one.
     /// </summary>
     /// <param name="console">Console.</param>
     public static string Folder(SourceConsole console) => console switch
@@ -53,6 +55,7 @@ public static class CommunityArtworkIds
         SourceConsole.Snes => "snes",
         SourceConsole.N64 => "n64",
         SourceConsole.Gba => "gba",
+        SourceConsole.GameBoy => "gba",
         SourceConsole.Nds => "nds",
         SourceConsole.Tg16 => "tg16",
         SourceConsole.Msx => "msx",

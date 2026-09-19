@@ -29,6 +29,8 @@ public sealed class RetroArchRomInjector : IRomInjector
 
     /// <inheritdoc/>
     public SourceConsole Console { get; }
+    /// <inheritdoc/>
+    public TitleKind Kind => TitleKind.RetroArch;
 
     /// <summary>
     /// The file name the ROM takes under content: its own, with anything the loader would split on or the console cannot store replaced by underscores. Saves on the card are named after it, so it stays recognisable.

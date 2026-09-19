@@ -10,6 +10,8 @@ public sealed class NesRomInjector : IRomInjector, IRomCapacity
 {
     /// <inheritdoc/>
     public SourceConsole Console => SourceConsole.Nes;
+    /// <inheritdoc/>
+    public TitleKind Kind => TitleKind.VirtualConsole;
 
     /// <inheritdoc/>
     public long Capacity(TitleDirectory title)

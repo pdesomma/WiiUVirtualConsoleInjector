@@ -318,6 +318,7 @@ public sealed class JsonInjectionHistory : IInjectionHistory
         SourceConsole.Snes => typeof(SnesOptions),
         SourceConsole.N64 => typeof(N64Options),
         SourceConsole.Gba => typeof(GbaOptions),
+        SourceConsole.GameBoy => typeof(GbaOptions),
         SourceConsole.Nds => typeof(NdsOptions),
         SourceConsole.Wii => typeof(WiiOptions),
         SourceConsole.GameCube => typeof(GameCubeOptions),

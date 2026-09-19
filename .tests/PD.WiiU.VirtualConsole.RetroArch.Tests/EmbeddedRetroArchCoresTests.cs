@@ -333,7 +333,116 @@ public class EmbeddedRetroArchCoresTests
         CollectionAssert.AreEqual(new[] { ".gg" }, cores.System(SourceConsole.GameGear)!.Extensions.ToArray());
         CollectionAssert.AreEqual(new[] { ".32x", ".bin" }, cores.System(SourceConsole.Sega32X)!.Extensions.ToArray());
         Assert.IsTrue(cores.System(SourceConsole.Genesis)!.Accepts("game.MD"));
-        Assert.IsNull(cores.System(SourceConsole.Nes));
+        foreach (var console in new[] { SourceConsole.N64, SourceConsole.Nds, SourceConsole.GameCube, SourceConsole.Wii })
+        {
+            Assert.IsNull(cores.System(console), console.ToString());
+            Assert.AreEqual(0, cores.Available(console).Count, console.ToString());
+        }
+    }
+
+    [TestMethod]
+    public void Available_Nes_ListsFourCoresFceummFirstWithNoCardBios()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        var nes = cores.Available(SourceConsole.Nes);
+        CollectionAssert.AreEqual(new[] { "fceumm", "nestopia", "quicknes", "fixnes" }, nes.Select(core => core.Id).ToArray());
+        CollectionAssert.AreEqual(new[] { "FCEUmm", "Nestopia", "QuickNES", "fixNES" }, nes.Select(core => core.Name).ToArray());
+        Assert.AreEqual("fceumm_libretro.rpx", nes[0].RpxFileName);
+        var system = cores.System(SourceConsole.Nes)!;
+        CollectionAssert.AreEqual(new[] { ".nes", ".fds", ".unf", ".unif", ".qd", ".nsf" }, system.Extensions.ToArray());
+        Assert.AreEqual(0, system.BiosFiles.Count, "disksys.rom is optional in every core");
+        Assert.IsTrue(system.Accepts(@"C:\roms\Metroid.NES"));
+    }
+
+    [TestMethod]
+    public void Available_Snes_ListsSixCoresSnes9xFirstWithNoCardBios()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        var snes = cores.Available(SourceConsole.Snes);
+        CollectionAssert.AreEqual(new[] { "snes9x", "snes9x2010", "snes9x2005_plus", "snes9x2005", "snes9x2002", "chimerasnes" }, snes.Select(core => core.Id).ToArray());
+        CollectionAssert.AreEqual(new[] { "Snes9x", "Snes9x 2010", "Snes9x 2005 Plus", "Snes9x 2005", "Snes9x 2002", "ChimeraSNES" }, snes.Select(core => core.Name).ToArray());
+        var system = cores.System(SourceConsole.Snes)!;
+        CollectionAssert.AreEqual(new[] { ".smc", ".sfc", ".swc", ".fig", ".bs", ".st", ".gd3", ".gd7", ".dx2", ".bsx" }, system.Extensions.ToArray());
+        Assert.AreEqual(0, system.BiosFiles.Count);
+    }
+
+    [TestMethod]
+    public void Available_GameBoy_ListsThreeCoresGambatteFirstWithNoCardBios()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        var gameBoy = cores.Available(SourceConsole.GameBoy);
+        CollectionAssert.AreEqual(new[] { "gambatte", "gearboy", "fixgb" }, gameBoy.Select(core => core.Id).ToArray());
+        CollectionAssert.AreEqual(new[] { "Gambatte", "Gearboy", "fixGB" }, gameBoy.Select(core => core.Name).ToArray());
+        StringAssert.Contains(gameBoy[0].Description, "Color");
+        var system = cores.System(SourceConsole.GameBoy)!;
+        CollectionAssert.AreEqual(new[] { ".gb", ".gbc", ".dmg", ".cgb", ".sgb", ".gbs" }, system.Extensions.ToArray());
+        Assert.AreEqual(0, system.BiosFiles.Count, "the boot ROMs are optional");
+        Assert.IsFalse(system.Accepts("game.gba"), "GBA carts belong to the GBA system");
+    }
+
+    [TestMethod]
+    public void Available_Gba_ListsFourCoresMgbaFirstAndTakesOnlyGbaCarts()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        var gba = cores.Available(SourceConsole.Gba);
+        CollectionAssert.AreEqual(new[] { "mgba", "vbam", "vba_next", "gpsp" }, gba.Select(core => core.Id).ToArray());
+        CollectionAssert.AreEqual(new[] { "mGBA", "VBA-M", "VBA Next", "gpSP" }, gba.Select(core => core.Name).ToArray());
+        var system = cores.System(SourceConsole.Gba)!;
+        CollectionAssert.AreEqual(new[] { ".gba", ".bin" }, system.Extensions.ToArray());
+        Assert.AreEqual(0, system.BiosFiles.Count, "gba_bios.bin is optional in mGBA");
+        Assert.IsFalse(system.Accepts("game.gb"), "Game Boy carts belong to the Game Boy system");
+    }
+
+    [TestMethod]
+    public void Available_Tg16_ListsThreeBeetleCoresAndTakesHuCardsAndDiscsWithNoCardBios()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        var tg16 = cores.Available(SourceConsole.Tg16);
+        CollectionAssert.AreEqual(new[] { "mednafen_pce", "mednafen_pce_fast", "mednafen_supergrafx" }, tg16.Select(core => core.Id).ToArray());
+        CollectionAssert.AreEqual(new[] { "Beetle PCE", "Beetle PCE Fast", "Beetle SuperGrafx" }, tg16.Select(core => core.Name).ToArray());
+        StringAssert.Contains(tg16[1].Description, "no SuperGrafx");
+        var system = cores.System(SourceConsole.Tg16)!;
+        CollectionAssert.AreEqual(new[] { ".pce", ".sgx", ".cue", ".ccd", ".chd", ".toc", ".m3u" }, system.Extensions.ToArray());
+        Assert.AreEqual(0, system.BiosFiles.Count, "the CD system cards are optional in every core");
+    }
+
+    [TestMethod]
+    public void Available_Msx_ListsBlueMsxThenFmsxAndWantsTheFmsxSystemRoms()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        var msx = cores.Available(SourceConsole.Msx);
+        CollectionAssert.AreEqual(new[] { "bluemsx", "fmsx" }, msx.Select(core => core.Id).ToArray());
+        CollectionAssert.AreEqual(new[] { "blueMSX", "fMSX" }, msx.Select(core => core.Name).ToArray());
+        StringAssert.Contains(msx[0].Description, "Machines");
+        StringAssert.Contains(msx[0].Description, "Databases");
+        var system = cores.System(SourceConsole.Msx)!;
+        CollectionAssert.AreEqual(new[] { ".rom", ".mx1", ".mx2", ".ri", ".col", ".sg", ".sc", ".sf", ".dsk", ".fdi", ".cas", ".m3u" }, system.Extensions.ToArray());
+        CollectionAssert.AreEqual(new[] { "MSX.ROM", "MSX2.ROM", "MSX2EXT.ROM", "MSX2P.ROM", "MSX2PEXT.ROM" }, system.BiosFiles.Select(bios => bios.Label).ToArray());
+        foreach (var bios in system.BiosFiles)
+            CollectionAssert.AreEqual(new[] { bios.Label }, bios.Names.ToArray(), bios.Label);
+    }
+
+    [TestMethod]
+    public void All_VirtualConsoleConsolesWithCores_HaveASystemAndViceVersa()
+    {
+        var cores = new EmbeddedRetroArchCores();
+        var withBases = new[] { SourceConsole.Nes, SourceConsole.Snes, SourceConsole.GameBoy, SourceConsole.Gba, SourceConsole.Tg16, SourceConsole.Msx };
+
+        foreach (var console in withBases)
+        {
+            Assert.IsTrue(cores.Available(console).Count >= 2, console.ToString());
+            Assert.IsNotNull(cores.System(console), console.ToString());
+            Assert.AreEqual(console, cores.System(console)!.Console);
+        }
+        CollectionAssert.AreEquivalent(withBases, EmbeddedRetroArchCores.Systems.Select(s => s.Console).Intersect(withBases).ToArray());
+        foreach (var console in new[] { SourceConsole.N64, SourceConsole.Nds, SourceConsole.GameCube, SourceConsole.Wii })
+            Assert.IsFalse(EmbeddedRetroArchCores.Systems.Any(s => s.Console == console), console + " has no core yet");
     }
 
     [TestMethod]
@@ -378,6 +487,28 @@ public class EmbeddedRetroArchCoresTests
             ["crocods"] = 5694943,
             ["fuse"] = 6533579,
             ["hatari"] = 7079134,
+            ["fceumm"] = 6090653,
+            ["nestopia"] = 6675352,
+            ["quicknes"] = 5596135,
+            ["fixnes"] = 5607437,
+            ["snes9x"] = 6644460,
+            ["snes9x2010"] = 6154753,
+            ["snes9x2005_plus"] = 5754543,
+            ["snes9x2005"] = 5791443,
+            ["snes9x2002"] = 5809676,
+            ["chimerasnes"] = 5715847,
+            ["gambatte"] = 5782792,
+            ["gearboy"] = 5823995,
+            ["fixgb"] = 5472504,
+            ["mgba"] = 5974622,
+            ["vbam"] = 5969366,
+            ["vba_next"] = 5722814,
+            ["gpsp"] = 5655979,
+            ["mednafen_pce"] = 5964384,
+            ["mednafen_pce_fast"] = 5893942,
+            ["mednafen_supergrafx"] = 5881503,
+            ["bluemsx"] = 6258329,
+            ["fmsx"] = 5576407,
         };
 
         foreach (var core in EmbeddedRetroArchCores.All)
@@ -410,12 +541,6 @@ public class EmbeddedRetroArchCoresTests
     }
 
     [TestMethod]
-    public void Available_Nes_IsEmpty()
-    {
-        Assert.AreEqual(0, new EmbeddedRetroArchCores().Available(SourceConsole.Nes).Count);
-    }
-
-    [TestMethod]
     public void ResourceName_GenesisPlusGx_IsCoresPath()
     {
         Assert.AreEqual("cores/genesis_plus_gx_libretro.rpx", EmbeddedRetroArchCores.ResourceName(GenesisPlusGx));
@@ -439,9 +564,9 @@ public class EmbeddedRetroArchCoresTests
     public async Task StageAsync_CoreNotBundled_ThrowsArgumentException()
     {
         var cores = new EmbeddedRetroArchCores();
-        var nestopia = new RetroArchCore("nestopia", "Nestopia", SourceConsole.Nes, "x");
+        var bsnes = new RetroArchCore("bsnes", "bsnes", SourceConsole.Snes, "x");
 
-        await Assert.ThrowsExactlyAsync<ArgumentException>(() => cores.StageAsync(nestopia, _root));
+        await Assert.ThrowsExactlyAsync<ArgumentException>(() => cores.StageAsync(bsnes, _root));
     }
 
     [TestMethod]

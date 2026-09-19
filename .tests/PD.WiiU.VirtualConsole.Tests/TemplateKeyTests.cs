@@ -93,6 +93,7 @@ public class TemplateKeyTests
     private sealed class OtherTemplate : ITitleTemplate
     {
         public SourceConsole Console => SourceConsole.Genesis;
+        public TitleKind Kind => TitleKind.RetroArch;
         public string Name => "Other";
     }
 }

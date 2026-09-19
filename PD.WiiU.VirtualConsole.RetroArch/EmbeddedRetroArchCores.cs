@@ -61,6 +61,28 @@ public sealed class EmbeddedRetroArchCores : IRetroArchCores
         new RetroArchCore("crocods", "CrocoDS", SourceConsole.AmstradCpc, "CrocoDS; lighter Amstrad CPC core."),
         new RetroArchCore("fuse", "Fuse", SourceConsole.ZxSpectrum, "Fuse, the ZX Spectrum emulator."),
         new RetroArchCore("hatari", "Hatari", SourceConsole.AtariSt, "Hatari, the Atari ST; needs tos.img on the card."),
+        new RetroArchCore("fceumm", "FCEUmm", SourceConsole.Nes, "FCEUmm; the usual NES choice."),
+        new RetroArchCore("nestopia", "Nestopia", SourceConsole.Nes, "Nestopia UE; accurate."),
+        new RetroArchCore("quicknes", "QuickNES", SourceConsole.Nes, "QuickNES; fast."),
+        new RetroArchCore("fixnes", "fixNES", SourceConsole.Nes, "fixNES by FIX94."),
+        new RetroArchCore("snes9x", "Snes9x", SourceConsole.Snes, "Snes9x current."),
+        new RetroArchCore("snes9x2010", "Snes9x 2010", SourceConsole.Snes, "Snes9x 2010; lighter."),
+        new RetroArchCore("snes9x2005_plus", "Snes9x 2005 Plus", SourceConsole.Snes, "Snes9x 2005 Plus; light, with sound fixes."),
+        new RetroArchCore("snes9x2005", "Snes9x 2005", SourceConsole.Snes, "Snes9x 2005; light."),
+        new RetroArchCore("snes9x2002", "Snes9x 2002", SourceConsole.Snes, "Snes9x 2002; lightest."),
+        new RetroArchCore("chimerasnes", "ChimeraSNES", SourceConsole.Snes, "ChimeraSNES."),
+        new RetroArchCore("gambatte", "Gambatte", SourceConsole.GameBoy, "Gambatte; accurate Game Boy and Color."),
+        new RetroArchCore("gearboy", "Gearboy", SourceConsole.GameBoy, "Gearboy."),
+        new RetroArchCore("fixgb", "fixGB", SourceConsole.GameBoy, "fixGB by FIX94."),
+        new RetroArchCore("mgba", "mGBA", SourceConsole.Gba, "mGBA; accurate."),
+        new RetroArchCore("vbam", "VBA-M", SourceConsole.Gba, "VBA-M."),
+        new RetroArchCore("vba_next", "VBA Next", SourceConsole.Gba, "VBA Next; lighter."),
+        new RetroArchCore("gpsp", "gpSP", SourceConsole.Gba, "gpSP; fastest, less accurate."),
+        new RetroArchCore("mednafen_pce", "Beetle PCE", SourceConsole.Tg16, "Beetle PCE; HuCard, SuperGrafx and CD."),
+        new RetroArchCore("mednafen_pce_fast", "Beetle PCE Fast", SourceConsole.Tg16, "Beetle PCE Fast; lighter, no SuperGrafx."),
+        new RetroArchCore("mednafen_supergrafx", "Beetle SuperGrafx", SourceConsole.Tg16, "Beetle SuperGrafx."),
+        new RetroArchCore("bluemsx", "blueMSX", SourceConsole.Msx, "blueMSX; needs its Machines and Databases folders under retroarch/system."),
+        new RetroArchCore("fmsx", "fMSX", SourceConsole.Msx, "fMSX; needs the MSX system ROMs on the card."),
     };
 
     /// <summary>
@@ -103,6 +125,18 @@ public sealed class EmbeddedRetroArchCores : IRetroArchCores
         new RetroArchSystem(SourceConsole.AmstradCpc, ".dsk", ".sna", ".tap", ".cdt", ".voc", ".cpr", ".m3u", ".kcr"),
         new RetroArchSystem(SourceConsole.ZxSpectrum, ".tzx", ".tap", ".z80", ".rzx", ".scl", ".trd", ".dsk"),
         new RetroArchSystem(SourceConsole.AtariSt, ".st", ".msa", ".stx", ".dim", ".ipf", ".vhd", ".gem", ".ide", ".m3u") { BiosFiles = new[] { new BiosFile("tos.img") } },
+        // disksys.rom for FDS images is optional in every NES core, so none is demanded
+        new RetroArchSystem(SourceConsole.Nes, ".nes", ".fds", ".unf", ".unif", ".qd", ".nsf"),
+        new RetroArchSystem(SourceConsole.Snes, ".smc", ".sfc", ".swc", ".fig", ".bs", ".st", ".gd3", ".gd7", ".dx2", ".bsx"),
+        new RetroArchSystem(SourceConsole.GameBoy, ".gb", ".gbc", ".dmg", ".cgb", ".sgb", ".gbs"),
+        new RetroArchSystem(SourceConsole.Gba, ".gba", ".bin"),
+        // the CD system cards are optional in every Beetle PCE core; HuCards need none
+        new RetroArchSystem(SourceConsole.Tg16, ".pce", ".sgx", ".cue", ".ccd", ".chd", ".toc", ".m3u"),
+        // the fMSX system ROMs; blueMSX wants whole Machines and Databases folders instead, which its description points at
+        new RetroArchSystem(SourceConsole.Msx, ".rom", ".mx1", ".mx2", ".ri", ".col", ".sg", ".sc", ".sf", ".dsk", ".fdi", ".cas", ".m3u")
+        {
+            BiosFiles = new[] { new BiosFile("MSX.ROM"), new BiosFile("MSX2.ROM"), new BiosFile("MSX2EXT.ROM"), new BiosFile("MSX2P.ROM"), new BiosFile("MSX2PEXT.ROM") },
+        },
     };
 
     /// <inheritdoc/>

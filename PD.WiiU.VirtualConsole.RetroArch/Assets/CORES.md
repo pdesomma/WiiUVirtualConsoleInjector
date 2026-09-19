@@ -1,6 +1,6 @@
 # Cores/<console>/*_libretro.rpx
 
-Folders group the cores by the console they were first added for; a core that serves several consoles (Genesis Plus GX also runs Master System, Game Gear and Sega CD, PicoDrive also runs 32X and Sega CD, FinalBurn Neo serves both Arcade and Neo Geo) is embedded once under its own name.
+Folders group the cores by the console they were first added for; a core that serves several consoles (Genesis Plus GX also runs Master System, Game Gear and Sega CD, PicoDrive also runs 32X and Sega CD, FinalBurn Neo serves both Arcade and Neo Geo) is embedded once under its own name. The `Nes`, `Snes`, `GameBoy`, `Gba`, `Tg16` and `Msx` folders hold cores for consoles that also have Virtual Console bases; the user picks base or core per injection.
 
 libretro cores built for Aroma, unmodified, from the community alpha `Aroma-RA-Test+Mame2010 [12-05-26].zip` (RetroArch 1.22.2, git 3f0a2c2f1e, built 2026-05-12) posted in the GBAtemp thread [RetroArch for Wii U gets early alpha Aroma CFW compatible builds](https://gbatemp.net/threads/retroarch-for-wii-u-gets-early-alpha-aroma-cfw-compatible-builds.656984/). Source is ashquarky's wut/Aroma port of RetroArch ([libretro/RetroArch PR #14925](https://github.com/libretro/RetroArch/pull/14925), branch [ashquarky/RetroArch@wiiu-wut](https://github.com/ashquarky/RetroArch/tree/wiiu-wut)). Each RPX statically links the RetroArch frontend (GPL-3.0) with one core.
 
@@ -43,5 +43,27 @@ libretro cores built for Aroma, unmodified, from the community alpha `Aroma-RA-T
 | `AmstradCpc/crocods_libretro.rpx` | 5,694,943 | `864566c2b065915687d0a8ebdb4968e2f9f5a7b83ac1bcd37c4faaa7b5e065e9` | [CrocoDS](https://github.com/libretro/libretro-crocods) | MIT |
 | `ZxSpectrum/fuse_libretro.rpx` | 6,533,579 | `194c4ff9c2a83bd05b1859c7ea4334d3cdbf6b1ccbbc0eeaae6ec8a210087dc1` | [Fuse](https://github.com/libretro/fuse-libretro) | GPL-3.0 |
 | `AtariSt/hatari_libretro.rpx` | 7,079,134 | `c1549c867f87b5df3c1e325c3e21a42a4c386669d96bf619aae112991fc71755` | [Hatari](https://github.com/libretro/hatari) | GPL-2.0 |
+| `Nes/fceumm_libretro.rpx` | 6,090,653 | `2554337a92ecf5611a94b0d041ba03883c7e5bf3601b186b08a1e3703723e8fc` | [FCEUmm](https://github.com/libretro/libretro-fceumm) | GPL-2.0 |
+| `Nes/nestopia_libretro.rpx` | 6,675,352 | `d0f5058ede58c878ddfc22d0c9d2ecdbb472078a005fd005f5f073bb669533ea` | [Nestopia UE](https://github.com/libretro/nestopia) | GPL-2.0 |
+| `Nes/quicknes_libretro.rpx` | 5,596,135 | `6836abb68b115665c79b6390f95f56940a676119cfe89344590f1eb5d2144e73` | [QuickNES](https://github.com/libretro/QuickNES_Core) | MIT / LGPL-2.1 |
+| `Nes/fixnes_libretro.rpx` | 5,607,437 | `833dacdbbfa2577ce97b6df5ce678d78e23cfe4b3431e8ec1aa4a4eeedbc7f12` | [fixNES](https://github.com/FIX94/fixNES) | MIT |
+| `Snes/snes9x_libretro.rpx` | 6,644,460 | `ab0c0de7cd42249fb8a884f148a87b095f8bb7988a8597b615d9624768179f4c` | [Snes9x](https://github.com/libretro/snes9x) | non-commercial |
+| `Snes/snes9x2010_libretro.rpx` | 6,154,753 | `005cdf2a5975a33150344417fa3e3d72a0c76dd21de99f8d759741161ea4715e` | [Snes9x 2010](https://github.com/libretro/snes9x2010) | non-commercial |
+| `Snes/snes9x2005_plus_libretro.rpx` | 5,754,543 | `e58c60d514726046c87b43ecc62187d0b4567932bd0bfac266525bfd68b6d345` | [Snes9x 2005 Plus](https://github.com/libretro/snes9x2005) | non-commercial |
+| `Snes/snes9x2005_libretro.rpx` | 5,791,443 | `a46d96c1396e434d1a5832e1fe4993f86ace2e8e13e3da652e8eabb9cc407612` | [Snes9x 2005](https://github.com/libretro/snes9x2005) | non-commercial |
+| `Snes/snes9x2002_libretro.rpx` | 5,809,676 | `3f84ec0be27cd9d6858386a9d7e639d83b1e1a7056e28ab6f44c54f295f6cd82` | [Snes9x 2002](https://github.com/libretro/snes9x2002) | non-commercial |
+| `Snes/chimerasnes_libretro.rpx` | 5,715,847 | `fc461a8571e60fd3b9b6b37b24e63aa1cfcf62e592dbf0d81b0b066c4c968e86` | [ChimeraSNES](https://github.com/libretro/chimerasnes) | non-commercial |
+| `GameBoy/gambatte_libretro.rpx` | 5,782,792 | `616351c333a699fbed5f81d369ad23e636236c2a1c54ce7e9cbceacef01392b7` | [Gambatte](https://github.com/libretro/gambatte-libretro) | GPL-2.0 |
+| `GameBoy/gearboy_libretro.rpx` | 5,823,995 | `0caf0e99da1829eb0ddf4efbfe28289206cd0603ad12cfe1ec487ab2f424b8b7` | [Gearboy](https://github.com/drhelius/Gearboy) | GPL-3.0 |
+| `GameBoy/fixgb_libretro.rpx` | 5,472,504 | `9fc9fd698c15166cc160ace425cea74693dc003f76fe549d9295fb27ccfd586a` | [fixGB](https://github.com/FIX94/fixGB) | MIT |
+| `Gba/mgba_libretro.rpx` | 5,974,622 | `3fd2d587ffc9651daaab7623a918f20dbe543a3457be77a8fcbee24080055be2` | [mGBA](https://github.com/libretro/mgba) | MPL-2.0 |
+| `Gba/vbam_libretro.rpx` | 5,969,366 | `5027799188fc8d056c00aacfe9d651880973c1b5cc0ac5e5241112642532061f` | [VBA-M](https://github.com/libretro/vbam-libretro) | GPL-2.0 |
+| `Gba/vba_next_libretro.rpx` | 5,722,814 | `e79be5fd8ef32285c5b3328a0f84134d8dd1c5723ccaeec623d13c023ba7c0a4` | [VBA Next](https://github.com/libretro/vba-next) | GPL-2.0 |
+| `Gba/gpsp_libretro.rpx` | 5,655,979 | `f2306a933f4e985d5cba97e4a2b05ea976352994c69164276763c5e9339b3338` | [gpSP](https://github.com/libretro/gpsp) | GPL-2.0 |
+| `Tg16/mednafen_pce_libretro.rpx` | 5,964,384 | `afb6fbc321f8c40c8eb01681dcdef9cd491de68ea2789f1edb15311252fa2674` | [Beetle PCE](https://github.com/libretro/beetle-pce-libretro) | GPL-2.0 |
+| `Tg16/mednafen_pce_fast_libretro.rpx` | 5,893,942 | `0e037284fe4278909c00f7d383e8cfd2ef9e8c8ca9989d7951539c7925b184b1` | [Beetle PCE Fast](https://github.com/libretro/beetle-pce-fast-libretro) | GPL-2.0 |
+| `Tg16/mednafen_supergrafx_libretro.rpx` | 5,881,503 | `b3586697159031da62a1bcd2ba1b3bea0547b631a43a31da92f0fcb8243d9c9b` | [Beetle SuperGrafx](https://github.com/libretro/beetle-supergrafx-libretro) | GPL-2.0 |
+| `Msx/bluemsx_libretro.rpx` | 6,258,329 | `45f9d39ae1df6a6917036c99ae1f36921a72ac28eaa6dbb279058efcfba03db8` | [blueMSX](https://github.com/libretro/blueMSX-libretro) | GPL-2.0 |
+| `Msx/fmsx_libretro.rpx` | 5,576,407 | `a09220ed720920865cd8743ed73e068b3b00c628ad51b0100c41d6f867542d4d` | [fMSX](https://github.com/libretro/fmsx-libretro) | non-commercial |
 
 The injector writes one of them under `code/` as the title's executable and passes the ROM through cos.xml's `argstr` (`<rpx> fs:/vol/content/<rom>`). On the console the core reads and writes its settings, saves and states under `sd:/retroarch/`, so an Aroma card with the RetroArch data folder works as usual; nothing else from the zip is shipped. Titles built this way only run under Aroma (the cores use its Mocha and rpx loader modules) and need the signature-patch module to install.

@@ -66,6 +66,7 @@ public static class ConsoleIcons
         SourceConsole.Snes => "SNES",
         SourceConsole.N64 => "Nintendo 64",
         SourceConsole.Gba => "Game Boy Advance",
+        SourceConsole.GameBoy => "Game Boy / Color",
         SourceConsole.Nds => "Nintendo DS",
         SourceConsole.Tg16 => "TurboGrafx-16",
         SourceConsole.Msx => "MSX",

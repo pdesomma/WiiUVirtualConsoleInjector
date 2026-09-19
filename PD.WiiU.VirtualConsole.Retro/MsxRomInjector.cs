@@ -34,6 +34,8 @@ public sealed class MsxRomInjector : IRomInjector
 
     /// <inheritdoc/>
     public SourceConsole Console => SourceConsole.Msx;
+    /// <inheritdoc/>
+    public TitleKind Kind => TitleKind.VirtualConsole;
     /// <summary>
     /// Bytes of the base package kept before the ROM.
     /// </summary>

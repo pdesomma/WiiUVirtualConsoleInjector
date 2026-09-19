@@ -21,7 +21,7 @@ public sealed class InjectionService : IInjectionService
     private readonly IBootSoundConverter _bootSounds;
     private readonly IRetroArchCores _cores;
     private readonly IImageConverter _images;
-    private readonly IReadOnlyDictionary<SourceConsole, IRomInjector> _injectors;
+    private readonly IReadOnlyDictionary<(SourceConsole Console, TitleKind Kind), IRomInjector> _injectors;
     private readonly ITitlePacker _packer;
 
     /// <summary>
@@ -29,11 +29,11 @@ public sealed class InjectionService : IInjectionService
     /// </summary>
     /// <param name="bases">Where bases come from.</param>
     /// <param name="cores">Where RetroArch cores and their template come from.</param>
-    /// <param name="injectors">One injector per console.</param>
+    /// <param name="injectors">One injector per console and template kind.</param>
     /// <param name="images">Artwork converter.</param>
     /// <param name="bootSounds">Boot sound converter.</param>
     /// <param name="packer">Final packer.</param>
-    /// <exception cref="ArgumentException">Two injectors claim the same console.</exception>
+    /// <exception cref="ArgumentException">Two injectors claim the same console and kind.</exception>
     public InjectionService(IBaseStore bases, IRetroArchCores cores, IEnumerable<IRomInjector> injectors, IImageConverter images, IBootSoundConverter bootSounds, ITitlePacker packer)
     {
         _bases = bases ?? throw new ArgumentNullException(nameof(bases));
@@ -44,20 +44,20 @@ public sealed class InjectionService : IInjectionService
 
         if (injectors is null)
             throw new ArgumentNullException(nameof(injectors));
-        var byConsole = new Dictionary<SourceConsole, IRomInjector>();
+        var byKey = new Dictionary<(SourceConsole, TitleKind), IRomInjector>();
         foreach (var injector in injectors)
         {
-            if (byConsole.ContainsKey(injector.Console))
-                throw new ArgumentException($"More than one injector for {injector.Console}.", nameof(injectors));
-            byConsole.Add(injector.Console, injector);
+            if (byKey.ContainsKey((injector.Console, injector.Kind)))
+                throw new ArgumentException($"More than one {injector.Kind} injector for {injector.Console}.", nameof(injectors));
+            byKey.Add((injector.Console, injector.Kind), injector);
         }
-        _injectors = byConsole;
+        _injectors = byKey;
     }
 
     /// <summary>
-    /// Consoles an injector was supplied for.
+    /// Consoles an injector was supplied for, whichever kind.
     /// </summary>
-    public IReadOnlyCollection<SourceConsole> SupportedConsoles => _injectors.Keys.ToArray();
+    public IReadOnlyCollection<SourceConsole> SupportedConsoles => _injectors.Keys.Select(k => k.Console).Distinct().ToArray();
 
     /// <inheritdoc/>
     public async Task<InjectedTitle> InjectAsync(Injection injection, string workDirectory, string outputDirectory, IProgress<InjectionProgress>? progress = null, CancellationToken cancellationToken = default)
@@ -68,8 +68,8 @@ public sealed class InjectionService : IInjectionService
             throw new ArgumentException("Work directory is required.", nameof(workDirectory));
         if (string.IsNullOrWhiteSpace(outputDirectory))
             throw new ArgumentException("Output directory is required.", nameof(outputDirectory));
-        if (!_injectors.TryGetValue(injection.Console, out var injector))
-            throw new NotSupportedException($"No injector for {injection.Console}.");
+        if (!_injectors.TryGetValue((injection.Console, injection.Template.Kind), out var injector))
+            throw new NotSupportedException($"No {injection.Template.Kind} injector for {injection.Console}.");
 
         var work = Path.Combine(workDirectory, Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(work);
@@ -117,8 +117,8 @@ public sealed class InjectionService : IInjectionService
     {
         if (@base is null)
             throw new ArgumentNullException(nameof(@base));
-        if (!_injectors.TryGetValue(@base.Console, out var injector))
-            throw new NotSupportedException($"No injector for {@base.Console}.");
+        if (!_injectors.TryGetValue((@base.Console, TitleKind.VirtualConsole), out var injector))
+            throw new NotSupportedException($"No {TitleKind.VirtualConsole} injector for {@base.Console}.");
 
         return Inspect(_bases.Locate(@base), injector);
     }

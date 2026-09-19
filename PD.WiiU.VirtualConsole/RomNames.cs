@@ -13,7 +13,7 @@ public static class RomNames
     private static readonly Regex Spaces = new(@"\s+", RegexOptions.CultureInvariant);
 
     /// <summary>
-    /// Reads the internal name: the disc title for Wii and GameCube, the cartridge title for GBA, NDS, N64, Genesis, 32X, Atari 7800, Lynx and Virtual Boy, the internal name for SNES. NES, MSX and TurboGrafx carry none.
+    /// Reads the internal name: the disc title for Wii and GameCube, the cartridge title for GBA, Game Boy, NDS, N64, Genesis, 32X, Atari 7800, Lynx and Virtual Boy, the internal name for SNES. NES, MSX and TurboGrafx carry none.
     /// </summary>
     /// <param name="console">Console the ROM is for.</param>
     /// <param name="romPath">The ROM.</param>
@@ -30,6 +30,7 @@ public static class RomNames
         {
             SourceConsole.Wii or SourceConsole.GameCube => Disc(romPath, extension),
             SourceConsole.Gba => string.Equals(extension, ".gba", StringComparison.OrdinalIgnoreCase) ? Ascii(Read(romPath, 0xA0, 12)) : GameBoy(romPath),
+            SourceConsole.GameBoy => GameBoy(romPath),
             SourceConsole.Nds => NintendoDs(romPath),
             SourceConsole.N64 => Nintendo64(romPath),
             SourceConsole.Snes => SuperNintendo(romPath),
@@ -92,9 +93,17 @@ public static class RomNames
     }
 
     /// <summary>
-    /// Game Boy titles sit at 0x134, 16 bytes at most, with the CGB flag taking the last one.
+    /// Game Boy titles sit at 0x134, 16 bytes at most, NUL-padded; on Color carts the CGB flag (0x80 or 0xC0) takes the last byte, so anything unprintable is dropped.
     /// </summary>
-    private static string? GameBoy(string path) => Ascii(Read(path, 0x134, 15));
+    private static string? GameBoy(string path)
+    {
+        var bytes = Read(path, 0x134, 16);
+        if (bytes is null)
+            return null;
+        var end = Array.IndexOf(bytes, (byte)0);
+        var text = new string(bytes.Take(end < 0 ? bytes.Length : end).Where(b => b >= 0x20 && b < 0x7F).Select(b => (char)b).ToArray()).Trim();
+        return text.Length == 0 ? null : text;
+    }
 
     /// <summary>
     /// The 32-byte cartridge name at 0x0A of an LNX header, which starts with "LYNX".

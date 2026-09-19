@@ -35,7 +35,7 @@ public class InjectionServiceFactoryTests
 
         CollectionAssert.Contains(service.SupportedConsoles.ToArray(), SourceConsole.GameCube);
         CollectionAssert.Contains(service.SupportedConsoles.ToArray(), SourceConsole.Wii, "NKit images, homebrew and channels need no Wii key");
-        foreach (var console in new[] { SourceConsole.Nes, SourceConsole.Snes, SourceConsole.N64, SourceConsole.Gba, SourceConsole.Nds, SourceConsole.Tg16, SourceConsole.Msx })
+        foreach (var console in new[] { SourceConsole.Nes, SourceConsole.Snes, SourceConsole.N64, SourceConsole.Gba, SourceConsole.GameBoy, SourceConsole.Nds, SourceConsole.Tg16, SourceConsole.Msx })
             CollectionAssert.Contains(service.SupportedConsoles.ToArray(), console);
     }
 
@@ -45,6 +45,15 @@ public class InjectionServiceFactoryTests
         var service = (InjectionService)new InjectionServiceFactory(_settings, _keys, _cores).Create();
 
         CollectionAssert.Contains(service.SupportedConsoles.ToArray(), SourceConsole.Genesis);
+    }
+
+    [TestMethod]
+    public void Create_GameBoyOnTheGbaInjector_SupportedBesideNes()
+    {
+        var service = (InjectionService)new InjectionServiceFactory(_settings, _keys, _cores).Create();
+
+        CollectionAssert.Contains(service.SupportedConsoles.ToArray(), SourceConsole.GameBoy);
+        CollectionAssert.Contains(service.SupportedConsoles.ToArray(), SourceConsole.Nes, "a base injector and a core injector for the same console coexist");
     }
 
     [TestMethod]

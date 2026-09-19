@@ -146,6 +146,46 @@ public class GbaTests
     }
 
     [TestMethod]
+    public void Constructor_GbaOrGameBoy_TakesTheConsoleAndRejectsOthers()
+    {
+        Assert.AreEqual(SourceConsole.Gba, new GbaRomInjector().Console);
+        Assert.AreEqual(SourceConsole.Gba, new GbaRomInjector(SourceConsole.Gba).Console);
+        Assert.AreEqual(SourceConsole.GameBoy, new GbaRomInjector(SourceConsole.GameBoy).Console);
+        Assert.AreEqual(SourceConsole.GameBoy, new GbaRomInjector(null, SourceConsole.GameBoy).Console);
+        Assert.AreEqual(TitleKind.VirtualConsole, new GbaRomInjector(SourceConsole.GameBoy).Kind);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new GbaRomInjector(SourceConsole.Nes));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new GbaRomInjector(null, SourceConsole.Snes));
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_GameBoyConsoleWithGbRom_StillWrapsInGoomba()
+    {
+        var title = StageBase();
+        var gb = Write("game.gb", Enumerable.Range(0, 300).Select(i => (byte)i).ToArray());
+        var goomba = Write("goomba.gba", new byte[] { 1, 2, 3, 4 });
+        var @base = new BaseTitle(new TitleId(TitleType.Game, 0x10101D00), "Base", Region.UnitedStates, SourceConsole.GameBoy);
+        var injection = new Injection(@base, new Rom(gb, SourceConsole.GameBoy), Game()) { Options = new GbaOptions { Console = SourceConsole.GameBoy } };
+        var messages = new List<string>();
+
+        await new GbaRomInjector(goomba, SourceConsole.GameBoy).InjectAsync(injection, title, new SyncProgress(messages.Add));
+
+        var (stored, brightness, _) = FakeAllData.Read(title.Content, Path.Combine(_root, "verify"));
+        Assert.AreEqual(GoombaRom.PaddedSize, stored.Length);
+        CollectionAssert.AreEqual(new byte[] { 1, 2, 3, 4 }, stored.Take(4).ToArray());
+        CollectionAssert.AreEqual(File.ReadAllBytes(gb), stored.Skip(4).Take(300).ToArray());
+        Assert.AreEqual(0, brightness, "no dark filter change was asked for");
+        CollectionAssert.Contains(messages, "Wrapping Game Boy ROM in Goomba");
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_GameBoyConsoleGivenAGbaInjection_ThrowsArgumentException()
+    {
+        var title = StageBase();
+
+        await Assert.ThrowsExactlyAsync<ArgumentException>(() => new GbaRomInjector(SourceConsole.GameBoy).InjectAsync(Injection("x.gba"), title));
+    }
+
+    [TestMethod]
     public async Task InjectAsync_NoArchive_ThrowsFileNotFoundException()
     {
         var title = TitleDirectory.Create(Path.Combine(_root, "empty"));

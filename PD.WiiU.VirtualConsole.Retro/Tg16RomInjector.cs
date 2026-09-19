@@ -14,6 +14,8 @@ public sealed class Tg16RomInjector : IRomInjector
 
     /// <inheritdoc/>
     public SourceConsole Console => SourceConsole.Tg16;
+    /// <inheritdoc/>
+    public TitleKind Kind => TitleKind.VirtualConsole;
 
     /// <inheritdoc/>
     public IReadOnlyList<BaseIssue> Inspect(TitleDirectory title)

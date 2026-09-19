@@ -37,6 +37,22 @@ public class ArtworkFramesTests
     }
 
     [TestMethod]
+    public void For_GameBoy_ReusesTheGbaArtUnderItsOwnKeys()
+    {
+        var boots = ArtworkFrames.For(ImageSlot.BootTv, SourceConsole.GameBoy);
+        var icons = ArtworkFrames.For(ImageSlot.Icon, SourceConsole.GameBoy);
+
+        CollectionAssert.AreEqual(new[] { "gb-gb", "gb-gb-grey", "gb-gb-green", "gb-gbc", "gb-gba", "boot-plain" }, boots.Select(f => f.Key).ToArray());
+        CollectionAssert.AreEqual(new[] { "icon-gb-gb-1", "icon-gb-gb-2", "icon-gb-gbc-1", "icon-gb-gbc-2", "icon-gb-gba-1", "icon-gb-gba-2", "icon-vc", "icon-plain" }, icons.Select(f => f.Key).ToArray());
+        Assert.AreEqual("Game Boy", ArtworkFrames.Find("gb-gb")!.Name);
+        Assert.AreEqual(ArtworkFrames.Find("gb")!.Resource, ArtworkFrames.Find("gb-gb")!.Resource, "same PNG as the GBA console's Game Boy frame");
+        Assert.AreEqual(ArtworkFrames.BootGbc, ArtworkFrames.Find("gb-gb")!.Window);
+        Assert.AreEqual(ArtworkFrames.Find("icon-gbc-1")!.Resource, ArtworkFrames.Find("icon-gb-gbc-1")!.Resource);
+        Assert.IsTrue(boots.Where(f => !f.IsPlain).All(f => f.Console == SourceConsole.GameBoy));
+        Assert.IsFalse(ArtworkFrames.For(ImageSlot.BootTv, SourceConsole.Gba).Any(f => f.Console == SourceConsole.GameBoy), "the GBA list is unchanged");
+    }
+
+    [TestMethod]
     public void For_Logo_IsTheSameForEveryConsole()
     {
         foreach (var console in (SourceConsole[])Enum.GetValues(typeof(SourceConsole)))

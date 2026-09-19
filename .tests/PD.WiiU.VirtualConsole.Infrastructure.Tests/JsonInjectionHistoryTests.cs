@@ -122,6 +122,28 @@ public class JsonInjectionHistoryTests
     }
 
     [TestMethod]
+    public void Add_GameBoyRecordWithGbaOptions_RoundTripsConsoleAndFlags()
+    {
+        var history = new JsonInjectionHistory(_folder);
+        var record = new InjectionRecord("gb", DateTimeOffset.Now, SourceConsole.GameBoy, TemplateKey.Base(new TitleId(TitleType.Game, 0x10101D00)), @"C:\roms\tetris.gb", "Tetris",
+            new TitleIdentity(new TitleId(TitleType.Demo, 0x31323334), new GroupId(0x3456), new ProductCode(ProductCode.EShop, "WXYZ")))
+        {
+            Options = new GbaOptions { Console = SourceConsole.GameBoy, RemoveDarkFilter = true, PokemonPatch = true },
+        };
+
+        history.Add(record, null);
+
+        foreach (var reloaded in new[] { history.All().Single(), new JsonInjectionHistory(_folder).All().Single() })
+        {
+            Assert.AreEqual(SourceConsole.GameBoy, reloaded.Console);
+            var gba = (GbaOptions)reloaded.Options!;
+            Assert.AreEqual(SourceConsole.GameBoy, gba.Console);
+            Assert.IsTrue(gba.RemoveDarkFilter);
+            Assert.IsTrue(gba.PokemonPatch);
+        }
+    }
+
+    [TestMethod]
     public void Add_RecordWithCardFiles_RoundTripsThemAndDropsBrokenEntries()
     {
         var history = new JsonInjectionHistory(_folder);
