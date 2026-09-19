@@ -216,6 +216,13 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
     public bool IsRetroArch => Cores.Count > 0;
 
     /// <summary>
+    /// The BIOS files the selected console's core needs on the card, or null when it needs none.
+    /// </summary>
+    public string? BiosHint => _cores.System(SelectedConsole) is { BiosFiles.Count: > 0 } system
+        ? $"Needs {string.Join(" and ", system.BiosFiles)} in {RetroArchSystem.SystemFolder} on the SD card. Not shipped; dump it from your own hardware."
+        : null;
+
+    /// <summary>
     /// The quit hint for RetroArch titles, or null for the rest.
     /// </summary>
     public string? RetroArchHint => IsRetroArch ? RetroArchQuitHint : null;
@@ -1035,6 +1042,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
             Cores.Add(core);
         OnPropertyChanged(nameof(IsRetroArch));
         OnPropertyChanged(nameof(RetroArchHint));
+        OnPropertyChanged(nameof(BiosHint));
         OnPropertyChanged(nameof(ReviewTemplateLabel));
 
         SelectedBase = Bases.FirstOrDefault(b => previous is { } id && b.Base.TitleId.Equals(id))
@@ -1068,11 +1076,14 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
             return Array.Empty<string>();
         }
 
+        var warnings = new List<string>();
         if (!aroma.IsInstalled)
-            return new[] { $"Aroma was not found on the SD card at {sd} (no {AromaEnvironment.EnvironmentFolder}). RetroArch titles only run under Aroma." };
-        if (!aroma.HasSigPatches)
-            return new[] { $"Aroma on the SD card has no signature patches ({AromaEnvironment.SigPatchesFile} is missing), so installing will fail. Get 01_sigpatches.rpx from {SigPatchesUrl}." };
-        return Array.Empty<string>();
+            warnings.Add($"Aroma was not found on the SD card at {sd} (no {AromaEnvironment.EnvironmentFolder}). RetroArch titles only run under Aroma.");
+        else if (!aroma.HasSigPatches)
+            warnings.Add($"Aroma on the SD card has no signature patches ({AromaEnvironment.SigPatchesFile} is missing), so installing will fail. Get 01_sigpatches.rpx from {SigPatchesUrl}.");
+        if (_cores.System(SelectedConsole) is { } system && system.MissingBios(sd) is { Count: > 0 } missing)
+            warnings.Add($"{SelectedConsoleName} needs {string.Join(" and ", missing)} in {RetroArchSystem.SystemFolder} on the SD card; the core will not start without it.");
+        return warnings;
     }
 
     partial void OnStepChanged(int value)

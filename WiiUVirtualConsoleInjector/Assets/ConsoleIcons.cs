@@ -21,7 +21,8 @@ public static class ConsoleIcons
     /// <param name="console">Console to annotate.</param>
     public static string? Caption(SourceConsole console) => console switch
     {
-        SourceConsole.Genesis or SourceConsole.MasterSystem or SourceConsole.GameGear or SourceConsole.Sega32X => "Aroma only",
+        SourceConsole.Genesis or SourceConsole.MasterSystem or SourceConsole.GameGear or SourceConsole.Sega32X
+            or SourceConsole.Atari2600 or SourceConsole.Atari7800 or SourceConsole.AtariLynx => "Aroma only",
         _ => null,
     };
 
@@ -68,6 +69,9 @@ public static class ConsoleIcons
         SourceConsole.MasterSystem => "Master System",
         SourceConsole.GameGear => "Game Gear",
         SourceConsole.Sega32X => "Sega 32X",
+        SourceConsole.Atari2600 => "Atari 2600",
+        SourceConsole.Atari7800 => "Atari 7800",
+        SourceConsole.AtariLynx => "Atari Lynx",
         _ => console.ToString(),
     };
 

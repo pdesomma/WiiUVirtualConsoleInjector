@@ -13,7 +13,7 @@ public static class RomNames
     private static readonly Regex Spaces = new(@"\s+", RegexOptions.CultureInvariant);
 
     /// <summary>
-    /// Reads the internal name: the disc title for Wii and GameCube, the cartridge title for GBA, NDS, N64, Genesis and 32X, the internal name for SNES. NES, MSX and TurboGrafx carry none.
+    /// Reads the internal name: the disc title for Wii and GameCube, the cartridge title for GBA, NDS, N64, Genesis, 32X, Atari 7800 and Lynx, the internal name for SNES. NES, MSX and TurboGrafx carry none.
     /// </summary>
     /// <param name="console">Console the ROM is for.</param>
     /// <param name="romPath">The ROM.</param>
@@ -34,6 +34,8 @@ public static class RomNames
             SourceConsole.N64 => Nintendo64(romPath),
             SourceConsole.Snes => SuperNintendo(romPath),
             SourceConsole.Genesis or SourceConsole.Sega32X => Genesis(romPath),
+            SourceConsole.Atari7800 => Atari7800(romPath),
+            SourceConsole.AtariLynx => Lynx(romPath),
             _ => null,
         };
         return Tidy(raw);
@@ -54,6 +56,12 @@ public static class RomNames
             text = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(text.ToLowerInvariant());
         return text;
     }
+
+    /// <summary>
+    /// The 32-byte title at 0x11 of an A78 header, which announces itself with "ATARI7800" at 0x01.
+    /// </summary>
+    private static string? Atari7800(string path) =>
+        Ascii(Read(path, 0x01, 9)) == "ATARI7800" ? Padded(Read(path, 0x11, 32)) : null;
 
     private static string? Ascii(byte[]? bytes)
     {
@@ -86,6 +94,12 @@ public static class RomNames
     /// Game Boy titles sit at 0x134, 16 bytes at most, with the CGB flag taking the last one.
     /// </summary>
     private static string? GameBoy(string path) => Ascii(Read(path, 0x134, 15));
+
+    /// <summary>
+    /// The 32-byte cartridge name at 0x0A of an LNX header, which starts with "LYNX".
+    /// </summary>
+    private static string? Lynx(string path) =>
+        Ascii(Read(path, 0, 4)) == "LYNX" ? Padded(Read(path, 0x0A, 32)) : null;
 
     /// <summary>
     /// The banner's English title (its first line), which reads like the box; the twelve-character header code only as a fallback.

@@ -73,6 +73,9 @@ public static class ArtworkFrames
         Boot("sms-homebrew", "Homebrew, Master System", SourceConsole.MasterSystem, "homebrew.png", BootWii),
         Boot("gg-homebrew", "Homebrew, Game Gear", SourceConsole.GameGear, "homebrew.png", BootWii),
         Boot("32x-homebrew", "Homebrew, 32X", SourceConsole.Sega32X, "homebrew.png", BootWii),
+        Boot("2600-homebrew", "Homebrew, Atari 2600", SourceConsole.Atari2600, "homebrew.png", BootWii),
+        Boot("7800-homebrew", "Homebrew, Atari 7800", SourceConsole.Atari7800, "homebrew.png", BootWii),
+        Boot("lynx-homebrew", "Homebrew, Atari Lynx", SourceConsole.AtariLynx, "homebrew.png", BootWii),
         Boot("boot-plain", "None", null, null, BootFull),
 
         // Icons
@@ -104,6 +107,9 @@ public static class ArtworkFrames
         Icon("icon-sms-homebrew", "Homebrew, Master System", SourceConsole.MasterSystem, "HBICON.png", IconBadged),
         Icon("icon-gg-homebrew", "Homebrew, Game Gear", SourceConsole.GameGear, "HBICON.png", IconBadged),
         Icon("icon-32x-homebrew", "Homebrew, 32X", SourceConsole.Sega32X, "HBICON.png", IconBadged),
+        Icon("icon-2600-homebrew", "Homebrew, Atari 2600", SourceConsole.Atari2600, "HBICON.png", IconBadged),
+        Icon("icon-7800-homebrew", "Homebrew, Atari 7800", SourceConsole.Atari7800, "HBICON.png", IconBadged),
+        Icon("icon-lynx-homebrew", "Homebrew, Atari Lynx", SourceConsole.AtariLynx, "HBICON.png", IconBadged),
         Icon("icon-plain", "None", null, null, IconFull),
 
         // Boot logos

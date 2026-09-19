@@ -93,6 +93,21 @@ public class RomNamesTests
     }
 
     [TestMethod]
+    public void Suggest_Atari7800AndLynx_ReadTheirHeaders()
+    {
+        var a78 = Write("game.a78", 0x80, (0x01, "ATARI7800"), (0x11, "FOOD FIGHT".PadRight(32)));
+        var headerless7800 = Write("raw.a78", 0x80, (0x11, "NOT A HEADER"));
+        var lnx = Write("game.lnx", 0x40, (0x00, "LYNX"), (0x0A, "TODD'S ADVENTURES IN SLIME WORLD".PadRight(32)));
+        var headerlessLynx = Write("raw.lnx", 0x40, (0x0A, "NOT A HEADER"));
+
+        Assert.AreEqual("Food Fight", RomNames.Suggest(SourceConsole.Atari7800, a78));
+        Assert.IsNull(RomNames.Suggest(SourceConsole.Atari7800, headerless7800));
+        Assert.AreEqual("Todd's Adventures In Slime World", RomNames.Suggest(SourceConsole.AtariLynx, lnx));
+        Assert.IsNull(RomNames.Suggest(SourceConsole.AtariLynx, headerlessLynx));
+        Assert.IsNull(RomNames.Suggest(SourceConsole.Atari2600, a78), "2600 carts carry no name");
+    }
+
+    [TestMethod]
     public void Suggest_NothingToRead_IsNull()
     {
         var nes = Write("game.nes", 0x100, (0, "NES\x1a"));
@@ -143,10 +158,11 @@ public class RomNamesTests
         return path;
     }
 
-    private string Write(string name, int length, (int Offset, string Text) field)
+    private string Write(string name, int length, params (int Offset, string Text)[] fields)
     {
         var bytes = new byte[length];
-        Encoding.ASCII.GetBytes(field.Text).CopyTo(bytes, field.Offset);
+        foreach (var field in fields)
+            Encoding.ASCII.GetBytes(field.Text).CopyTo(bytes, field.Offset);
         var path = Path.Combine(_root, name);
         File.WriteAllBytes(path, bytes);
         return path;

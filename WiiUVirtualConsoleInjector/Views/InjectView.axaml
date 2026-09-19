@@ -155,6 +155,9 @@
                         <StackPanel IsVisible="{Binding IsRetroArch}">
                             <TextBlock Classes="label" Text="RetroArch core" Margin="0,8,0,2" />
                             <TextBlock Classes="hint" FontSize="12" Text="The core is the emulator; it is packed into the title with your ROM. The title runs under Aroma only and uses the retroarch folder on the SD card for settings and saves." Margin="0,0,0,14" />
+                            <Border Classes="banner-warning" Margin="0,0,0,14" IsVisible="{Binding BiosHint, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                <TextBlock Text="{Binding BiosHint}" />
+                            </Border>
                             <ComboBox ItemsSource="{Binding Cores}" SelectedItem="{Binding SelectedCore}" Width="480" HorizontalAlignment="Left" IsEnabled="{Binding !IsRunning}" PlaceholderText="Select a core…">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate x:DataType="vc:RetroArchCore">

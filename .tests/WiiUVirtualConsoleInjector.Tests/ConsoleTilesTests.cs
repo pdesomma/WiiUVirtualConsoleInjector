@@ -137,7 +137,7 @@ public class ConsoleTilesTests
         Assert.IsFalse(vm.IsGroupOpen);
         Assert.IsNull(vm.SelectedTile);
         Assert.IsNull(vm.SelectedTopTile);
-        Assert.AreEqual(4, vm.TopTiles.Count);
+        Assert.AreEqual(Assets.ConsoleGroups.Top.Count, vm.TopTiles.Count);
     }
 
     private InjectViewModel Create() =>

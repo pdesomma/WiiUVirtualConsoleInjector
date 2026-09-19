@@ -25,6 +25,9 @@ public sealed class EmbeddedRetroArchCores : IRetroArchCores
         new RetroArchCore("genesis_plus_gx", "Genesis Plus GX", SourceConsole.GameGear, "Most accurate; the usual choice.") { IsRecommended = true },
         new RetroArchCore("gearsystem", "Gearsystem", SourceConsole.GameGear, "Lighter Master System and Game Gear emulator."),
         new RetroArchCore("picodrive", "PicoDrive", SourceConsole.Sega32X, "The one core with 32X support.") { IsRecommended = true },
+        new RetroArchCore("stella2023", "Stella 2023", SourceConsole.Atari2600, "The Stella emulator, 2023 build.") { IsRecommended = true },
+        new RetroArchCore("prosystem", "ProSystem", SourceConsole.Atari7800, "The ProSystem emulator.") { IsRecommended = true },
+        new RetroArchCore("handy", "Handy", SourceConsole.AtariLynx, "The Handy emulator; needs lynxboot.img on the card.") { IsRecommended = true },
     };
 
     /// <summary>
@@ -36,6 +39,9 @@ public sealed class EmbeddedRetroArchCores : IRetroArchCores
         new RetroArchSystem(SourceConsole.MasterSystem, ".sms"),
         new RetroArchSystem(SourceConsole.GameGear, ".gg"),
         new RetroArchSystem(SourceConsole.Sega32X, ".32x", ".bin"),
+        new RetroArchSystem(SourceConsole.Atari2600, ".a26", ".bin"),
+        new RetroArchSystem(SourceConsole.Atari7800, ".a78", ".bin"),
+        new RetroArchSystem(SourceConsole.AtariLynx, ".lnx") { BiosFiles = new[] { "lynxboot.img" } },
     };
 
     /// <inheritdoc/>

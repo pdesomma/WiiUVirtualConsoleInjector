@@ -76,6 +76,45 @@ public class InjectRetroArchTests
     }
 
     [TestMethod]
+    public void AromaWarnings_BiosMissing_NamesTheFileAndFolder()
+    {
+        var sd = TempFolder();
+        try
+        {
+            _settings.Current = _settings.Current with { SdPath = sd };
+            WriteAroma(sd, sigPatches: true);
+            _cores.Add(Core("handy", "Handy", SourceConsole.AtariLynx, recommended: true));
+            _cores.Systems.Add(new RetroArchSystem(SourceConsole.AtariLynx, ".lnx") { BiosFiles = new[] { "lynxboot.img" } });
+            var vm = Create();
+
+            vm.SelectedConsole = SourceConsole.AtariLynx;
+
+            Assert.AreEqual(1, vm.AromaWarnings.Count);
+            StringAssert.Contains(vm.AromaWarnings[0], "lynxboot.img");
+            StringAssert.Contains(vm.AromaWarnings[0], RetroArchSystem.SystemFolder);
+            StringAssert.Contains(vm.BiosHint, "lynxboot.img");
+
+            Directory.CreateDirectory(Path.Combine(sd, "retroarch", "system"));
+            File.WriteAllBytes(Path.Combine(sd, "retroarch", "system", "lynxboot.img"), new byte[] { 1 });
+            vm.Step = InjectViewModel.Steps.Count;
+
+            Assert.AreEqual(0, vm.AromaWarnings.Count, "the review step re-checks the card");
+        }
+        finally
+        {
+            Directory.Delete(sd, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void BiosHint_ConsoleWithoutBios_Null()
+    {
+        var vm = Genesis();
+
+        Assert.IsNull(vm.BiosHint);
+    }
+
+    [TestMethod]
     public void AromaWarnings_NesConsole_EmptyEvenWithoutAroma()
     {
         var sd = TempFolder();

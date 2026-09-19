@@ -18,4 +18,7 @@ public enum SourceConsole
     MasterSystem,
     GameGear,
     Sega32X,
+    Atari2600,
+    Atari7800,
+    AtariLynx,
 }

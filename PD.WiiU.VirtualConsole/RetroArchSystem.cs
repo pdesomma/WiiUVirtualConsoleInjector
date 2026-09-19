@@ -1,10 +1,15 @@
 namespace PD.WiiU.VirtualConsole;
 
 /// <summary>
-/// A console that RetroArch cores emulate: which ROM files it takes.
+/// A console that RetroArch cores emulate: which ROM files it takes and which BIOS files the card must carry.
 /// </summary>
 public sealed class RetroArchSystem
 {
+    /// <summary>
+    /// Folder on the card, under the RetroArch data folder, that cores read BIOS files from.
+    /// </summary>
+    public const string SystemFolder = "retroarch/system";
+
     /// <summary>
     /// Creates a new instance of the <see cref="RetroArchSystem"/> class.
     /// </summary>
@@ -24,6 +29,10 @@ public sealed class RetroArchSystem
     }
 
     /// <summary>
+    /// File names the core needs under <see cref="SystemFolder"/> on the card; empty when it runs without any.
+    /// </summary>
+    public IReadOnlyList<string> BiosFiles { get; init; } = Array.Empty<string>();
+    /// <summary>
     /// The console.
     /// </summary>
     public SourceConsole Console { get; }
@@ -41,5 +50,18 @@ public sealed class RetroArchSystem
         if (path is null)
             throw new ArgumentNullException(nameof(path));
         return Extensions.Contains(Path.GetExtension(path).ToLowerInvariant());
+    }
+
+    /// <summary>
+    /// The BIOS files not yet on the card.
+    /// </summary>
+    /// <param name="sdRoot">Root of the card.</param>
+    public IReadOnlyList<string> MissingBios(string sdRoot)
+    {
+        if (string.IsNullOrWhiteSpace(sdRoot))
+            throw new ArgumentException("Card root is required.", nameof(sdRoot));
+
+        var folder = Path.Combine(sdRoot, SystemFolder.Replace('/', Path.DirectorySeparatorChar));
+        return BiosFiles.Where(file => !File.Exists(Path.Combine(folder, file))).ToArray();
     }
 }

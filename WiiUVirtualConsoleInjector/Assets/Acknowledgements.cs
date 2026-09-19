@@ -49,6 +49,9 @@ public static class Acknowledgements
         new("Genesis Plus GX", "Charles MacDonald, Eke-Eke and the libretro contributors", "The emulator behind the Genesis Plus GX and Genesis Plus GX Wide cores; also serves Master System and Game Gear.", new Uri("https://github.com/libretro/Genesis-Plus-GX"), "Non-commercial"),
         new("PicoDrive", "notaz, Grazvydas Ignotas and the libretro contributors", "The lighter Sega Genesis emulator offered as a core, and the 32X one.", new Uri("https://github.com/libretro/picodrive"), "MAME-style non-commercial"),
         new("Gearsystem", "Ignacio Sánchez (drhelius)", "The lighter Master System and Game Gear emulator offered as a core.", new Uri("https://github.com/drhelius/Gearsystem"), "GPL"),
+        new("Stella", "Bradford W. Mott, Stephen Anthony and the Stella team", "The Atari 2600 emulator behind the Stella 2023 core.", new Uri("https://github.com/libretro/stella2023-libretro"), "GPL"),
+        new("ProSystem", "Greg Stanton and the libretro contributors", "The Atari 7800 emulator behind the ProSystem core.", new Uri("https://github.com/libretro/prosystem-libretro"), "GPL"),
+        new("Handy", "Keith Wilkins and the libretro contributors", "The Atari Lynx emulator behind the Handy core.", new Uri("https://github.com/libretro/libretro-handy"), "zlib"),
         new("Homebrew Launcher channel", "dimok789; art by cathor and Maschell", "The title skeleton (cos.xml, app.xml, meta.xml and stock boot art) RetroArch cores are packed into.", new Uri("https://github.com/dimok789/homebrew_launcher"), "GPL"),
         new("Nunito", "The Nunito Project Authors", "The interface font.", new Uri("https://github.com/googlefonts/nunito"), "SIL Open Font License 1.1"),
     };

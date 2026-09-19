@@ -30,6 +30,35 @@ public sealed class RetroArchSystemTests
     }
 
     [TestMethod]
+    public void MissingBios_BlankRoot_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => new RetroArchSystem(SourceConsole.AtariLynx, ".lnx").MissingBios(" "));
+    }
+
+    [TestMethod]
+    public void MissingBios_FilesPresentOrAbsent_ListsTheAbsentOnes()
+    {
+        var sd = Path.Combine(Path.GetTempPath(), "PD.WiiU.VirtualConsole.Tests", Guid.NewGuid().ToString("N"));
+        var system = new RetroArchSystem(SourceConsole.AtariLynx, ".lnx") { BiosFiles = new[] { "lynxboot.img", "extra.bin" } };
+        try
+        {
+            Directory.CreateDirectory(sd);
+            CollectionAssert.AreEqual(new[] { "lynxboot.img", "extra.bin" }, system.MissingBios(sd).ToArray(), "nothing on the card yet");
+
+            var folder = Path.Combine(sd, "retroarch", "system");
+            Directory.CreateDirectory(folder);
+            File.WriteAllBytes(Path.Combine(folder, "lynxboot.img"), new byte[] { 1 });
+
+            CollectionAssert.AreEqual(new[] { "extra.bin" }, system.MissingBios(sd).ToArray());
+            Assert.AreEqual(0, new RetroArchSystem(SourceConsole.Genesis, ".md").MissingBios(sd).Count, "no BIOS needed, nothing missing");
+        }
+        finally
+        {
+            Directory.Delete(sd, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void Constructor_ValidExtensions_KeepsThemLowerCase()
     {
         var system = new RetroArchSystem(SourceConsole.Sega32X, ".32X", ".bin");

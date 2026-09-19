@@ -50,6 +50,19 @@ public class EmbeddedRetroArchCoresTests
     }
 
     [TestMethod]
+    public void System_AtariLynx_NeedsTheBootRom()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        CollectionAssert.AreEqual(new[] { "lynxboot.img" }, cores.System(SourceConsole.AtariLynx)!.BiosFiles.ToArray());
+        Assert.AreEqual(0, cores.System(SourceConsole.Atari2600)!.BiosFiles.Count);
+        Assert.AreEqual(0, cores.System(SourceConsole.Atari7800)!.BiosFiles.Count);
+        CollectionAssert.AreEqual(new[] { "stella2023" }, cores.Available(SourceConsole.Atari2600).Select(c => c.Id).ToArray());
+        CollectionAssert.AreEqual(new[] { "prosystem" }, cores.Available(SourceConsole.Atari7800).Select(c => c.Id).ToArray());
+        CollectionAssert.AreEqual(new[] { "handy" }, cores.Available(SourceConsole.AtariLynx).Select(c => c.Id).ToArray());
+    }
+
+    [TestMethod]
     public void System_KnownAndUnknown()
     {
         var cores = new EmbeddedRetroArchCores();

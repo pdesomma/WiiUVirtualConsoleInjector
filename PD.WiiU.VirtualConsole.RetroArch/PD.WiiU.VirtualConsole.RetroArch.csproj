@@ -13,6 +13,9 @@
     <EmbeddedResource Include="Assets\Cores\Genesis\genesis_plus_gx_wide_libretro.rpx" LogicalName="cores/genesis_plus_gx_wide_libretro.rpx" />
     <EmbeddedResource Include="Assets\Cores\Genesis\picodrive_libretro.rpx" LogicalName="cores/picodrive_libretro.rpx" />
     <EmbeddedResource Include="Assets\Cores\MasterSystem\gearsystem_libretro.rpx" LogicalName="cores/gearsystem_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Atari2600\stella2023_libretro.rpx" LogicalName="cores/stella2023_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Atari7800\prosystem_libretro.rpx" LogicalName="cores/prosystem_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\AtariLynx\handy_libretro.rpx" LogicalName="cores/handy_libretro.rpx" />
     <EmbeddedResource Include="Assets\Template\app.xml" LogicalName="template/code/app.xml" />
     <EmbeddedResource Include="Assets\Template\cos.xml" LogicalName="template/code/cos.xml" />
     <EmbeddedResource Include="Assets\Template\meta.xml" LogicalName="template/meta/meta.xml" />

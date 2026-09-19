@@ -13,6 +13,10 @@ public static class ConsoleGroups
     /// </summary>
     public const string Nintendo = "Nintendo";
     /// <summary>
+    /// Company name of the Atari tile.
+    /// </summary>
+    public const string Atari = "Atari";
+    /// <summary>
     /// Company name of the Sega tile.
     /// </summary>
     public const string Sega = "Sega";
@@ -24,6 +28,7 @@ public static class ConsoleGroups
     {
         new ConsoleTile(Nintendo, new[] { SourceConsole.Nes, SourceConsole.Snes, SourceConsole.N64, SourceConsole.Gba, SourceConsole.Nds, SourceConsole.GameCube, SourceConsole.Wii }),
         new ConsoleTile(Sega, new[] { SourceConsole.Genesis, SourceConsole.MasterSystem, SourceConsole.GameGear, SourceConsole.Sega32X }),
+        new ConsoleTile(Atari, new[] { SourceConsole.Atari2600, SourceConsole.Atari7800, SourceConsole.AtariLynx }),
         new ConsoleTile(SourceConsole.Tg16),
         new ConsoleTile(SourceConsole.Msx),
     };
