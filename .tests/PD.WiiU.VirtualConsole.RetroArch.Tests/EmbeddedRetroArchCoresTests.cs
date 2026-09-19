@@ -118,6 +118,94 @@ public class EmbeddedRetroArchCoresTests
     }
 
     [TestMethod]
+    public void Available_NeoGeoPocket_ListsBeetleNeoPopThenRace()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        var pocket = cores.Available(SourceConsole.NeoGeoPocket);
+        CollectionAssert.AreEqual(new[] { "mednafen_ngp", "race" }, pocket.Select(core => core.Id).ToArray());
+        Assert.AreEqual("Beetle NeoPop", pocket[0].Name);
+        Assert.AreEqual("RACE", pocket[1].Name);
+        Assert.AreEqual("mednafen_ngp_libretro.rpx", pocket[0].RpxFileName);
+        var system = cores.System(SourceConsole.NeoGeoPocket)!;
+        CollectionAssert.AreEqual(new[] { ".ngp", ".ngc", ".ngpc", ".npc" }, system.Extensions.ToArray());
+        Assert.AreEqual(0, system.BiosFiles.Count);
+    }
+
+    [TestMethod]
+    public void Available_OneFileHandhelds_HaveOneCoreEachAndNoCardBios()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        CollectionAssert.AreEqual(new[] { "pokemini" }, cores.Available(SourceConsole.PokemonMini).Select(core => core.Id).ToArray());
+        Assert.AreEqual("PokeMini", cores.Available(SourceConsole.PokemonMini)[0].Name);
+        CollectionAssert.AreEqual(new[] { ".min" }, cores.System(SourceConsole.PokemonMini)!.Extensions.ToArray());
+        Assert.AreEqual(0, cores.System(SourceConsole.PokemonMini)!.BiosFiles.Count);
+
+        CollectionAssert.AreEqual(new[] { "mednafen_wswan" }, cores.Available(SourceConsole.WonderSwan).Select(core => core.Id).ToArray());
+        Assert.AreEqual("Beetle WonderSwan", cores.Available(SourceConsole.WonderSwan)[0].Name);
+        CollectionAssert.AreEqual(new[] { ".ws", ".wsc", ".pc2", ".pcv2" }, cores.System(SourceConsole.WonderSwan)!.Extensions.ToArray());
+        Assert.AreEqual(0, cores.System(SourceConsole.WonderSwan)!.BiosFiles.Count);
+
+        CollectionAssert.AreEqual(new[] { "potator" }, cores.Available(SourceConsole.Supervision).Select(core => core.Id).ToArray());
+        Assert.AreEqual("Potator", cores.Available(SourceConsole.Supervision)[0].Name);
+        CollectionAssert.AreEqual(new[] { ".bin", ".sv" }, cores.System(SourceConsole.Supervision)!.Extensions.ToArray());
+        Assert.AreEqual(0, cores.System(SourceConsole.Supervision)!.BiosFiles.Count);
+
+        CollectionAssert.AreEqual(new[] { "gw" }, cores.Available(SourceConsole.GameAndWatch).Select(core => core.Id).ToArray());
+        Assert.AreEqual("GW", cores.Available(SourceConsole.GameAndWatch)[0].Name);
+        CollectionAssert.AreEqual(new[] { ".mgw" }, cores.System(SourceConsole.GameAndWatch)!.Extensions.ToArray());
+        Assert.AreEqual(0, cores.System(SourceConsole.GameAndWatch)!.BiosFiles.Count);
+
+        CollectionAssert.AreEqual(new[] { "vecx" }, cores.Available(SourceConsole.Vectrex).Select(core => core.Id).ToArray());
+        Assert.AreEqual("vecx", cores.Available(SourceConsole.Vectrex)[0].Name);
+        CollectionAssert.AreEqual(new[] { ".bin", ".vec" }, cores.System(SourceConsole.Vectrex)!.Extensions.ToArray());
+        Assert.AreEqual(0, cores.System(SourceConsole.Vectrex)!.BiosFiles.Count);
+    }
+
+    [TestMethod]
+    public void System_ColecoVision_NeedsTheColecoRom()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        CollectionAssert.AreEqual(new[] { "gearcoleco" }, cores.Available(SourceConsole.ColecoVision).Select(core => core.Id).ToArray());
+        Assert.AreEqual("Gearcoleco", cores.Available(SourceConsole.ColecoVision)[0].Name);
+        var system = cores.System(SourceConsole.ColecoVision)!;
+        CollectionAssert.AreEqual(new[] { ".col", ".cv", ".bin", ".rom" }, system.Extensions.ToArray());
+        var bios = system.BiosFiles.Single();
+        Assert.AreEqual("colecovision.rom", bios.Label);
+        CollectionAssert.AreEqual(new[] { "colecovision.rom" }, bios.Names.ToArray());
+    }
+
+    [TestMethod]
+    public void System_Intellivision_NeedsExecAndGrom()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        CollectionAssert.AreEqual(new[] { "freeintv" }, cores.Available(SourceConsole.Intellivision).Select(core => core.Id).ToArray());
+        Assert.AreEqual("FreeIntv", cores.Available(SourceConsole.Intellivision)[0].Name);
+        var system = cores.System(SourceConsole.Intellivision)!;
+        CollectionAssert.AreEqual(new[] { ".int", ".bin", ".rom" }, system.Extensions.ToArray());
+        CollectionAssert.AreEqual(new[] { "exec.bin", "grom.bin" }, system.BiosFiles.Select(bios => bios.Label).ToArray());
+        foreach (var bios in system.BiosFiles)
+            CollectionAssert.AreEqual(new[] { bios.Label }, bios.Names.ToArray(), bios.Label);
+    }
+
+    [TestMethod]
+    public void System_Odyssey2_NeedsOnlyTheG7000Rom()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        CollectionAssert.AreEqual(new[] { "o2em" }, cores.Available(SourceConsole.Odyssey2).Select(core => core.Id).ToArray());
+        Assert.AreEqual("O2EM", cores.Available(SourceConsole.Odyssey2)[0].Name);
+        var system = cores.System(SourceConsole.Odyssey2)!;
+        CollectionAssert.AreEqual(new[] { ".bin" }, system.Extensions.ToArray());
+        var bios = system.BiosFiles.Single();
+        Assert.AreEqual("o2rom.bin", bios.Label);
+        CollectionAssert.AreEqual(new[] { "o2rom.bin" }, bios.Names.ToArray());
+    }
+
+    [TestMethod]
     public void System_KnownAndUnknown()
     {
         var cores = new EmbeddedRetroArchCores();
@@ -129,10 +217,18 @@ public class EmbeddedRetroArchCoresTests
     }
 
     [TestMethod]
-    public void All_ArcadeAndPlayStationCores_AreEmbeddedAtTheCatalogedSizes()
+    public void All_EveryCore_IsEmbeddedAtTheCatalogedSize()
     {
         var sizes = new Dictionary<string, long>
         {
+            ["genesis_plus_gx"] = GenesisPlusGxLength,
+            ["genesis_plus_gx_wide"] = 6717132,
+            ["picodrive"] = 6156010,
+            ["gearsystem"] = 5841357,
+            ["stella2023"] = 7344333,
+            ["prosystem"] = 5471817,
+            ["handy"] = 5516495,
+            ["mednafen_vb"] = 5494527,
             ["fbneo"] = 29751521,
             ["mame2003_plus"] = 18012178,
             ["mame2010"] = 24833358,
@@ -144,10 +240,21 @@ public class EmbeddedRetroArchCoresTests
             ["fbalpha2012_cps3"] = 5506159,
             ["fbalpha2012_neogeo"] = 6099616,
             ["pcsx_rearmed"] = 6231138,
+            ["pokemini"] = 5545354,
+            ["mednafen_ngp"] = 5582405,
+            ["race"] = 5551384,
+            ["mednafen_wswan"] = 5593151,
+            ["potator"] = 5437345,
+            ["gw"] = 5643936,
+            ["gearcoleco"] = 5823933,
+            ["freeintv"] = 5451978,
+            ["o2em"] = 5520131,
+            ["vecx"] = 5467604,
         };
 
-        foreach (var core in EmbeddedRetroArchCores.All.Where(core => core.Console is SourceConsole.Arcade or SourceConsole.PlayStation))
+        foreach (var core in EmbeddedRetroArchCores.All)
         {
+            Assert.IsTrue(sizes.ContainsKey(core.Id), core.Id);
             using var stream = typeof(EmbeddedRetroArchCores).Assembly.GetManifestResourceStream(EmbeddedRetroArchCores.ResourceName(core));
             Assert.IsNotNull(stream, core.Id);
             Assert.AreEqual(sizes[core.Id], stream!.Length, core.Id);

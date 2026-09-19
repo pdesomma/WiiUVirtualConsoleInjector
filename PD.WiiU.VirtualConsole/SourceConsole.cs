@@ -25,4 +25,13 @@ public enum SourceConsole
     Arcade,
     NeoGeo,
     PlayStation,
+    PokemonMini,
+    NeoGeoPocket,
+    WonderSwan,
+    Supervision,
+    GameAndWatch,
+    ColecoVision,
+    Intellivision,
+    Odyssey2,
+    Vectrex,
 }

@@ -28,6 +28,16 @@
     <EmbeddedResource Include="Assets\Cores\Arcade\fbalpha2012_cps3_libretro.rpx" LogicalName="cores/fbalpha2012_cps3_libretro.rpx" />
     <EmbeddedResource Include="Assets\Cores\Arcade\fbalpha2012_neogeo_libretro.rpx" LogicalName="cores/fbalpha2012_neogeo_libretro.rpx" />
     <EmbeddedResource Include="Assets\Cores\PlayStation\pcsx_rearmed_libretro.rpx" LogicalName="cores/pcsx_rearmed_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\PokemonMini\pokemini_libretro.rpx" LogicalName="cores/pokemini_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\NeoGeoPocket\mednafen_ngp_libretro.rpx" LogicalName="cores/mednafen_ngp_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\NeoGeoPocket\race_libretro.rpx" LogicalName="cores/race_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\WonderSwan\mednafen_wswan_libretro.rpx" LogicalName="cores/mednafen_wswan_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Supervision\potator_libretro.rpx" LogicalName="cores/potator_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\GameAndWatch\gw_libretro.rpx" LogicalName="cores/gw_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\ColecoVision\gearcoleco_libretro.rpx" LogicalName="cores/gearcoleco_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Intellivision\freeintv_libretro.rpx" LogicalName="cores/freeintv_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Odyssey2\o2em_libretro.rpx" LogicalName="cores/o2em_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Vectrex\vecx_libretro.rpx" LogicalName="cores/vecx_libretro.rpx" />
     <EmbeddedResource Include="Assets\Template\app.xml" LogicalName="template/code/app.xml" />
     <EmbeddedResource Include="Assets\Template\cos.xml" LogicalName="template/code/cos.xml" />
     <EmbeddedResource Include="Assets\Template\meta.xml" LogicalName="template/meta/meta.xml" />

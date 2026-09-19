@@ -25,5 +25,15 @@ libretro cores built for Aroma, unmodified, from the community alpha `Aroma-RA-T
 | `Arcade/fbalpha2012_cps3_libretro.rpx` | 5,506,159 | `c21533a57deb828c5a03a4f0d2b08c5ef3c99e57f1a29c5cd3b222027b872639` | [FB Alpha 2012 CPS-3](https://github.com/libretro/fbalpha2012_cps3) | non-commercial |
 | `Arcade/fbalpha2012_neogeo_libretro.rpx` | 6,099,616 | `b22e510c48ee2bd42c2b2689bbb8d5f3c0a478dfe4487afd235bb8e236ac9d79` | [FB Alpha 2012 Neo Geo](https://github.com/libretro/fbalpha2012_neogeo) | non-commercial |
 | `PlayStation/pcsx_rearmed_libretro.rpx` | 6,231,138 | `9ed67de8151116629a3b99615e19eaf4a44e0c297ab2b2ebbc4041f27b1863be` | [PCSX-ReARMed](https://github.com/libretro/pcsx_rearmed) | GPL-2.0 |
+| `PokemonMini/pokemini_libretro.rpx` | 5,545,354 | `0139c2928b76b329711bff1363cf3afb74018e05cc3d289d232313dfb8d7593e` | [PokeMini](https://github.com/libretro/PokeMini) | GPL-3.0 |
+| `NeoGeoPocket/mednafen_ngp_libretro.rpx` | 5,582,405 | `cb788edb0b65eaef09dc355f01b52280a42dc5af903302b9289e8491fc3678e3` | [Beetle NeoPop](https://github.com/libretro/beetle-ngp-libretro) | GPL-2.0 |
+| `NeoGeoPocket/race_libretro.rpx` | 5,551,384 | `74abbdd09ded120d03ed64a3ba11f65712ac5c57838c2d6288c46faea1ea68db` | [RACE](https://github.com/libretro/RACE) | GPL-2.0 |
+| `WonderSwan/mednafen_wswan_libretro.rpx` | 5,593,151 | `ead3bf4ff32b0053d67a7ae1b38fffc7ed8567c02cd87ef46904f164ce098250` | [Beetle WonderSwan](https://github.com/libretro/beetle-wswan-libretro) | GPL-2.0 |
+| `Supervision/potator_libretro.rpx` | 5,437,345 | `029988434190fa151048b6528c78abe413c5b4817d66b3356c80c21ff3eb55b1` | [Potator](https://github.com/libretro/potator) | MIT |
+| `GameAndWatch/gw_libretro.rpx` | 5,643,936 | `c1ba0142adcc323cd605d72dacb21f4e74c22b39a14f479274942a48f2641195` | [GW](https://github.com/libretro/gw-libretro) | GPL-3.0 |
+| `ColecoVision/gearcoleco_libretro.rpx` | 5,823,933 | `e977864a40b17353d9382c15b185a93d9899dd259e646c191b0d67b8325e9d18` | [Gearcoleco](https://github.com/drhelius/Gearcoleco) | GPL-3.0 |
+| `Intellivision/freeintv_libretro.rpx` | 5,451,978 | `861c1fc1973f9cce8c9e79b6d008172776efd913bc33064f0344e7ee0ae0a183` | [FreeIntv](https://github.com/libretro/FreeIntv) | GPL-3.0 |
+| `Odyssey2/o2em_libretro.rpx` | 5,520,131 | `3caaf56cacb45b89b70cf65f77d228732c4a0175e036e541a03d6c2c5b97c251` | [O2EM](https://github.com/libretro/libretro-o2em) | Artistic License 2.0 |
+| `Vectrex/vecx_libretro.rpx` | 5,467,604 | `f57b1b54fe4525a731fab8815e468fd935f2ac9e780174098edc84a33370e241` | [vecx](https://github.com/libretro/libretro-vecx) | GPL-3.0 |
 
 The injector writes one of them under `code/` as the title's executable and passes the ROM through cos.xml's `argstr` (`<rpx> fs:/vol/content/<rom>`). On the console the core reads and writes its settings, saves and states under `sd:/retroarch/`, so an Aroma card with the RetroArch data folder works as usual; nothing else from the zip is shipped. Titles built this way only run under Aroma (the cores use its Mocha and rpx loader modules) and need the signature-patch module to install.

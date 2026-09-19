@@ -9,13 +9,29 @@ namespace WiiUVirtualConsoleInjector.Assets;
 public static class ConsoleGroups
 {
     /// <summary>
+    /// Company name of the Atari tile.
+    /// </summary>
+    public const string Atari = "Atari";
+    /// <summary>
     /// Company name of the Nintendo tile.
     /// </summary>
     public const string Nintendo = "Nintendo";
     /// <summary>
-    /// Company name of the Atari tile.
+    /// Name of the tile gathering the remaining consoles.
     /// </summary>
-    public const string Atari = "Atari";
+    public const string Other = "Other consoles";
+    /// <summary>
+    /// Logo file name of the <see cref="Other"/> tile.
+    /// </summary>
+    public const string OtherConsolesIcon = "OtherConsoles";
+    /// <summary>
+    /// Name of the tile gathering the remaining handhelds.
+    /// </summary>
+    public const string OtherHandhelds = "Other Handhelds";
+    /// <summary>
+    /// Logo file name of the <see cref="OtherHandhelds"/> tile.
+    /// </summary>
+    public const string OtherHandheldsIcon = "OtherHandhelds";
     /// <summary>
     /// Company name of the Sega tile.
     /// </summary>
@@ -26,9 +42,11 @@ public static class ConsoleGroups
     /// </summary>
     public static readonly IReadOnlyList<ConsoleTile> Top = new[]
     {
-        new ConsoleTile(Nintendo, new[] { SourceConsole.Nes, SourceConsole.Snes, SourceConsole.N64, SourceConsole.Gba, SourceConsole.Nds, SourceConsole.VirtualBoy, SourceConsole.GameCube, SourceConsole.Wii }),
+        new ConsoleTile(Nintendo, new[] { SourceConsole.Nes, SourceConsole.Snes, SourceConsole.N64, SourceConsole.Gba, SourceConsole.Nds, SourceConsole.VirtualBoy, SourceConsole.PokemonMini, SourceConsole.GameCube, SourceConsole.Wii }),
         new ConsoleTile(Sega, new[] { SourceConsole.Genesis, SourceConsole.MasterSystem, SourceConsole.GameGear, SourceConsole.Sega32X }),
         new ConsoleTile(Atari, new[] { SourceConsole.Atari2600, SourceConsole.Atari7800, SourceConsole.AtariLynx }),
+        new ConsoleTile(OtherHandhelds, new[] { SourceConsole.NeoGeoPocket, SourceConsole.WonderSwan, SourceConsole.Supervision, SourceConsole.GameAndWatch }, OtherHandheldsIcon),
+        new ConsoleTile(Other, new[] { SourceConsole.ColecoVision, SourceConsole.Intellivision, SourceConsole.Odyssey2, SourceConsole.Vectrex }, OtherConsolesIcon),
         new ConsoleTile(SourceConsole.Tg16),
         new ConsoleTile(SourceConsole.Msx),
         new ConsoleTile(SourceConsole.PlayStation),

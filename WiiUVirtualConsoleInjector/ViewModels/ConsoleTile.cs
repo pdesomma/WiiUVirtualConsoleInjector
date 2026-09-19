@@ -24,9 +24,10 @@ public sealed class ConsoleTile
     /// <summary>
     /// Creates a tile for a company.
     /// </summary>
-    /// <param name="name">Company name; also its logo's file name.</param>
+    /// <param name="name">Company name; also its logo's file name unless <paramref name="iconName"/> says otherwise.</param>
     /// <param name="consoles">Its consoles, in the order shown.</param>
-    public ConsoleTile(string name, IReadOnlyList<SourceConsole> consoles)
+    /// <param name="iconName">Logo file name when it differs from the name, or null.</param>
+    public ConsoleTile(string name, IReadOnlyList<SourceConsole> consoles, string? iconName = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name is required.", nameof(name));
@@ -34,10 +35,12 @@ public sealed class ConsoleTile
             throw new ArgumentNullException(nameof(consoles));
         if (consoles.Count == 0)
             throw new ArgumentException("A company needs at least one console.", nameof(consoles));
+        if (iconName is not null && string.IsNullOrWhiteSpace(iconName))
+            throw new ArgumentException("Icon name cannot be blank.", nameof(iconName));
 
         Label = name;
         Consoles = consoles;
-        IconName = name;
+        IconName = iconName ?? name;
         var captions = consoles.Select(ConsoleIcons.Caption).Distinct().ToArray();
         Caption = captions.Length == 1 ? captions[0] : null;
     }

@@ -23,7 +23,10 @@ public static class ConsoleIcons
     {
         SourceConsole.Genesis or SourceConsole.MasterSystem or SourceConsole.GameGear or SourceConsole.Sega32X
             or SourceConsole.Atari2600 or SourceConsole.Atari7800 or SourceConsole.AtariLynx or SourceConsole.VirtualBoy
-            or SourceConsole.PlayStation or SourceConsole.Arcade or SourceConsole.NeoGeo => "Aroma only",
+            or SourceConsole.PlayStation or SourceConsole.Arcade or SourceConsole.NeoGeo
+            or SourceConsole.PokemonMini or SourceConsole.NeoGeoPocket or SourceConsole.WonderSwan or SourceConsole.Supervision
+            or SourceConsole.GameAndWatch or SourceConsole.ColecoVision or SourceConsole.Intellivision or SourceConsole.Odyssey2
+            or SourceConsole.Vectrex => "Aroma only",
         _ => null,
     };
 
@@ -77,6 +80,15 @@ public static class ConsoleIcons
         SourceConsole.PlayStation => "PlayStation",
         SourceConsole.Arcade => "Arcade",
         SourceConsole.NeoGeo => "Neo Geo",
+        SourceConsole.PokemonMini => "Pokémon Mini",
+        SourceConsole.NeoGeoPocket => "Neo Geo Pocket",
+        SourceConsole.WonderSwan => "WonderSwan",
+        SourceConsole.Supervision => "Watara Supervision",
+        SourceConsole.GameAndWatch => "Game & Watch",
+        SourceConsole.ColecoVision => "ColecoVision",
+        SourceConsole.Intellivision => "Intellivision",
+        SourceConsole.Odyssey2 => "Odyssey²",
+        SourceConsole.Vectrex => "Vectrex",
         _ => console.ToString(),
     };
 

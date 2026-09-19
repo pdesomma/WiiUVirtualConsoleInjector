@@ -17,6 +17,13 @@ public class ConsoleIconsTests
     }
 
     [TestMethod]
+    public void Caption_NewRetroArchConsoles_SayAromaOnly()
+    {
+        foreach (var console in new[] { SourceConsole.PokemonMini, SourceConsole.NeoGeoPocket, SourceConsole.WonderSwan, SourceConsole.Supervision, SourceConsole.GameAndWatch, SourceConsole.ColecoVision, SourceConsole.Intellivision, SourceConsole.Odyssey2, SourceConsole.Vectrex })
+            Assert.AreEqual("Aroma only", ConsoleIcons.Caption(console), console.ToString());
+    }
+
+    [TestMethod]
     public void Caption_BaseConsoles_Null()
     {
         var cores = new EmbeddedRetroArchCores();
@@ -37,6 +44,20 @@ public class ConsoleIconsTests
     }
 
     [TestMethod]
+    public void DisplayName_NewRetroArchConsoles_UseTheirMarketNames()
+    {
+        Assert.AreEqual("Pokémon Mini", ConsoleIcons.DisplayName(SourceConsole.PokemonMini));
+        Assert.AreEqual("Neo Geo Pocket", ConsoleIcons.DisplayName(SourceConsole.NeoGeoPocket));
+        Assert.AreEqual("WonderSwan", ConsoleIcons.DisplayName(SourceConsole.WonderSwan));
+        Assert.AreEqual("Watara Supervision", ConsoleIcons.DisplayName(SourceConsole.Supervision));
+        Assert.AreEqual("Game & Watch", ConsoleIcons.DisplayName(SourceConsole.GameAndWatch));
+        Assert.AreEqual("ColecoVision", ConsoleIcons.DisplayName(SourceConsole.ColecoVision));
+        Assert.AreEqual("Intellivision", ConsoleIcons.DisplayName(SourceConsole.Intellivision));
+        Assert.AreEqual("Odyssey²", ConsoleIcons.DisplayName(SourceConsole.Odyssey2));
+        Assert.AreEqual("Vectrex", ConsoleIcons.DisplayName(SourceConsole.Vectrex));
+    }
+
+    [TestMethod]
     public void UriFor_Genesis_PointsAtBothLogos()
     {
         StringAssert.EndsWith(ConsoleIcons.UriFor(SourceConsole.Genesis).ToString(), "Assets/Consoles/Genesis.png");
@@ -51,6 +72,17 @@ public class ConsoleIconsTests
         {
             Assert.IsTrue(File.Exists(Path.Combine(root, console + ".png")), console + " white logo");
             Assert.IsTrue(File.Exists(Path.Combine(root, "Dark", console + ".png")), console + " dark logo");
+        }
+    }
+
+    [TestMethod]
+    public void UriFor_EveryCompanyTile_HasBothLogosOnDisk()
+    {
+        var root = Path.Combine(FindRepoRoot(), "WiiUVirtualConsoleInjector", "Assets", "Consoles");
+        foreach (var tile in ConsoleGroups.Top.Where(t => t.IsGroup))
+        {
+            Assert.IsTrue(File.Exists(Path.Combine(root, tile.IconName + ".png")), tile.Label + " white logo");
+            Assert.IsTrue(File.Exists(Path.Combine(root, "Dark", tile.IconName + ".png")), tile.Label + " dark logo");
         }
     }
 

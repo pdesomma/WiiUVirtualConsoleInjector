@@ -80,6 +80,15 @@ public static class ArtworkFrames
         Boot("arcade-homebrew", "Homebrew, Arcade", SourceConsole.Arcade, "homebrew.png", BootWii),
         Boot("neogeo-homebrew", "Homebrew, Neo Geo", SourceConsole.NeoGeo, "homebrew.png", BootWii),
         Boot("psx-homebrew", "Homebrew, PlayStation", SourceConsole.PlayStation, "homebrew.png", BootWii),
+        Boot("pokemini-homebrew", "Homebrew, Pokemon Mini", SourceConsole.PokemonMini, "homebrew.png", BootWii),
+        Boot("ngp-homebrew", "Homebrew, Neo Geo Pocket", SourceConsole.NeoGeoPocket, "homebrew.png", BootWii),
+        Boot("wswan-homebrew", "Homebrew, WonderSwan", SourceConsole.WonderSwan, "homebrew.png", BootWii),
+        Boot("supervision-homebrew", "Homebrew, Supervision", SourceConsole.Supervision, "homebrew.png", BootWii),
+        Boot("gw-homebrew", "Homebrew, Game & Watch", SourceConsole.GameAndWatch, "homebrew.png", BootWii),
+        Boot("coleco-homebrew", "Homebrew, ColecoVision", SourceConsole.ColecoVision, "homebrew.png", BootWii),
+        Boot("intv-homebrew", "Homebrew, Intellivision", SourceConsole.Intellivision, "homebrew.png", BootWii),
+        Boot("odyssey2-homebrew", "Homebrew, Odyssey²", SourceConsole.Odyssey2, "homebrew.png", BootWii),
+        Boot("vectrex-homebrew", "Homebrew, Vectrex", SourceConsole.Vectrex, "homebrew.png", BootWii),
         Boot("boot-plain", "None", null, null, BootFull),
 
         // Icons
@@ -118,6 +127,15 @@ public static class ArtworkFrames
         Icon("icon-arcade-homebrew", "Homebrew, Arcade", SourceConsole.Arcade, "HBICON.png", IconBadged),
         Icon("icon-neogeo-homebrew", "Homebrew, Neo Geo", SourceConsole.NeoGeo, "HBICON.png", IconBadged),
         Icon("icon-psx-homebrew", "Homebrew, PlayStation", SourceConsole.PlayStation, "HBICON.png", IconBadged),
+        Icon("icon-pokemini-homebrew", "Homebrew, Pokemon Mini", SourceConsole.PokemonMini, "HBICON.png", IconBadged),
+        Icon("icon-ngp-homebrew", "Homebrew, Neo Geo Pocket", SourceConsole.NeoGeoPocket, "HBICON.png", IconBadged),
+        Icon("icon-wswan-homebrew", "Homebrew, WonderSwan", SourceConsole.WonderSwan, "HBICON.png", IconBadged),
+        Icon("icon-supervision-homebrew", "Homebrew, Supervision", SourceConsole.Supervision, "HBICON.png", IconBadged),
+        Icon("icon-gw-homebrew", "Homebrew, Game & Watch", SourceConsole.GameAndWatch, "HBICON.png", IconBadged),
+        Icon("icon-coleco-homebrew", "Homebrew, ColecoVision", SourceConsole.ColecoVision, "HBICON.png", IconBadged),
+        Icon("icon-intv-homebrew", "Homebrew, Intellivision", SourceConsole.Intellivision, "HBICON.png", IconBadged),
+        Icon("icon-odyssey2-homebrew", "Homebrew, Odyssey²", SourceConsole.Odyssey2, "HBICON.png", IconBadged),
+        Icon("icon-vectrex-homebrew", "Homebrew, Vectrex", SourceConsole.Vectrex, "HBICON.png", IconBadged),
         Icon("icon-plain", "None", null, null, IconFull),
 
         // Boot logos

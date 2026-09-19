@@ -41,6 +41,16 @@ public sealed class EmbeddedRetroArchCores : IRetroArchCores
         new RetroArchCore("fbalpha2012_neogeo", "FB Alpha 2012 Neo Geo", SourceConsole.Arcade, "FB Alpha 2012, Neo Geo only."),
         new RetroArchCore("fbneo", "FinalBurn Neo", SourceConsole.NeoGeo, "FinalBurn Neo; needs neogeo.zip beside the game."),
         new RetroArchCore("pcsx_rearmed", "PCSX-ReARMed", SourceConsole.PlayStation, "The PlayStation emulator; a BIOS on the card is strongly advised, HLE otherwise."),
+        new RetroArchCore("pokemini", "PokeMini", SourceConsole.PokemonMini, "The PokeMini emulator; bios.min on the card is optional."),
+        new RetroArchCore("mednafen_ngp", "Beetle NeoPop", SourceConsole.NeoGeoPocket, "Mednafen's Neo Geo Pocket and Color emulator; the usual choice."),
+        new RetroArchCore("race", "RACE", SourceConsole.NeoGeoPocket, "RACE; lighter, less accurate."),
+        new RetroArchCore("mednafen_wswan", "Beetle WonderSwan", SourceConsole.WonderSwan, "Mednafen's WonderSwan and Color emulator."),
+        new RetroArchCore("potator", "Potator", SourceConsole.Supervision, "The Potator Watara Supervision emulator."),
+        new RetroArchCore("gw", "GW", SourceConsole.GameAndWatch, "Game & Watch simulator; takes .mgw packs."),
+        new RetroArchCore("gearcoleco", "Gearcoleco", SourceConsole.ColecoVision, "The Gearcoleco emulator; needs colecovision.rom on the card."),
+        new RetroArchCore("freeintv", "FreeIntv", SourceConsole.Intellivision, "The FreeIntv emulator; needs exec.bin and grom.bin on the card."),
+        new RetroArchCore("o2em", "O2EM", SourceConsole.Odyssey2, "Odyssey 2 and Videopac emulator; needs o2rom.bin on the card."),
+        new RetroArchCore("vecx", "vecx", SourceConsole.Vectrex, "The vecx Vectrex emulator; no BIOS needed."),
     };
 
     /// <summary>
@@ -59,6 +69,15 @@ public sealed class EmbeddedRetroArchCores : IRetroArchCores
         new RetroArchSystem(SourceConsole.Arcade, ".zip", ".7z"),
         new RetroArchSystem(SourceConsole.NeoGeo, ".zip", ".7z"),
         new RetroArchSystem(SourceConsole.PlayStation, ".cue", ".chd", ".pbp", ".m3u", ".iso", ".img") { BiosFiles = new[] { new BiosFile("PlayStation BIOS", "scph5501.bin", "scph5500.bin", "scph5502.bin", "scph1001.bin", "psxonpsp660.bin") } },
+        new RetroArchSystem(SourceConsole.PokemonMini, ".min"),
+        new RetroArchSystem(SourceConsole.NeoGeoPocket, ".ngp", ".ngc", ".ngpc", ".npc"),
+        new RetroArchSystem(SourceConsole.WonderSwan, ".ws", ".wsc", ".pc2", ".pcv2"),
+        new RetroArchSystem(SourceConsole.Supervision, ".bin", ".sv"),
+        new RetroArchSystem(SourceConsole.GameAndWatch, ".mgw"),
+        new RetroArchSystem(SourceConsole.ColecoVision, ".col", ".cv", ".bin", ".rom") { BiosFiles = new[] { new BiosFile("colecovision.rom") } },
+        new RetroArchSystem(SourceConsole.Intellivision, ".int", ".bin", ".rom") { BiosFiles = new[] { new BiosFile("exec.bin"), new BiosFile("grom.bin") } },
+        new RetroArchSystem(SourceConsole.Odyssey2, ".bin") { BiosFiles = new[] { new BiosFile("o2rom.bin") } },
+        new RetroArchSystem(SourceConsole.Vectrex, ".bin", ".vec"),
     };
 
     /// <inheritdoc/>

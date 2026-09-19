@@ -42,13 +42,55 @@ public class ConsoleTilesTests
         CollectionAssert.AreEquivalent(Enum.GetValues<SourceConsole>(), consoles);
         Assert.AreEqual(consoles.Length, consoles.Distinct().Count());
         Assert.AreEqual(ConsoleGroups.Nintendo, ConsoleGroups.GroupOf(SourceConsole.Nes)!.Label);
+        Assert.AreEqual(ConsoleGroups.Nintendo, ConsoleGroups.GroupOf(SourceConsole.PokemonMini)!.Label);
         Assert.AreEqual(ConsoleGroups.Sega, ConsoleGroups.GroupOf(SourceConsole.GameGear)!.Label);
+        Assert.AreEqual(ConsoleGroups.OtherHandhelds, ConsoleGroups.GroupOf(SourceConsole.WonderSwan)!.Label);
+        Assert.AreEqual(ConsoleGroups.Other, ConsoleGroups.GroupOf(SourceConsole.Vectrex)!.Label);
         Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.Msx));
         Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.PlayStation));
         Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.Arcade));
         Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.NeoGeo));
         Assert.AreEqual(SourceConsole.PlayStation, ConsoleGroups.Top[^3].Console, "PlayStation sits before the arcade tiles");
         Assert.AreEqual(SourceConsole.NeoGeo, ConsoleGroups.Top[^1].Console, "arcade tiles close the top level");
+    }
+
+    [TestMethod]
+    public void ConsoleGroups_Top_GroupTilesComeFirstInOrder()
+    {
+        var groups = ConsoleGroups.Top.TakeWhile(t => t.IsGroup).Select(t => t.Label).ToArray();
+
+        CollectionAssert.AreEqual(new[] { ConsoleGroups.Nintendo, ConsoleGroups.Sega, ConsoleGroups.Atari, ConsoleGroups.OtherHandhelds, ConsoleGroups.Other }, groups);
+        Assert.IsTrue(ConsoleGroups.Top.Skip(groups.Length).All(t => !t.IsGroup), "loose consoles follow the companies");
+    }
+
+    [TestMethod]
+    public void ConsoleGroups_Top_OtherConsolesTileHoldsTheRestWithItsOwnIcon()
+    {
+        var tile = ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.Other);
+
+        CollectionAssert.AreEqual(new[] { SourceConsole.ColecoVision, SourceConsole.Intellivision, SourceConsole.Odyssey2, SourceConsole.Vectrex }, tile.Consoles.ToArray());
+        Assert.AreEqual("Other consoles", tile.Label);
+        Assert.AreEqual("OtherConsoles", tile.IconName);
+        Assert.AreEqual("Aroma only", tile.Caption);
+    }
+
+    [TestMethod]
+    public void ConsoleGroups_Top_OtherHandheldsTileHoldsTheHandheldsWithItsOwnIcon()
+    {
+        var tile = ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.OtherHandhelds);
+
+        CollectionAssert.AreEqual(new[] { SourceConsole.NeoGeoPocket, SourceConsole.WonderSwan, SourceConsole.Supervision, SourceConsole.GameAndWatch }, tile.Consoles.ToArray());
+        Assert.AreEqual("Other Handhelds", tile.Label);
+        Assert.AreEqual("OtherHandhelds", tile.IconName);
+        Assert.AreEqual("Aroma only", tile.Caption);
+    }
+
+    [TestMethod]
+    public void ConsoleGroups_Top_PokemonMiniSitsAfterVirtualBoyUnderNintendo()
+    {
+        var nintendo = ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.Nintendo).Consoles.ToList();
+
+        Assert.AreEqual(nintendo.IndexOf(SourceConsole.VirtualBoy) + 1, nintendo.IndexOf(SourceConsole.PokemonMini));
     }
 
     [TestMethod]
@@ -65,7 +107,15 @@ public class ConsoleTilesTests
         Assert.AreEqual("Aroma only", new ConsoleTile("Sega", new[] { SourceConsole.Genesis, SourceConsole.GameGear }).Caption);
         Assert.AreEqual("Aroma only", ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.Atari).Caption);
         Assert.IsNull(new ConsoleTile("Mixed", new[] { SourceConsole.Nes, SourceConsole.VirtualBoy }).Caption, "one plain console drops the note");
-        Assert.IsNull(ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.Nintendo).Caption);
+        Assert.IsNull(ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.Nintendo).Caption, "Pokémon Mini's note is dropped by the plain Nintendo consoles");
+    }
+
+    [TestMethod]
+    public void ConsoleTile_Company_IconNameDefaultsToTheName()
+    {
+        Assert.AreEqual("Sega", new ConsoleTile("Sega", new[] { SourceConsole.Genesis }).IconName);
+        Assert.AreEqual("OtherConsoles", new ConsoleTile("Other consoles", new[] { SourceConsole.Vectrex }, "OtherConsoles").IconName);
+        Assert.AreEqual("Other consoles", new ConsoleTile("Other consoles", new[] { SourceConsole.Vectrex }, "OtherConsoles").Label);
     }
 
     [TestMethod]
@@ -74,6 +124,7 @@ public class ConsoleTilesTests
         Assert.ThrowsExactly<ArgumentException>(() => new ConsoleTile(" ", new[] { SourceConsole.Nes }));
         Assert.ThrowsExactly<ArgumentNullException>(() => new ConsoleTile("Nintendo", null!));
         Assert.ThrowsExactly<ArgumentException>(() => new ConsoleTile("Nintendo", Array.Empty<SourceConsole>()));
+        Assert.ThrowsExactly<ArgumentException>(() => new ConsoleTile("Nintendo", new[] { SourceConsole.Nes }, " "));
     }
 
     [TestMethod]
