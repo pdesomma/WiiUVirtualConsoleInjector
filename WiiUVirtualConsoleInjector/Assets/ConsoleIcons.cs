@@ -26,7 +26,7 @@ public static class ConsoleIcons
             or SourceConsole.PlayStation or SourceConsole.Arcade or SourceConsole.NeoGeo
             or SourceConsole.PokemonMini or SourceConsole.NeoGeoPocket or SourceConsole.WonderSwan or SourceConsole.Supervision
             or SourceConsole.GameAndWatch or SourceConsole.ColecoVision or SourceConsole.Intellivision or SourceConsole.Odyssey2
-            or SourceConsole.Vectrex => "Aroma only",
+            or SourceConsole.Vectrex or SourceConsole.SegaCd or SourceConsole.NeoGeoCd => "Aroma only",
         _ => null,
     };
 
@@ -89,6 +89,8 @@ public static class ConsoleIcons
         SourceConsole.Intellivision => "Intellivision",
         SourceConsole.Odyssey2 => "Odyssey²",
         SourceConsole.Vectrex => "Vectrex",
+        SourceConsole.SegaCd => "Sega CD",
+        SourceConsole.NeoGeoCd => "Neo Geo CD",
         _ => console.ToString(),
     };
 

@@ -34,4 +34,6 @@ public enum SourceConsole
     Intellivision,
     Odyssey2,
     Vectrex,
+    SegaCd,
+    NeoGeoCd,
 }

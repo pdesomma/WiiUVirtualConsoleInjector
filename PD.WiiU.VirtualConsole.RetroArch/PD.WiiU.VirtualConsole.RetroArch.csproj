@@ -38,6 +38,7 @@
     <EmbeddedResource Include="Assets\Cores\Intellivision\freeintv_libretro.rpx" LogicalName="cores/freeintv_libretro.rpx" />
     <EmbeddedResource Include="Assets\Cores\Odyssey2\o2em_libretro.rpx" LogicalName="cores/o2em_libretro.rpx" />
     <EmbeddedResource Include="Assets\Cores\Vectrex\vecx_libretro.rpx" LogicalName="cores/vecx_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\NeoGeoCd\neocd_libretro.rpx" LogicalName="cores/neocd_libretro.rpx" />
     <EmbeddedResource Include="Assets\Template\app.xml" LogicalName="template/code/app.xml" />
     <EmbeddedResource Include="Assets\Template\cos.xml" LogicalName="template/code/cos.xml" />
     <EmbeddedResource Include="Assets\Template\meta.xml" LogicalName="template/meta/meta.xml" />

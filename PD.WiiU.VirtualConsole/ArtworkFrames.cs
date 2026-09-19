@@ -89,6 +89,8 @@ public static class ArtworkFrames
         Boot("intv-homebrew", "Homebrew, Intellivision", SourceConsole.Intellivision, "homebrew.png", BootWii),
         Boot("odyssey2-homebrew", "Homebrew, Odyssey²", SourceConsole.Odyssey2, "homebrew.png", BootWii),
         Boot("vectrex-homebrew", "Homebrew, Vectrex", SourceConsole.Vectrex, "homebrew.png", BootWii),
+        Boot("segacd-homebrew", "Homebrew, Sega CD", SourceConsole.SegaCd, "homebrew.png", BootWii),
+        Boot("neocd-homebrew", "Homebrew, Neo Geo CD", SourceConsole.NeoGeoCd, "homebrew.png", BootWii),
         Boot("boot-plain", "None", null, null, BootFull),
 
         // Icons
@@ -136,6 +138,8 @@ public static class ArtworkFrames
         Icon("icon-intv-homebrew", "Homebrew, Intellivision", SourceConsole.Intellivision, "HBICON.png", IconBadged),
         Icon("icon-odyssey2-homebrew", "Homebrew, Odyssey²", SourceConsole.Odyssey2, "HBICON.png", IconBadged),
         Icon("icon-vectrex-homebrew", "Homebrew, Vectrex", SourceConsole.Vectrex, "HBICON.png", IconBadged),
+        Icon("icon-segacd-homebrew", "Homebrew, Sega CD", SourceConsole.SegaCd, "HBICON.png", IconBadged),
+        Icon("icon-neocd-homebrew", "Homebrew, Neo Geo CD", SourceConsole.NeoGeoCd, "HBICON.png", IconBadged),
         Icon("icon-plain", "None", null, null, IconFull),
 
         // Boot logos

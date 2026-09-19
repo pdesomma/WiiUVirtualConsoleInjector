@@ -51,6 +51,9 @@ public sealed class EmbeddedRetroArchCores : IRetroArchCores
         new RetroArchCore("freeintv", "FreeIntv", SourceConsole.Intellivision, "The FreeIntv emulator; needs exec.bin and grom.bin on the card."),
         new RetroArchCore("o2em", "O2EM", SourceConsole.Odyssey2, "Odyssey 2 and Videopac emulator; needs o2rom.bin on the card."),
         new RetroArchCore("vecx", "vecx", SourceConsole.Vectrex, "The vecx Vectrex emulator; no BIOS needed."),
+        new RetroArchCore("genesis_plus_gx", "Genesis Plus GX", SourceConsole.SegaCd, "Sega CD through Genesis Plus GX; needs the region BIOS on the card."),
+        new RetroArchCore("picodrive", "PicoDrive", SourceConsole.SegaCd, "Faster and lighter; less accurate. Needs the same region BIOS."),
+        new RetroArchCore("neocd", "NeoCD", SourceConsole.NeoGeoCd, "Neo Geo CD emulator; needs the system ROMs under retroarch/system/neocd."),
     };
 
     /// <summary>
@@ -78,6 +81,15 @@ public sealed class EmbeddedRetroArchCores : IRetroArchCores
         new RetroArchSystem(SourceConsole.Intellivision, ".int", ".bin", ".rom") { BiosFiles = new[] { new BiosFile("exec.bin"), new BiosFile("grom.bin") } },
         new RetroArchSystem(SourceConsole.Odyssey2, ".bin") { BiosFiles = new[] { new BiosFile("o2rom.bin") } },
         new RetroArchSystem(SourceConsole.Vectrex, ".bin", ".vec"),
+        new RetroArchSystem(SourceConsole.SegaCd, ".cue", ".chd", ".iso", ".m3u") { BiosFiles = new[] { new BiosFile("Sega CD BIOS", "bios_CD_U.bin", "bios_CD_E.bin", "bios_CD_J.bin") } },
+        new RetroArchSystem(SourceConsole.NeoGeoCd, ".cue", ".chd")
+        {
+            BiosFiles = new[]
+            {
+                new BiosFile("Neo Geo CD zoom ROM", "neocd/000-lo.lo", "neocd/ng-lo.rom"),
+                new BiosFile("Neo Geo CD BIOS", "neocd/neocd_z.rom", "neocd/neocd_f.rom", "neocd/neocd_sf.rom", "neocd/front-sp1.bin", "neocd/neocd_t.rom", "neocd/neocd_st.rom", "neocd/top-sp1.bin", "neocd/neocd_sz.rom", "neocd/neocd.bin", "neocd/uni-bioscd.rom"),
+            },
+        },
     };
 
     /// <inheritdoc/>

@@ -72,6 +72,23 @@ public sealed class BiosFileTests
     }
 
     [TestMethod]
+    public void NameFor_PickMatchesASubfolderName_KeepsTheSubfolder()
+    {
+        var bios = new BiosFile("Neo Geo CD BIOS", "neocd/neocd_z.rom", "neocd/neocd_f.rom");
+
+        Assert.AreEqual("neocd/neocd_f.rom", bios.NameFor(@"C:\dumps\NEOCD_F.ROM"));
+        Assert.AreEqual("neocd/neocd_z.rom", bios.NameFor(@"C:\dumps\other\neocd_z.rom"));
+    }
+
+    [TestMethod]
+    public void NameFor_PickUnderAnotherFolder_IgnoresThePicksFolder()
+    {
+        var bios = new BiosFile("Neo Geo CD BIOS", "neocd/neocd_z.rom", "neocd/neocd_f.rom");
+
+        Assert.AreEqual("neocd/neocd_z.rom", bios.NameFor(@"C:\dumps\neocd\bios.rom"));
+    }
+
+    [TestMethod]
     public void NameFor_UnknownName_IsThePreferredOne()
     {
         var bios = new BiosFile("PlayStation BIOS", "scph5501.bin", "scph1001.bin");
@@ -100,6 +117,17 @@ public sealed class BiosFileTests
     {
         Assert.IsNull(new BiosFile("PlayStation BIOS", "scph5501.bin", "scph1001.bin").Present(_folder));
         Assert.IsNull(new BiosFile("lynxboot.img").Present(Path.Combine(_folder, "missing")));
+    }
+
+    [TestMethod]
+    public void Present_SubfolderNameOnDisk_IsFoundUnderTheFolder()
+    {
+        var bios = new BiosFile("Neo Geo CD BIOS", "neocd/neocd_z.rom", "neocd/neocd_f.rom");
+        Directory.CreateDirectory(Path.Combine(_folder, "neocd"));
+        File.WriteAllBytes(Path.Combine(_folder, "neocd", "neocd_f.rom"), new byte[] { 1 });
+        File.WriteAllBytes(Path.Combine(_folder, "neocd_z.rom"), new byte[] { 2 });
+
+        Assert.AreEqual("neocd/neocd_f.rom", bios.Present(_folder), "the one at the folder root is not under neocd/");
     }
 
     [TestMethod]

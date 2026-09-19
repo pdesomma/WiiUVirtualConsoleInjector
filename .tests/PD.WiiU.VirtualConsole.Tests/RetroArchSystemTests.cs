@@ -81,6 +81,30 @@ public sealed class RetroArchSystemTests
     }
 
     [TestMethod]
+    public void MissingBios_SubfolderNamePresent_IsSatisfied()
+    {
+        var sd = Path.Combine(Path.GetTempPath(), "PD.WiiU.VirtualConsole.Tests", Guid.NewGuid().ToString("N"));
+        var bios = new BiosFile("Neo Geo CD BIOS", "neocd/neocd_z.rom", "neocd/neocd_f.rom");
+        var system = new RetroArchSystem(SourceConsole.NeoGeoCd, ".cue") { BiosFiles = new[] { bios } };
+        try
+        {
+            var folder = Path.Combine(sd, "retroarch", "system");
+            Directory.CreateDirectory(folder);
+            File.WriteAllBytes(Path.Combine(folder, "neocd_z.rom"), new byte[] { 1 });
+            Assert.AreSame(bios, system.MissingBios(sd).Single(), "at the system root, not under neocd/");
+
+            Directory.CreateDirectory(Path.Combine(folder, "neocd"));
+            File.WriteAllBytes(Path.Combine(folder, "neocd", "neocd_z.rom"), new byte[] { 1 });
+
+            Assert.AreEqual(0, system.MissingBios(sd).Count, "the subfolder name satisfies it");
+        }
+        finally
+        {
+            Directory.Delete(sd, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void Constructor_ValidExtensions_KeepsThemLowerCase()
     {
         var system = new RetroArchSystem(SourceConsole.Sega32X, ".32X", ".bin");

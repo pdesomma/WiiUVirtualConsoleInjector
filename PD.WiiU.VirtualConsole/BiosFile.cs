@@ -1,7 +1,7 @@
 namespace PD.WiiU.VirtualConsole;
 
 /// <summary>
-/// A BIOS a core needs on the card, satisfied by any one of several file names.
+/// A BIOS a core needs on the card, satisfied by any one of several file names; a name may carry a subfolder when the core keeps its BIOS under one.
 /// </summary>
 public sealed class BiosFile
 {
@@ -9,7 +9,7 @@ public sealed class BiosFile
     /// Creates a new instance of the <see cref="BiosFile"/> class.
     /// </summary>
     /// <param name="label">What the file is; doubles as the only name when none follow.</param>
-    /// <param name="names">Accepted file names, preferred first.</param>
+    /// <param name="names">Accepted file names, preferred first, with a forward-slash subfolder where the core wants one, e.g. "neocd/neocd_z.rom".</param>
     public BiosFile(string label, params string[] names)
     {
         if (string.IsNullOrWhiteSpace(label))
@@ -28,12 +28,12 @@ public sealed class BiosFile
     /// </summary>
     public string Label { get; }
     /// <summary>
-    /// File names the core accepts, preferred first.
+    /// File names the core accepts, preferred first, subfolder included where one applies.
     /// </summary>
     public IReadOnlyList<string> Names { get; }
 
     /// <summary>
-    /// The accepted name a picked file already carries, or the preferred one.
+    /// The accepted name whose file name a picked file already carries, subfolder included, or the preferred one.
     /// </summary>
     /// <param name="path">The picked file.</param>
     public string NameFor(string path)
@@ -41,11 +41,11 @@ public sealed class BiosFile
         if (string.IsNullOrWhiteSpace(path))
             throw new ArgumentException("Path is required.", nameof(path));
         var own = Path.GetFileName(path);
-        return Names.FirstOrDefault(name => string.Equals(name, own, StringComparison.OrdinalIgnoreCase)) ?? Names[0];
+        return Names.FirstOrDefault(name => string.Equals(Path.GetFileName(name), own, StringComparison.OrdinalIgnoreCase)) ?? Names[0];
     }
 
     /// <summary>
-    /// The accepted name found in a folder, or null when none is there.
+    /// The accepted name found in a folder, its subfolder resolved under it, or null when none is there.
     /// </summary>
     /// <param name="folder">Folder to look in.</param>
     public string? Present(string folder)

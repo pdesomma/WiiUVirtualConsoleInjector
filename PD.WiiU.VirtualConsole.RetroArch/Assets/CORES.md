@@ -1,6 +1,6 @@
 # Cores/<console>/*_libretro.rpx
 
-Folders group the cores by the console they were first added for; a core that serves several consoles (Genesis Plus GX also runs Master System and Game Gear, PicoDrive also runs 32X, FinalBurn Neo serves both Arcade and Neo Geo) is embedded once under its own name.
+Folders group the cores by the console they were first added for; a core that serves several consoles (Genesis Plus GX also runs Master System, Game Gear and Sega CD, PicoDrive also runs 32X and Sega CD, FinalBurn Neo serves both Arcade and Neo Geo) is embedded once under its own name.
 
 libretro cores built for Aroma, unmodified, from the community alpha `Aroma-RA-Test+Mame2010 [12-05-26].zip` (RetroArch 1.22.2, git 3f0a2c2f1e, built 2026-05-12) posted in the GBAtemp thread [RetroArch for Wii U gets early alpha Aroma CFW compatible builds](https://gbatemp.net/threads/retroarch-for-wii-u-gets-early-alpha-aroma-cfw-compatible-builds.656984/). Source is ashquarky's wut/Aroma port of RetroArch ([libretro/RetroArch PR #14925](https://github.com/libretro/RetroArch/pull/14925), branch [ashquarky/RetroArch@wiiu-wut](https://github.com/ashquarky/RetroArch/tree/wiiu-wut)). Each RPX statically links the RetroArch frontend (GPL-3.0) with one core.
 
@@ -35,5 +35,6 @@ libretro cores built for Aroma, unmodified, from the community alpha `Aroma-RA-T
 | `Intellivision/freeintv_libretro.rpx` | 5,451,978 | `861c1fc1973f9cce8c9e79b6d008172776efd913bc33064f0344e7ee0ae0a183` | [FreeIntv](https://github.com/libretro/FreeIntv) | GPL-3.0 |
 | `Odyssey2/o2em_libretro.rpx` | 5,520,131 | `3caaf56cacb45b89b70cf65f77d228732c4a0175e036e541a03d6c2c5b97c251` | [O2EM](https://github.com/libretro/libretro-o2em) | Artistic License 2.0 |
 | `Vectrex/vecx_libretro.rpx` | 5,467,604 | `f57b1b54fe4525a731fab8815e468fd935f2ac9e780174098edc84a33370e241` | [vecx](https://github.com/libretro/libretro-vecx) | GPL-3.0 |
+| `NeoGeoCd/neocd_libretro.rpx` | 6,419,656 | `4f46f914205425ad3fe5ba0f023c4419905a13af12db4fccf521a1c9aca704a6` | [NeoCD](https://github.com/libretro/neocd_libretro) | LGPL-3.0 |
 
 The injector writes one of them under `code/` as the title's executable and passes the ROM through cos.xml's `argstr` (`<rpx> fs:/vol/content/<rom>`). On the console the core reads and writes its settings, saves and states under `sd:/retroarch/`, so an Aroma card with the RetroArch data folder works as usual; nothing else from the zip is shipped. Titles built this way only run under Aroma (the cores use its Mocha and rpx loader modules) and need the signature-patch module to install.

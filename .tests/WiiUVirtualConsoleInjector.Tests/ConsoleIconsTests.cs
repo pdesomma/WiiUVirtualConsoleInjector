@@ -19,7 +19,7 @@ public class ConsoleIconsTests
     [TestMethod]
     public void Caption_NewRetroArchConsoles_SayAromaOnly()
     {
-        foreach (var console in new[] { SourceConsole.PokemonMini, SourceConsole.NeoGeoPocket, SourceConsole.WonderSwan, SourceConsole.Supervision, SourceConsole.GameAndWatch, SourceConsole.ColecoVision, SourceConsole.Intellivision, SourceConsole.Odyssey2, SourceConsole.Vectrex })
+        foreach (var console in new[] { SourceConsole.PokemonMini, SourceConsole.NeoGeoPocket, SourceConsole.WonderSwan, SourceConsole.Supervision, SourceConsole.GameAndWatch, SourceConsole.ColecoVision, SourceConsole.Intellivision, SourceConsole.Odyssey2, SourceConsole.Vectrex, SourceConsole.SegaCd, SourceConsole.NeoGeoCd })
             Assert.AreEqual("Aroma only", ConsoleIcons.Caption(console), console.ToString());
     }
 
@@ -55,6 +55,13 @@ public class ConsoleIconsTests
         Assert.AreEqual("Intellivision", ConsoleIcons.DisplayName(SourceConsole.Intellivision));
         Assert.AreEqual("Odyssey²", ConsoleIcons.DisplayName(SourceConsole.Odyssey2));
         Assert.AreEqual("Vectrex", ConsoleIcons.DisplayName(SourceConsole.Vectrex));
+    }
+
+    [TestMethod]
+    public void DisplayName_DiscConsoles_UseTheirMarketNames()
+    {
+        Assert.AreEqual("Sega CD", ConsoleIcons.DisplayName(SourceConsole.SegaCd));
+        Assert.AreEqual("Neo Geo CD", ConsoleIcons.DisplayName(SourceConsole.NeoGeoCd));
     }
 
     [TestMethod]

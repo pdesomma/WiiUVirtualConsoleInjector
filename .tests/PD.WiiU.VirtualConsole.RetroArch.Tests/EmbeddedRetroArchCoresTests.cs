@@ -206,6 +206,46 @@ public class EmbeddedRetroArchCoresTests
     }
 
     [TestMethod]
+    public void System_SegaCd_TakesDiscImagesAndWantsOneRegionBios()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        var segaCd = cores.Available(SourceConsole.SegaCd);
+        CollectionAssert.AreEqual(new[] { "genesis_plus_gx", "picodrive" }, segaCd.Select(core => core.Id).ToArray());
+        Assert.AreEqual("Genesis Plus GX", segaCd[0].Name);
+        Assert.AreEqual("genesis_plus_gx_libretro.rpx", segaCd[0].RpxFileName);
+        StringAssert.Contains(segaCd[0].Description, "BIOS");
+        var system = cores.System(SourceConsole.SegaCd)!;
+        CollectionAssert.AreEqual(new[] { ".cue", ".chd", ".iso", ".m3u" }, system.Extensions.ToArray());
+        var bios = system.BiosFiles.Single();
+        Assert.AreEqual("Sega CD BIOS", bios.Label);
+        CollectionAssert.AreEqual(new[] { "bios_CD_U.bin", "bios_CD_E.bin", "bios_CD_J.bin" }, bios.Names.ToArray());
+    }
+
+    [TestMethod]
+    public void System_NeoGeoCd_TakesCueOrChdAndWantsZoomRomPlusOneSystemRom()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        var neoGeoCd = cores.Available(SourceConsole.NeoGeoCd);
+        Assert.AreEqual(1, neoGeoCd.Count);
+        Assert.AreEqual("neocd", neoGeoCd[0].Id);
+        Assert.AreEqual("NeoCD", neoGeoCd[0].Name);
+        Assert.AreEqual("neocd_libretro.rpx", neoGeoCd[0].RpxFileName);
+        StringAssert.Contains(neoGeoCd[0].Description, "retroarch/system/neocd");
+        var system = cores.System(SourceConsole.NeoGeoCd)!;
+        CollectionAssert.AreEqual(new[] { ".cue", ".chd" }, system.Extensions.ToArray());
+        Assert.AreEqual(2, system.BiosFiles.Count);
+        Assert.AreEqual("Neo Geo CD zoom ROM", system.BiosFiles[0].Label);
+        CollectionAssert.AreEqual(new[] { "neocd/000-lo.lo", "neocd/ng-lo.rom" }, system.BiosFiles[0].Names.ToArray());
+        Assert.AreEqual("Neo Geo CD BIOS", system.BiosFiles[1].Label);
+        CollectionAssert.AreEqual(
+            new[] { "neocd/neocd_z.rom", "neocd/neocd_f.rom", "neocd/neocd_sf.rom", "neocd/front-sp1.bin", "neocd/neocd_t.rom", "neocd/neocd_st.rom", "neocd/top-sp1.bin", "neocd/neocd_sz.rom", "neocd/neocd.bin", "neocd/uni-bioscd.rom" },
+            system.BiosFiles[1].Names.ToArray());
+        Assert.IsTrue(system.BiosFiles.SelectMany(bios => bios.Names).All(name => name.StartsWith("neocd/", StringComparison.Ordinal)), "every name sits under the core's own folder");
+    }
+
+    [TestMethod]
     public void System_KnownAndUnknown()
     {
         var cores = new EmbeddedRetroArchCores();
@@ -250,6 +290,7 @@ public class EmbeddedRetroArchCoresTests
             ["freeintv"] = 5451978,
             ["o2em"] = 5520131,
             ["vecx"] = 5467604,
+            ["neocd"] = 6419656,
         };
 
         foreach (var core in EmbeddedRetroArchCores.All)

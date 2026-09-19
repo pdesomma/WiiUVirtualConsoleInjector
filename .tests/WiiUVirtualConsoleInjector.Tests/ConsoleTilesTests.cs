@@ -44,14 +44,27 @@ public class ConsoleTilesTests
         Assert.AreEqual(ConsoleGroups.Nintendo, ConsoleGroups.GroupOf(SourceConsole.Nes)!.Label);
         Assert.AreEqual(ConsoleGroups.Nintendo, ConsoleGroups.GroupOf(SourceConsole.PokemonMini)!.Label);
         Assert.AreEqual(ConsoleGroups.Sega, ConsoleGroups.GroupOf(SourceConsole.GameGear)!.Label);
+        Assert.AreEqual(ConsoleGroups.Sega, ConsoleGroups.GroupOf(SourceConsole.SegaCd)!.Label);
         Assert.AreEqual(ConsoleGroups.OtherHandhelds, ConsoleGroups.GroupOf(SourceConsole.WonderSwan)!.Label);
         Assert.AreEqual(ConsoleGroups.Other, ConsoleGroups.GroupOf(SourceConsole.Vectrex)!.Label);
         Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.Msx));
         Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.PlayStation));
         Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.Arcade));
         Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.NeoGeo));
-        Assert.AreEqual(SourceConsole.PlayStation, ConsoleGroups.Top[^3].Console, "PlayStation sits before the arcade tiles");
-        Assert.AreEqual(SourceConsole.NeoGeo, ConsoleGroups.Top[^1].Console, "arcade tiles close the top level");
+        Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.NeoGeoCd));
+        Assert.AreEqual(SourceConsole.PlayStation, ConsoleGroups.Top[^4].Console, "PlayStation sits before the arcade tiles");
+        Assert.AreEqual(SourceConsole.Arcade, ConsoleGroups.Top[^3].Console);
+        Assert.AreEqual(SourceConsole.NeoGeo, ConsoleGroups.Top[^2].Console);
+        Assert.AreEqual(SourceConsole.NeoGeoCd, ConsoleGroups.Top[^1].Console, "Neo Geo CD closes the top level, right after Neo Geo");
+    }
+
+    [TestMethod]
+    public void ConsoleGroups_Top_SegaCdSitsAfterGenesisUnderSega()
+    {
+        var sega = ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.Sega).Consoles.ToList();
+
+        CollectionAssert.AreEqual(new[] { SourceConsole.Genesis, SourceConsole.SegaCd, SourceConsole.MasterSystem, SourceConsole.GameGear, SourceConsole.Sega32X }, sega);
+        Assert.AreEqual("Aroma only", ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.Sega).Caption);
     }
 
     [TestMethod]
@@ -98,7 +111,7 @@ public class ConsoleTilesTests
     {
         Assert.ThrowsExactly<ArgumentNullException>(() => ConsoleGroups.Members(null!));
         Assert.ThrowsExactly<ArgumentException>(() => ConsoleGroups.Members(new ConsoleTile(SourceConsole.Msx)));
-        Assert.AreEqual(4, ConsoleGroups.Members(ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.Sega)).Count);
+        Assert.AreEqual(5, ConsoleGroups.Members(ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.Sega)).Count);
     }
 
     [TestMethod]

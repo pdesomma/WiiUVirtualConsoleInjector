@@ -43,7 +43,7 @@ public static class ConsoleGroups
     public static readonly IReadOnlyList<ConsoleTile> Top = new[]
     {
         new ConsoleTile(Nintendo, new[] { SourceConsole.Nes, SourceConsole.Snes, SourceConsole.N64, SourceConsole.Gba, SourceConsole.Nds, SourceConsole.VirtualBoy, SourceConsole.PokemonMini, SourceConsole.GameCube, SourceConsole.Wii }),
-        new ConsoleTile(Sega, new[] { SourceConsole.Genesis, SourceConsole.MasterSystem, SourceConsole.GameGear, SourceConsole.Sega32X }),
+        new ConsoleTile(Sega, new[] { SourceConsole.Genesis, SourceConsole.SegaCd, SourceConsole.MasterSystem, SourceConsole.GameGear, SourceConsole.Sega32X }),
         new ConsoleTile(Atari, new[] { SourceConsole.Atari2600, SourceConsole.Atari7800, SourceConsole.AtariLynx }),
         new ConsoleTile(OtherHandhelds, new[] { SourceConsole.NeoGeoPocket, SourceConsole.WonderSwan, SourceConsole.Supervision, SourceConsole.GameAndWatch }, OtherHandheldsIcon),
         new ConsoleTile(Other, new[] { SourceConsole.ColecoVision, SourceConsole.Intellivision, SourceConsole.Odyssey2, SourceConsole.Vectrex }, OtherConsolesIcon),
@@ -52,6 +52,7 @@ public static class ConsoleGroups
         new ConsoleTile(SourceConsole.PlayStation),
         new ConsoleTile(SourceConsole.Arcade),
         new ConsoleTile(SourceConsole.NeoGeo),
+        new ConsoleTile(SourceConsole.NeoGeoCd),
     };
 
     /// <summary>
