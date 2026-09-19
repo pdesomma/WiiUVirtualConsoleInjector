@@ -28,6 +28,7 @@ public sealed class EmbeddedRetroArchCores : IRetroArchCores
         new RetroArchCore("stella2023", "Stella 2023", SourceConsole.Atari2600, "The Stella emulator, 2023 build.") { IsRecommended = true },
         new RetroArchCore("prosystem", "ProSystem", SourceConsole.Atari7800, "The ProSystem emulator.") { IsRecommended = true },
         new RetroArchCore("handy", "Handy", SourceConsole.AtariLynx, "The Handy emulator; needs lynxboot.img on the card.") { IsRecommended = true },
+        new RetroArchCore("mednafen_vb", "Beetle VB", SourceConsole.VirtualBoy, "Mednafen's Virtual Boy emulator; the red-on-black view goes to both screens.") { IsRecommended = true },
     };
 
     /// <summary>
@@ -42,6 +43,7 @@ public sealed class EmbeddedRetroArchCores : IRetroArchCores
         new RetroArchSystem(SourceConsole.Atari2600, ".a26", ".bin"),
         new RetroArchSystem(SourceConsole.Atari7800, ".a78", ".bin"),
         new RetroArchSystem(SourceConsole.AtariLynx, ".lnx") { BiosFiles = new[] { "lynxboot.img" } },
+        new RetroArchSystem(SourceConsole.VirtualBoy, ".vb", ".vboy"),
     };
 
     /// <inheritdoc/>

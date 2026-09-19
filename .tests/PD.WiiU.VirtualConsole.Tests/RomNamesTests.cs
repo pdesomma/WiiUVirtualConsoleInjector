@@ -108,6 +108,16 @@ public class RomNamesTests
     }
 
     [TestMethod]
+    public void Suggest_VirtualBoy_ReadsTheTrailingHeader()
+    {
+        var vb = Write("game.vb", 0x1000, (0x1000 - 0x220, "MARIO'S TENNIS".PadRight(20)));
+        var tiny = Write("tiny.vb", 0x100, (0, "X"));
+
+        Assert.AreEqual("Mario's Tennis", RomNames.Suggest(SourceConsole.VirtualBoy, vb));
+        Assert.IsNull(RomNames.Suggest(SourceConsole.VirtualBoy, tiny), "shorter than a header");
+    }
+
+    [TestMethod]
     public void Suggest_NothingToRead_IsNull()
     {
         var nes = Write("game.nes", 0x100, (0, "NES\x1a"));

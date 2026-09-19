@@ -60,6 +60,8 @@ public class EmbeddedRetroArchCoresTests
         CollectionAssert.AreEqual(new[] { "stella2023" }, cores.Available(SourceConsole.Atari2600).Select(c => c.Id).ToArray());
         CollectionAssert.AreEqual(new[] { "prosystem" }, cores.Available(SourceConsole.Atari7800).Select(c => c.Id).ToArray());
         CollectionAssert.AreEqual(new[] { "handy" }, cores.Available(SourceConsole.AtariLynx).Select(c => c.Id).ToArray());
+        CollectionAssert.AreEqual(new[] { "mednafen_vb" }, cores.Available(SourceConsole.VirtualBoy).Select(c => c.Id).ToArray());
+        CollectionAssert.AreEqual(new[] { ".vb", ".vboy" }, cores.System(SourceConsole.VirtualBoy)!.Extensions.ToArray());
     }
 
     [TestMethod]

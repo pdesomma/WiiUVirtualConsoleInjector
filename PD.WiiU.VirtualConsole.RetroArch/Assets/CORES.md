@@ -13,5 +13,6 @@ libretro cores built for Aroma, unmodified, from the community alpha `Aroma-RA-T
 | `Atari2600/stella2023_libretro.rpx` | 7,344,333 | `8c533850d2b3cb08d26491fe8e1b06b317d2bef938913ced978f8f9d17525c10` | [Stella 2023](https://github.com/libretro/stella2023-libretro) | GPL-2.0 |
 | `Atari7800/prosystem_libretro.rpx` | 5,471,817 | `aad44794b8259cc3e26bd315f598d6a1cda7b43fa59dedfb8b05e30c5a3cf8dd` | [ProSystem](https://github.com/libretro/prosystem-libretro) | GPL-2.0 |
 | `AtariLynx/handy_libretro.rpx` | 5,516,495 | `9235a207810f224618efc01d5200fe12428d55fb40b7767b1cbd41e0d76d2b0b` | [Handy](https://github.com/libretro/libretro-handy) | zlib |
+| `VirtualBoy/mednafen_vb_libretro.rpx` | 5,494,527 | `5b98b8163f68a2df4cdaa1d7745a04816f477f77d1d98556d4bf22078fa47ae6` | [Beetle VB](https://github.com/libretro/beetle-vb-libretro) | GPL-2.0 |
 
 The injector writes one of them under `code/` as the title's executable and passes the ROM through cos.xml's `argstr` (`<rpx> fs:/vol/content/<rom>`). On the console the core reads and writes its settings, saves and states under `sd:/retroarch/`, so an Aroma card with the RetroArch data folder works as usual; nothing else from the zip is shipped. Titles built this way only run under Aroma (the cores use its Mocha and rpx loader modules) and need the signature-patch module to install.

@@ -13,7 +13,7 @@ public static class RomNames
     private static readonly Regex Spaces = new(@"\s+", RegexOptions.CultureInvariant);
 
     /// <summary>
-    /// Reads the internal name: the disc title for Wii and GameCube, the cartridge title for GBA, NDS, N64, Genesis, 32X, Atari 7800 and Lynx, the internal name for SNES. NES, MSX and TurboGrafx carry none.
+    /// Reads the internal name: the disc title for Wii and GameCube, the cartridge title for GBA, NDS, N64, Genesis, 32X, Atari 7800, Lynx and Virtual Boy, the internal name for SNES. NES, MSX and TurboGrafx carry none.
     /// </summary>
     /// <param name="console">Console the ROM is for.</param>
     /// <param name="romPath">The ROM.</param>
@@ -36,6 +36,7 @@ public static class RomNames
             SourceConsole.Genesis or SourceConsole.Sega32X => Genesis(romPath),
             SourceConsole.Atari7800 => Atari7800(romPath),
             SourceConsole.AtariLynx => Lynx(romPath),
+            SourceConsole.VirtualBoy => VirtualBoy(romPath),
             _ => null,
         };
         return Tidy(raw);
@@ -158,6 +159,15 @@ public static class RomNames
     {
         var text = Ascii(bytes)?.Trim();
         return string.IsNullOrEmpty(text) ? null : text;
+    }
+
+    /// <summary>
+    /// The 20-byte title at the start of the header that sits 0x220 bytes before the end of the ROM.
+    /// </summary>
+    private static string? VirtualBoy(string path)
+    {
+        var length = new FileInfo(path).Length;
+        return length < 0x220 ? null : Padded(Read(path, length - 0x220, 20));
     }
 
     private static byte[]? Read(string path, long offset, int count)

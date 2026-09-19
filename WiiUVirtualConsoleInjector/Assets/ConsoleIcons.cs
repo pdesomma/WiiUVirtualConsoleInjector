@@ -22,7 +22,7 @@ public static class ConsoleIcons
     public static string? Caption(SourceConsole console) => console switch
     {
         SourceConsole.Genesis or SourceConsole.MasterSystem or SourceConsole.GameGear or SourceConsole.Sega32X
-            or SourceConsole.Atari2600 or SourceConsole.Atari7800 or SourceConsole.AtariLynx => "Aroma only",
+            or SourceConsole.Atari2600 or SourceConsole.Atari7800 or SourceConsole.AtariLynx or SourceConsole.VirtualBoy => "Aroma only",
         _ => null,
     };
 
@@ -72,6 +72,7 @@ public static class ConsoleIcons
         SourceConsole.Atari2600 => "Atari 2600",
         SourceConsole.Atari7800 => "Atari 7800",
         SourceConsole.AtariLynx => "Atari Lynx",
+        SourceConsole.VirtualBoy => "Virtual Boy",
         _ => console.ToString(),
     };
 

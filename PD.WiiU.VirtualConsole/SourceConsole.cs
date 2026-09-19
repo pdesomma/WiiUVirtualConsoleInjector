@@ -21,4 +21,5 @@ public enum SourceConsole
     Atari2600,
     Atari7800,
     AtariLynx,
+    VirtualBoy,
 }

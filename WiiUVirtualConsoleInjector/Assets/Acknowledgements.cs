@@ -52,6 +52,7 @@ public static class Acknowledgements
         new("Stella", "Bradford W. Mott, Stephen Anthony and the Stella team", "The Atari 2600 emulator behind the Stella 2023 core.", new Uri("https://github.com/libretro/stella2023-libretro"), "GPL"),
         new("ProSystem", "Greg Stanton and the libretro contributors", "The Atari 7800 emulator behind the ProSystem core.", new Uri("https://github.com/libretro/prosystem-libretro"), "GPL"),
         new("Handy", "Keith Wilkins and the libretro contributors", "The Atari Lynx emulator behind the Handy core.", new Uri("https://github.com/libretro/libretro-handy"), "zlib"),
+        new("Beetle VB", "Mednafen team and the libretro contributors", "The Virtual Boy emulator behind the Beetle VB core.", new Uri("https://github.com/libretro/beetle-vb-libretro"), "GPL"),
         new("Homebrew Launcher channel", "dimok789; art by cathor and Maschell", "The title skeleton (cos.xml, app.xml, meta.xml and stock boot art) RetroArch cores are packed into.", new Uri("https://github.com/dimok789/homebrew_launcher"), "GPL"),
         new("Nunito", "The Nunito Project Authors", "The interface font.", new Uri("https://github.com/googlefonts/nunito"), "SIL Open Font License 1.1"),
     };

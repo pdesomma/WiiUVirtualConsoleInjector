@@ -76,6 +76,7 @@ public static class ArtworkFrames
         Boot("2600-homebrew", "Homebrew, Atari 2600", SourceConsole.Atari2600, "homebrew.png", BootWii),
         Boot("7800-homebrew", "Homebrew, Atari 7800", SourceConsole.Atari7800, "homebrew.png", BootWii),
         Boot("lynx-homebrew", "Homebrew, Atari Lynx", SourceConsole.AtariLynx, "homebrew.png", BootWii),
+        Boot("vb-homebrew", "Homebrew, Virtual Boy", SourceConsole.VirtualBoy, "homebrew.png", BootWii),
         Boot("boot-plain", "None", null, null, BootFull),
 
         // Icons
@@ -110,6 +111,7 @@ public static class ArtworkFrames
         Icon("icon-2600-homebrew", "Homebrew, Atari 2600", SourceConsole.Atari2600, "HBICON.png", IconBadged),
         Icon("icon-7800-homebrew", "Homebrew, Atari 7800", SourceConsole.Atari7800, "HBICON.png", IconBadged),
         Icon("icon-lynx-homebrew", "Homebrew, Atari Lynx", SourceConsole.AtariLynx, "HBICON.png", IconBadged),
+        Icon("icon-vb-homebrew", "Homebrew, Virtual Boy", SourceConsole.VirtualBoy, "HBICON.png", IconBadged),
         Icon("icon-plain", "None", null, null, IconFull),
 
         // Boot logos

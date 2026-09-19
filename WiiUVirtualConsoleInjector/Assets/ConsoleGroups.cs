@@ -26,7 +26,7 @@ public static class ConsoleGroups
     /// </summary>
     public static readonly IReadOnlyList<ConsoleTile> Top = new[]
     {
-        new ConsoleTile(Nintendo, new[] { SourceConsole.Nes, SourceConsole.Snes, SourceConsole.N64, SourceConsole.Gba, SourceConsole.Nds, SourceConsole.GameCube, SourceConsole.Wii }),
+        new ConsoleTile(Nintendo, new[] { SourceConsole.Nes, SourceConsole.Snes, SourceConsole.N64, SourceConsole.Gba, SourceConsole.Nds, SourceConsole.VirtualBoy, SourceConsole.GameCube, SourceConsole.Wii }),
         new ConsoleTile(Sega, new[] { SourceConsole.Genesis, SourceConsole.MasterSystem, SourceConsole.GameGear, SourceConsole.Sega32X }),
         new ConsoleTile(Atari, new[] { SourceConsole.Atari2600, SourceConsole.Atari7800, SourceConsole.AtariLynx }),
         new ConsoleTile(SourceConsole.Tg16),

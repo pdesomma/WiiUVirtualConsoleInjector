@@ -96,7 +96,7 @@ public class ConsoleTilesTests
 
         Assert.IsTrue(vm.IsGroupOpen);
         Assert.AreEqual(ConsoleGroups.Nintendo, vm.OpenGroupName);
-        Assert.AreEqual(7, vm.Tiles.Count);
+        Assert.AreEqual(ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.Nintendo).Consoles.Count, vm.Tiles.Count);
         Assert.IsTrue(vm.Tiles.All(t => !t.IsGroup));
         Assert.IsNull(vm.SelectedTile, "nothing is highlighted while browsing, so a click on any console counts");
         Assert.AreEqual(1, vm.Step, "opening a company is not choosing a console");
