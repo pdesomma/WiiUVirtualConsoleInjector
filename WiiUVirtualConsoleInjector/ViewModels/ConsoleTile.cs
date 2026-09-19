@@ -38,10 +38,12 @@ public sealed class ConsoleTile
         Label = name;
         Consoles = consoles;
         IconName = name;
+        var captions = consoles.Select(ConsoleIcons.Caption).Distinct().ToArray();
+        Caption = captions.Length == 1 ? captions[0] : null;
     }
 
     /// <summary>
-    /// Note under the label, or null.
+    /// Note under the label, or null; a company carries the note all its consoles share.
     /// </summary>
     public string? Caption { get; }
     /// <summary>

@@ -20,24 +20,57 @@ public class EmbeddedRetroArchCoresTests
     }
 
     [TestMethod]
-    public void All_Always_HasThreeGenesisCoresWithGenesisPlusGxRecommended()
+    public void All_Always_HasThreeGenesisCoresInDeclarationOrder()
     {
         var genesis = EmbeddedRetroArchCores.All.Where(core => core.Console == SourceConsole.Genesis).ToArray();
 
         Assert.AreEqual(3, genesis.Length);
-        CollectionAssert.AreEquivalent(new[] { "genesis_plus_gx", "genesis_plus_gx_wide", "picodrive" }, genesis.Select(core => core.Id).ToArray());
-        Assert.AreEqual("genesis_plus_gx", genesis.Single(core => core.IsRecommended).Id);
+        CollectionAssert.AreEqual(new[] { "genesis_plus_gx", "genesis_plus_gx_wide", "picodrive" }, genesis.Select(core => core.Id).ToArray());
     }
 
     [TestMethod]
-    public void All_EveryConsole_HasExactlyOneRecommendedCoreAndASystem()
+    public void All_Always_RecommendsNothing()
+    {
+        Assert.IsFalse(EmbeddedRetroArchCores.All.Any(core => core.IsRecommended));
+    }
+
+    [TestMethod]
+    public void All_EveryConsole_HasACoreAndASystem()
     {
         var cores = new EmbeddedRetroArchCores();
         foreach (var console in EmbeddedRetroArchCores.All.Select(core => core.Console).Distinct())
         {
-            Assert.AreEqual(1, cores.Available(console).Count(core => core.IsRecommended), console.ToString());
+            Assert.IsTrue(cores.Available(console).Count >= 1, console.ToString());
             Assert.IsNotNull(cores.System(console), console.ToString());
         }
+        foreach (var system in EmbeddedRetroArchCores.Systems)
+            Assert.IsTrue(cores.Available(system.Console).Count >= 1, system.Console.ToString());
+    }
+
+    [TestMethod]
+    public void Available_Arcade_ListsTenCoresFbneoFirst()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        CollectionAssert.AreEqual(
+            new[] { "fbneo", "mame2003_plus", "mame2010", "mame2000", "mame2003_midway", "fbalpha2012", "fbalpha2012_cps1", "fbalpha2012_cps2", "fbalpha2012_cps3", "fbalpha2012_neogeo" },
+            cores.Available(SourceConsole.Arcade).Select(core => core.Id).ToArray());
+        CollectionAssert.AreEqual(new[] { ".zip", ".7z" }, cores.System(SourceConsole.Arcade)!.Extensions.ToArray());
+        Assert.AreEqual(0, cores.System(SourceConsole.Arcade)!.BiosFiles.Count);
+    }
+
+    [TestMethod]
+    public void Available_NeoGeo_IsFbneoOnlyWithNoCardBios()
+    {
+        var cores = new EmbeddedRetroArchCores();
+
+        var neoGeo = cores.Available(SourceConsole.NeoGeo);
+        Assert.AreEqual(1, neoGeo.Count);
+        Assert.AreEqual("fbneo", neoGeo[0].Id);
+        Assert.AreEqual("fbneo_libretro.rpx", neoGeo[0].RpxFileName);
+        StringAssert.Contains(neoGeo[0].Description, "neogeo.zip");
+        CollectionAssert.AreEqual(new[] { ".zip", ".7z" }, cores.System(SourceConsole.NeoGeo)!.Extensions.ToArray());
+        Assert.AreEqual(0, cores.System(SourceConsole.NeoGeo)!.BiosFiles.Count);
     }
 
     [TestMethod]
@@ -76,6 +109,31 @@ public class EmbeddedRetroArchCoresTests
     }
 
     [TestMethod]
+    public void All_ArcadeCores_AreEmbeddedAtTheCatalogedSizes()
+    {
+        var sizes = new Dictionary<string, long>
+        {
+            ["fbneo"] = 29751521,
+            ["mame2003_plus"] = 18012178,
+            ["mame2010"] = 24833358,
+            ["mame2000"] = 10261117,
+            ["mame2003_midway"] = 6345351,
+            ["fbalpha2012"] = 12335794,
+            ["fbalpha2012_cps1"] = 6054951,
+            ["fbalpha2012_cps2"] = 5944447,
+            ["fbalpha2012_cps3"] = 5506159,
+            ["fbalpha2012_neogeo"] = 6099616,
+        };
+
+        foreach (var core in EmbeddedRetroArchCores.All.Where(core => core.Console == SourceConsole.Arcade))
+        {
+            using var stream = typeof(EmbeddedRetroArchCores).Assembly.GetManifestResourceStream(EmbeddedRetroArchCores.ResourceName(core));
+            Assert.IsNotNull(stream, core.Id);
+            Assert.AreEqual(sizes[core.Id], stream!.Length, core.Id);
+        }
+    }
+
+    [TestMethod]
     public void All_EveryCore_HasItsResourceCompiledIn()
     {
         var names = typeof(EmbeddedRetroArchCores).Assembly.GetManifestResourceNames();
@@ -85,13 +143,14 @@ public class EmbeddedRetroArchCoresTests
     }
 
     [TestMethod]
-    public void Available_Genesis_ListsRecommendedFirst()
+    public void Available_Genesis_KeepsDeclarationOrder()
     {
         var cores = new EmbeddedRetroArchCores().Available(SourceConsole.Genesis);
 
         Assert.AreEqual(3, cores.Count);
         Assert.AreEqual("genesis_plus_gx", cores[0].Id);
-        Assert.IsTrue(cores[0].IsRecommended);
+        Assert.AreEqual("picodrive", cores[2].Id);
+        Assert.IsFalse(cores.Any(core => core.IsRecommended));
     }
 
     [TestMethod]

@@ -44,6 +44,9 @@ public class ConsoleTilesTests
         Assert.AreEqual(ConsoleGroups.Nintendo, ConsoleGroups.GroupOf(SourceConsole.Nes)!.Label);
         Assert.AreEqual(ConsoleGroups.Sega, ConsoleGroups.GroupOf(SourceConsole.GameGear)!.Label);
         Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.Msx));
+        Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.Arcade));
+        Assert.IsNull(ConsoleGroups.GroupOf(SourceConsole.NeoGeo));
+        Assert.AreEqual(SourceConsole.NeoGeo, ConsoleGroups.Top[^1].Console, "arcade tiles close the top level");
     }
 
     [TestMethod]
@@ -52,6 +55,15 @@ public class ConsoleTilesTests
         Assert.ThrowsExactly<ArgumentNullException>(() => ConsoleGroups.Members(null!));
         Assert.ThrowsExactly<ArgumentException>(() => ConsoleGroups.Members(new ConsoleTile(SourceConsole.Msx)));
         Assert.AreEqual(4, ConsoleGroups.Members(ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.Sega)).Count);
+    }
+
+    [TestMethod]
+    public void ConsoleTile_Company_CarriesTheCaptionAllItsConsolesShare()
+    {
+        Assert.AreEqual("Aroma only", new ConsoleTile("Sega", new[] { SourceConsole.Genesis, SourceConsole.GameGear }).Caption);
+        Assert.AreEqual("Aroma only", ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.Atari).Caption);
+        Assert.IsNull(new ConsoleTile("Mixed", new[] { SourceConsole.Nes, SourceConsole.VirtualBoy }).Caption, "one plain console drops the note");
+        Assert.IsNull(ConsoleGroups.Top.First(t => t.Label == ConsoleGroups.Nintendo).Caption);
     }
 
     [TestMethod]

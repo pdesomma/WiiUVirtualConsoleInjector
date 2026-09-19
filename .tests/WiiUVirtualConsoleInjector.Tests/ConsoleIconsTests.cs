@@ -11,6 +11,8 @@ public class ConsoleIconsTests
     public void Caption_Genesis_SaysAromaOnly()
     {
         Assert.AreEqual("Aroma only", ConsoleIcons.Caption(SourceConsole.Genesis));
+        Assert.AreEqual("Aroma only", ConsoleIcons.Caption(SourceConsole.Arcade));
+        Assert.AreEqual("Aroma only", ConsoleIcons.Caption(SourceConsole.NeoGeo));
     }
 
     [TestMethod]
@@ -26,6 +28,8 @@ public class ConsoleIconsTests
     {
         Assert.AreEqual("Sega Genesis", ConsoleIcons.DisplayName(SourceConsole.Genesis));
         Assert.AreEqual("NES", ConsoleIcons.DisplayName(SourceConsole.Nes));
+        Assert.AreEqual("Arcade", ConsoleIcons.DisplayName(SourceConsole.Arcade));
+        Assert.AreEqual("Neo Geo", ConsoleIcons.DisplayName(SourceConsole.NeoGeo));
         foreach (var console in Enum.GetValues<SourceConsole>())
             Assert.IsFalse(string.IsNullOrWhiteSpace(ConsoleIcons.DisplayName(console)), console.ToString());
     }
@@ -35,5 +39,25 @@ public class ConsoleIconsTests
     {
         StringAssert.EndsWith(ConsoleIcons.UriFor(SourceConsole.Genesis).ToString(), "Assets/Consoles/Genesis.png");
         StringAssert.EndsWith(ConsoleIcons.DarkUriFor(SourceConsole.Genesis).ToString(), "Assets/Consoles/Dark/Genesis.png");
+    }
+
+    [TestMethod]
+    public void UriFor_EveryConsole_HasBothLogosOnDisk()
+    {
+        var root = Path.Combine(FindRepoRoot(), "WiiUVirtualConsoleInjector", "Assets", "Consoles");
+        foreach (var console in Enum.GetValues<SourceConsole>())
+        {
+            Assert.IsTrue(File.Exists(Path.Combine(root, console + ".png")), console + " white logo");
+            Assert.IsTrue(File.Exists(Path.Combine(root, "Dark", console + ".png")), console + " dark logo");
+        }
+    }
+
+    private static string FindRepoRoot()
+    {
+        var folder = new DirectoryInfo(AppContext.BaseDirectory);
+        while (folder is not null && !File.Exists(Path.Combine(folder.FullName, "README.md")))
+            folder = folder.Parent;
+        Assert.IsNotNull(folder, "repo root");
+        return folder.FullName;
     }
 }

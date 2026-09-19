@@ -22,4 +22,6 @@ public enum SourceConsole
     Atari7800,
     AtariLynx,
     VirtualBoy,
+    Arcade,
+    NeoGeo,
 }

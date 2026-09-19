@@ -726,6 +726,7 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
         SourceConsole.Nds => new NdsOptionsViewModel(_dialogs),
         SourceConsole.Wii => new WiiOptionsViewModel(_dialogs),
         SourceConsole.GameCube => new GameCubeOptionsViewModel(_dialogs),
+        SourceConsole.Arcade or SourceConsole.NeoGeo => new ArcadeOptionsViewModel(_dialogs, console),
         _ => new NoOptionsViewModel(console),
     };
 
@@ -1106,7 +1107,6 @@ public sealed partial class InjectViewModel : PageViewModel, IArrowNavigation
                        ?? Bases.FirstOrDefault(b => b.Base.IsRecommended)
                        ?? Bases.FirstOrDefault();
         SelectedCore = Cores.FirstOrDefault(c => c.Id == previousCore)
-                       ?? Cores.FirstOrDefault(c => c.IsRecommended)
                        ?? Cores.FirstOrDefault();
         AromaWarnings = CheckAroma();
         Step = step;

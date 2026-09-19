@@ -117,6 +117,8 @@ public class InjectViewModelTests
             [SourceConsole.Msx] = typeof(NoOptionsViewModel),
             [SourceConsole.Wii] = typeof(WiiOptionsViewModel),
             [SourceConsole.GameCube] = typeof(GameCubeOptionsViewModel),
+            [SourceConsole.Arcade] = typeof(ArcadeOptionsViewModel),
+            [SourceConsole.NeoGeo] = typeof(ArcadeOptionsViewModel),
         };
 
         foreach (var (console, type) in expected)

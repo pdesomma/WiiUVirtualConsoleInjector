@@ -1,4 +1,5 @@
 using System.Text;
+using PD.WiiU.VirtualConsole.Options;
 
 namespace PD.WiiU.VirtualConsole.RetroArch.Tests;
 
@@ -57,6 +58,69 @@ public class RetroArchRomInjectorTests
     public void ContentFileName_SafeName_IsUnchanged()
     {
         Assert.AreEqual("Sonic.md", RetroArchRomInjector.ContentFileName("Sonic.md"));
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_ArcadeCompanions_CopiesThemBesideTheRomUnderTheirOwnNames()
+    {
+        var title = StageFake();
+        var rom = WriteRom("mslug.zip", new byte[] { 1, 2, 3 });
+        var bios = WriteRom("neogeo.zip", new byte[] { 4, 5 });
+        var parent = WriteRom("parent set (rev A).zip", new byte[] { 6 });
+        var messages = new List<string>();
+        var injection = ArcadeInjection(rom, SourceConsole.NeoGeo, bios, parent);
+
+        await new RetroArchRomInjector(SourceConsole.NeoGeo).InjectAsync(injection, title, new SyncProgress(messages.Add));
+
+        CollectionAssert.AreEqual(new byte[] { 1, 2, 3 }, File.ReadAllBytes(Path.Combine(title.Content, "mslug.zip")));
+        CollectionAssert.AreEqual(new byte[] { 4, 5 }, File.ReadAllBytes(Path.Combine(title.Content, "neogeo.zip")));
+        CollectionAssert.AreEqual(new byte[] { 6 }, File.ReadAllBytes(Path.Combine(title.Content, "parent set (rev A).zip")), "name kept verbatim, space and all");
+        Assert.AreEqual(RpxName + " fs:/vol/content/mslug.zip", CosXml.Load(Path.Combine(title.Code, CosXml.FileName)).Arguments);
+        CollectionAssert.AreEqual(
+            new[] { "Copying mslug.zip as mslug.zip", "Copying neogeo.zip beside it", "Copying parent set (rev A).zip beside it", "Pointing cos.xml at it" },
+            messages);
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_CompanionNamedLikeTheRom_IsSkipped()
+    {
+        var title = StageFake();
+        var rom = WriteRom("mslug.zip", new byte[] { 1, 2, 3 });
+        var other = Path.Combine(_root, "other");
+        Directory.CreateDirectory(other);
+        var duplicate = Path.Combine(other, "mslug.zip");
+        File.WriteAllBytes(duplicate, new byte[] { 9, 9, 9 });
+        var messages = new List<string>();
+
+        await new RetroArchRomInjector(SourceConsole.Arcade).InjectAsync(ArcadeInjection(rom, SourceConsole.Arcade, duplicate), title, new SyncProgress(messages.Add));
+
+        CollectionAssert.AreEqual(new byte[] { 1, 2, 3 }, File.ReadAllBytes(Path.Combine(title.Content, "mslug.zip")));
+        Assert.AreEqual(1, Directory.GetFiles(title.Content).Length);
+        Assert.AreEqual(2, messages.Count);
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_MissingCompanion_ThrowsFileNotFoundException()
+    {
+        var title = StageFake();
+        var rom = WriteRom("mslug.zip", new byte[] { 1 });
+        var injection = ArcadeInjection(rom, SourceConsole.Arcade, Path.Combine(_root, "nope.zip"));
+
+        await Assert.ThrowsExactlyAsync<FileNotFoundException>(() => new RetroArchRomInjector(SourceConsole.Arcade).InjectAsync(injection, title));
+    }
+
+    [TestMethod]
+    public async Task InjectAsync_ArcadeWithoutOptions_CopiesOnlyTheRom()
+    {
+        var title = StageFake();
+        var rom = WriteRom("mslug.zip", new byte[] { 1 });
+        var injection = new Injection(new RetroArchCore("fbneo", "FinalBurn Neo", SourceConsole.Arcade, "d"), new Rom(rom, SourceConsole.Arcade), Game());
+        var messages = new List<string>();
+
+        await new RetroArchRomInjector(SourceConsole.Arcade).InjectAsync(injection, title, new SyncProgress(messages.Add));
+
+        Assert.AreEqual(1, Directory.GetFiles(title.Content).Length);
+        Assert.AreEqual(2, messages.Count);
     }
 
     [TestMethod]
@@ -132,6 +196,12 @@ public class RetroArchRomInjectorTests
     {
         Assert.AreEqual(0, new RetroArchRomInjector(SourceConsole.Genesis).Inspect(StageFake()).Count);
     }
+
+    private static Injection ArcadeInjection(string romPath, SourceConsole console, params string[] companions) =>
+        new(new RetroArchCore("fbneo", "FinalBurn Neo", console, "d"), new Rom(romPath, console), Game())
+        {
+            Options = new ArcadeOptions { Console = console, CompanionPaths = companions },
+        };
 
     private static WiiUSharp.Game Game() => GameFactory.Create("Name", null, null, false, new Random(1));
 

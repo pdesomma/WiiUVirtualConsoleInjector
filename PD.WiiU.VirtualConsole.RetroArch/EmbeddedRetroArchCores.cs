@@ -13,22 +13,33 @@ public sealed class EmbeddedRetroArchCores : IRetroArchCores
     public const string ResourcePrefix = "cores/";
 
     /// <summary>
-    /// Every core shipped, recommended first within its console.
+    /// Every core shipped, in the order they are offered within each console.
     /// </summary>
     public static readonly IReadOnlyList<RetroArchCore> All = new[]
     {
-        new RetroArchCore("genesis_plus_gx", "Genesis Plus GX", SourceConsole.Genesis, "Most accurate; the usual choice.") { IsRecommended = true },
+        new RetroArchCore("genesis_plus_gx", "Genesis Plus GX", SourceConsole.Genesis, "Most accurate; the usual choice."),
         new RetroArchCore("genesis_plus_gx_wide", "Genesis Plus GX Wide", SourceConsole.Genesis, "Same emulator with a 16:9 widescreen hack."),
         new RetroArchCore("picodrive", "PicoDrive", SourceConsole.Genesis, "Faster and lighter; less accurate."),
-        new RetroArchCore("genesis_plus_gx", "Genesis Plus GX", SourceConsole.MasterSystem, "Most accurate; the usual choice.") { IsRecommended = true },
+        new RetroArchCore("genesis_plus_gx", "Genesis Plus GX", SourceConsole.MasterSystem, "Most accurate; the usual choice."),
         new RetroArchCore("gearsystem", "Gearsystem", SourceConsole.MasterSystem, "Lighter Master System and Game Gear emulator."),
-        new RetroArchCore("genesis_plus_gx", "Genesis Plus GX", SourceConsole.GameGear, "Most accurate; the usual choice.") { IsRecommended = true },
+        new RetroArchCore("genesis_plus_gx", "Genesis Plus GX", SourceConsole.GameGear, "Most accurate; the usual choice."),
         new RetroArchCore("gearsystem", "Gearsystem", SourceConsole.GameGear, "Lighter Master System and Game Gear emulator."),
-        new RetroArchCore("picodrive", "PicoDrive", SourceConsole.Sega32X, "The one core with 32X support.") { IsRecommended = true },
-        new RetroArchCore("stella2023", "Stella 2023", SourceConsole.Atari2600, "The Stella emulator, 2023 build.") { IsRecommended = true },
-        new RetroArchCore("prosystem", "ProSystem", SourceConsole.Atari7800, "The ProSystem emulator.") { IsRecommended = true },
-        new RetroArchCore("handy", "Handy", SourceConsole.AtariLynx, "The Handy emulator; needs lynxboot.img on the card.") { IsRecommended = true },
-        new RetroArchCore("mednafen_vb", "Beetle VB", SourceConsole.VirtualBoy, "Mednafen's Virtual Boy emulator; the red-on-black view goes to both screens.") { IsRecommended = true },
+        new RetroArchCore("picodrive", "PicoDrive", SourceConsole.Sega32X, "The one core with 32X support."),
+        new RetroArchCore("stella2023", "Stella 2023", SourceConsole.Atari2600, "The Stella emulator, 2023 build."),
+        new RetroArchCore("prosystem", "ProSystem", SourceConsole.Atari7800, "The ProSystem emulator."),
+        new RetroArchCore("handy", "Handy", SourceConsole.AtariLynx, "The Handy emulator; needs lynxboot.img on the card."),
+        new RetroArchCore("mednafen_vb", "Beetle VB", SourceConsole.VirtualBoy, "Mednafen's Virtual Boy emulator; the red-on-black view goes to both screens."),
+        new RetroArchCore("fbneo", "FinalBurn Neo", SourceConsole.Arcade, "FinalBurn Neo; current FBNeo romsets."),
+        new RetroArchCore("mame2003_plus", "MAME 2003-Plus", SourceConsole.Arcade, "MAME 0.78 romsets with later additions."),
+        new RetroArchCore("mame2010", "MAME 2010", SourceConsole.Arcade, "MAME 0.139 romsets; heavier."),
+        new RetroArchCore("mame2000", "MAME 2000", SourceConsole.Arcade, "MAME 0.37b5 romsets; light and fast."),
+        new RetroArchCore("mame2003_midway", "MAME 2003 Midway", SourceConsole.Arcade, "MAME 0.78 Midway subset."),
+        new RetroArchCore("fbalpha2012", "FB Alpha 2012", SourceConsole.Arcade, "FB Alpha 0.2.97.29 romsets; superseded by FBNeo."),
+        new RetroArchCore("fbalpha2012_cps1", "FB Alpha 2012 CPS-1", SourceConsole.Arcade, "FB Alpha 2012, CPS-1 only."),
+        new RetroArchCore("fbalpha2012_cps2", "FB Alpha 2012 CPS-2", SourceConsole.Arcade, "FB Alpha 2012, CPS-2 only."),
+        new RetroArchCore("fbalpha2012_cps3", "FB Alpha 2012 CPS-3", SourceConsole.Arcade, "FB Alpha 2012, CPS-3 only."),
+        new RetroArchCore("fbalpha2012_neogeo", "FB Alpha 2012 Neo Geo", SourceConsole.Arcade, "FB Alpha 2012, Neo Geo only."),
+        new RetroArchCore("fbneo", "FinalBurn Neo", SourceConsole.NeoGeo, "FinalBurn Neo; needs neogeo.zip beside the game."),
     };
 
     /// <summary>
@@ -44,11 +55,13 @@ public sealed class EmbeddedRetroArchCores : IRetroArchCores
         new RetroArchSystem(SourceConsole.Atari7800, ".a78", ".bin"),
         new RetroArchSystem(SourceConsole.AtariLynx, ".lnx") { BiosFiles = new[] { "lynxboot.img" } },
         new RetroArchSystem(SourceConsole.VirtualBoy, ".vb", ".vboy"),
+        new RetroArchSystem(SourceConsole.Arcade, ".zip", ".7z"),
+        new RetroArchSystem(SourceConsole.NeoGeo, ".zip", ".7z"),
     };
 
     /// <inheritdoc/>
     public IReadOnlyList<RetroArchCore> Available(SourceConsole console) =>
-        All.Where(core => core.Console == console).OrderByDescending(core => core.IsRecommended).ToArray();
+        All.Where(core => core.Console == console).ToArray();
 
     /// <summary>
     /// Logical name of a core's executable resource.

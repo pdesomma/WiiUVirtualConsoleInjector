@@ -6,7 +6,7 @@ namespace PD.WiiU.VirtualConsole.Ports;
 public interface IRetroArchCores
 {
     /// <summary>
-    /// The cores shipped for a console, recommended first; empty when the console has none.
+    /// The cores shipped for a console, in the order they are offered; empty when the console has none.
     /// </summary>
     /// <param name="console">Console the ROM is for.</param>
     IReadOnlyList<RetroArchCore> Available(SourceConsole console);

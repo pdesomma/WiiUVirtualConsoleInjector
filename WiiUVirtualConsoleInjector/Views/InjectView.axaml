@@ -168,15 +168,10 @@
                             <ComboBox ItemsSource="{Binding Cores}" SelectedItem="{Binding SelectedCore}" Width="480" HorizontalAlignment="Left" IsEnabled="{Binding !IsRunning}" PlaceholderText="Select a core…">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate x:DataType="vc:RetroArchCore">
-                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
-                                                <TextBlock Text="{Binding Description}" FontSize="10.5" Foreground="{DynamicResource TextTertiaryBrush}" TextTrimming="CharacterEllipsis" />
-                                            </StackPanel>
-                                            <Border Grid.Column="1" Classes="tag" IsVisible="{Binding IsRecommended}" VerticalAlignment="Center" ToolTip.Tip="The core to start with for this console">
-                                                <TextBlock Text="Recommended" FontSize="10.5" />
-                                            </Border>
-                                        </Grid>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Description}" FontSize="10.5" Foreground="{DynamicResource TextTertiaryBrush}" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>
                             </ComboBox>

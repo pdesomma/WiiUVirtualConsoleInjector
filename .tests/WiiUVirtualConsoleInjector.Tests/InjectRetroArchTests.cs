@@ -27,8 +27,8 @@ public class InjectRetroArchTests
         SynchronizationContext.SetSynchronizationContext(new InlineSynchronizationContext());
         _bases = new InjectBaseService().Add(Base(SourceConsole.Nes, 0x1000, "Nes Base"));
         _picodrive = Core("picodrive", "PicoDrive");
-        _plusGx = Core("genesis_plus_gx", "Genesis Plus GX", recommended: true);
-        _cores = new FakeRetroArchCores().Add(_picodrive).Add(_plusGx);
+        _plusGx = Core("genesis_plus_gx", "Genesis Plus GX");
+        _cores = new FakeRetroArchCores().Add(_plusGx).Add(_picodrive);
         _dialogs = new InjectDialogService();
         _factory = new RecordingInjectionServiceFactory();
         _history = new FakeInjectionHistory();
@@ -407,8 +407,8 @@ public class InjectRetroArchTests
         var vm = Genesis();
 
         Assert.IsTrue(vm.IsRetroArch);
-        CollectionAssert.AreEqual(new[] { _picodrive, _plusGx }, vm.Cores.ToArray());
-        Assert.AreSame(_plusGx, vm.SelectedCore, "the recommended core is picked first");
+        CollectionAssert.AreEqual(new[] { _plusGx, _picodrive }, vm.Cores.ToArray());
+        Assert.AreSame(_plusGx, vm.SelectedCore, "the first core is the default");
         Assert.AreEqual(0, vm.Bases.Count);
         Assert.IsNull(vm.SelectedBase);
         Assert.IsNull(vm.BaseHint);

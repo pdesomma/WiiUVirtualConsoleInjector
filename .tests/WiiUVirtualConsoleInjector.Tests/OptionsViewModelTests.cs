@@ -113,6 +113,86 @@ public class OptionsViewModelTests
     }
 
     [TestMethod]
+    public void Arcade_Build_MapsConsoleAndCompanions()
+    {
+        var vm = new ArcadeOptionsViewModel(_dialogs, SourceConsole.NeoGeo);
+        Assert.IsFalse(vm.HasCompanions);
+        Assert.AreEqual(0, ((ArcadeOptions)vm.Build()!).CompanionPaths.Count);
+        vm.Companions.Add(@"C:\sets\neogeo.zip");
+        vm.Companions.Add(@"C:\sets\mslug.zip");
+
+        var built = (ArcadeOptions)vm.Build()!;
+
+        Assert.AreEqual(SourceConsole.NeoGeo, built.Console);
+        Assert.AreEqual(SourceConsole.NeoGeo, vm.Console);
+        CollectionAssert.AreEqual(new[] { @"C:\sets\neogeo.zip", @"C:\sets\mslug.zip" }, built.CompanionPaths.ToArray());
+        Assert.IsTrue(vm.HasCompanions);
+    }
+
+    [TestMethod]
+    public void Arcade_Load_ReplacesCompanionsAndNullClears()
+    {
+        var vm = new ArcadeOptionsViewModel(_dialogs, SourceConsole.Arcade);
+        vm.Companions.Add(@"C:\old.zip");
+
+        vm.Load(new ArcadeOptions { CompanionPaths = new[] { @"C:\sf2.zip", @"C:\qsound_hle.zip" } });
+        CollectionAssert.AreEqual(new[] { @"C:\sf2.zip", @"C:\qsound_hle.zip" }, vm.Companions.ToArray());
+
+        vm.Load(new NesOptions());
+        Assert.AreEqual(0, vm.Companions.Count, "another console's options reset");
+
+        vm.Companions.Add(@"C:\x.zip");
+        vm.Load(null);
+        Assert.AreEqual(0, vm.Companions.Count);
+    }
+
+    [TestMethod]
+    public async Task Arcade_AddCompanion_AppendsPickAndIgnoresDuplicatesCaseInsensitively()
+    {
+        var vm = new ArcadeOptionsViewModel(_dialogs, SourceConsole.Arcade);
+        _dialogs.NextPaths.Enqueue(@"C:\sets\sf2.zip");
+        _dialogs.NextPaths.Enqueue(@"C:\SETS\SF2.ZIP");
+        _dialogs.NextPaths.Enqueue(@"C:\sets\qsound_hle.zip");
+
+        await vm.AddCompanionCommand.ExecuteAsync(null);
+        await vm.AddCompanionCommand.ExecuteAsync(null);
+        await vm.AddCompanionCommand.ExecuteAsync(null);
+        await vm.AddCompanionCommand.ExecuteAsync(null);
+
+        CollectionAssert.AreEqual(new[] { @"C:\sets\sf2.zip", @"C:\sets\qsound_hle.zip" }, vm.Companions.ToArray());
+        CollectionAssert.AreEqual(new[] { "*.zip", "*.7z" }, _dialogs.FilePicks[0].Filters.Single().Patterns);
+        Assert.AreEqual(4, _dialogs.FilePicks.Count, "a cancelled pick changes nothing");
+    }
+
+    [TestMethod]
+    public void Arcade_RemoveCompanion_DropsThePathAndIgnoresUnknown()
+    {
+        var vm = new ArcadeOptionsViewModel(_dialogs, SourceConsole.Arcade);
+        vm.Companions.Add(@"C:\a.zip");
+        vm.Companions.Add(@"C:\b.zip");
+
+        vm.RemoveCompanionCommand.Execute(@"C:\a.zip");
+        vm.RemoveCompanionCommand.Execute(@"C:\missing.zip");
+        vm.RemoveCompanionCommand.Execute(null);
+
+        CollectionAssert.AreEqual(new[] { @"C:\b.zip" }, vm.Companions.ToArray());
+    }
+
+    [TestMethod]
+    public void Arcade_Hint_DependsOnConsole()
+    {
+        StringAssert.Contains(new ArcadeOptionsViewModel(_dialogs, SourceConsole.Arcade).Hint, "sf2.zip");
+        StringAssert.Contains(new ArcadeOptionsViewModel(_dialogs, SourceConsole.NeoGeo).Hint, "neogeo.zip");
+    }
+
+    [TestMethod]
+    public void Arcade_InvalidArguments_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new ArcadeOptionsViewModel(_dialogs, SourceConsole.Nes));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new ArcadeOptionsViewModel(null!, SourceConsole.Arcade));
+    }
+
+    [TestMethod]
     public void Wii_Build_DefaultsMatchDomainDefaults()
     {
         var vm = new WiiOptionsViewModel(_dialogs);

@@ -101,6 +101,27 @@ public class JsonInjectionHistoryTests
     }
 
     [TestMethod]
+    public void Add_NeoGeoRecordWithArcadeOptions_RoundTripsConsoleAndCompanions()
+    {
+        var history = new JsonInjectionHistory(_folder);
+        var record = new InjectionRecord("neo", DateTimeOffset.Now, SourceConsole.NeoGeo, TemplateKey.Core("fbneo"), @"C:\roms\mslug.zip", "Metal Slug",
+            new TitleIdentity(new TitleId(TitleType.Demo, 0x31323334), new GroupId(0x3456), new ProductCode(ProductCode.EShop, "WXYZ")))
+        {
+            Options = new ArcadeOptions { Console = SourceConsole.NeoGeo, CompanionPaths = new[] { @"C:\roms\neogeo.zip", @"C:\roms\parent set.zip" } },
+        };
+
+        history.Add(record, null);
+
+        foreach (var reloaded in new[] { history.All().Single(), new JsonInjectionHistory(_folder).All().Single() })
+        {
+            Assert.AreEqual(SourceConsole.NeoGeo, reloaded.Console);
+            var arcade = (ArcadeOptions)reloaded.Options!;
+            Assert.AreEqual(SourceConsole.NeoGeo, arcade.Console);
+            CollectionAssert.AreEqual(new[] { @"C:\roms\neogeo.zip", @"C:\roms\parent set.zip" }, arcade.CompanionPaths.ToArray());
+        }
+    }
+
+    [TestMethod]
     public void Add_RecordWithCardFiles_RoundTripsThemAndDropsBrokenEntries()
     {
         var history = new JsonInjectionHistory(_folder);

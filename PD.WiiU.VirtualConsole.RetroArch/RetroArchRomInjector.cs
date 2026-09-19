@@ -1,10 +1,11 @@
 using System.Text.RegularExpressions;
+using PD.WiiU.VirtualConsole.Options;
 using PD.WiiU.VirtualConsole.Ports;
 
 namespace PD.WiiU.VirtualConsole.RetroArch;
 
 /// <summary>
-/// Puts a ROM into a staged RetroArch core title: the file goes under content and the core is told to load it through cos.xml's argument string.
+/// Puts a ROM into a staged RetroArch core title: the file goes under content and the core is told to load it through cos.xml's argument string. Arcade companions (parent and BIOS sets) go beside it under their own names.
 /// </summary>
 public sealed class RetroArchRomInjector : IRomInjector
 {
@@ -57,7 +58,7 @@ public sealed class RetroArchRomInjector : IRomInjector
     }
 
     /// <inheritdoc/>
-    /// <exception cref="FileNotFoundException">The title has no core executable.</exception>
+    /// <exception cref="FileNotFoundException">The title has no core executable, or a companion file is missing.</exception>
     public Task InjectAsync(Injection injection, TitleDirectory title, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
         if (injection is null)
@@ -75,12 +76,40 @@ public sealed class RetroArchRomInjector : IRomInjector
         File.Copy(injection.Rom.Path, Path.Combine(title.Content, fileName), overwrite: true);
         cancellationToken.ThrowIfCancellationRequested();
 
+        if (injection.Options is ArcadeOptions { CompanionPaths: { Count: > 0 } companions })
+            CopyCompanions(companions, fileName, title, progress, cancellationToken);
+
         progress?.Report("Pointing " + CosXml.FileName + " at it");
         var cosPath = Path.Combine(title.Code, CosXml.FileName);
         var cos = CosXml.Load(cosPath);
         cos.Arguments = Path.GetFileName(rpx) + " " + RetroArchTemplate.ContentMount + fileName;
         cos.Save(cosPath);
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Copies each companion beside the ROM under its own name; the core looks romsets up by exact name, so nothing is sanitised.
+    /// </summary>
+    /// <param name="companions">Files to copy.</param>
+    /// <param name="romFileName">The ROM's name under content; a companion by that name is skipped.</param>
+    /// <param name="title">Title being built.</param>
+    /// <param name="progress">Where to report each copy.</param>
+    /// <param name="cancellationToken">Cancels between copies.</param>
+    /// <exception cref="FileNotFoundException">A companion path does not exist.</exception>
+    private static void CopyCompanions(IReadOnlyList<string> companions, string romFileName, TitleDirectory title, IProgress<string>? progress, CancellationToken cancellationToken)
+    {
+        foreach (var companion in companions)
+        {
+            var name = Path.GetFileName(companion);
+            if (string.Equals(name, romFileName, StringComparison.OrdinalIgnoreCase))
+                continue;
+            if (!File.Exists(companion))
+                throw new FileNotFoundException($"Companion file not found: {companion}", companion);
+
+            progress?.Report($"Copying {name} beside it");
+            File.Copy(companion, Path.Combine(title.Content, name), overwrite: true);
+            cancellationToken.ThrowIfCancellationRequested();
+        }
     }
 
     /// <summary>

@@ -6,8 +6,27 @@ namespace PD.WiiU.VirtualConsole.Tests;
 public class OptionsTests
 {
     [TestMethod]
+    public void ArcadeDefaultsToArcadeWithNoCompanions()
+    {
+        var options = new ArcadeOptions();
+
+        Assert.AreEqual(SourceConsole.Arcade, options.Console);
+        Assert.AreEqual(0, options.CompanionPaths.Count);
+    }
+
+    [TestMethod]
+    public void ArcadeTakesNeoGeoAndCompanionsOnInit()
+    {
+        var options = new ArcadeOptions { Console = SourceConsole.NeoGeo, CompanionPaths = new[] { @"C:\roms\neogeo.zip" } };
+
+        Assert.AreEqual(SourceConsole.NeoGeo, options.Console);
+        CollectionAssert.AreEqual(new[] { @"C:\roms\neogeo.zip" }, options.CompanionPaths.ToArray());
+    }
+
+    [TestMethod]
     public void EachOptionsTypeNamesItsConsole()
     {
+        Assert.AreEqual(SourceConsole.Arcade, new ArcadeOptions().Console);
         Assert.AreEqual(SourceConsole.Gba, new GbaOptions().Console);
         Assert.AreEqual(SourceConsole.GameCube, new GameCubeOptions().Console);
         Assert.AreEqual(SourceConsole.N64, new N64Options().Console);

@@ -17,6 +17,16 @@
     <EmbeddedResource Include="Assets\Cores\Atari7800\prosystem_libretro.rpx" LogicalName="cores/prosystem_libretro.rpx" />
     <EmbeddedResource Include="Assets\Cores\AtariLynx\handy_libretro.rpx" LogicalName="cores/handy_libretro.rpx" />
     <EmbeddedResource Include="Assets\Cores\VirtualBoy\mednafen_vb_libretro.rpx" LogicalName="cores/mednafen_vb_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Arcade\fbneo_libretro.rpx" LogicalName="cores/fbneo_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Arcade\mame2003_plus_libretro.rpx" LogicalName="cores/mame2003_plus_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Arcade\mame2010_libretro.rpx" LogicalName="cores/mame2010_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Arcade\mame2000_libretro.rpx" LogicalName="cores/mame2000_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Arcade\mame2003_midway_libretro.rpx" LogicalName="cores/mame2003_midway_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Arcade\fbalpha2012_libretro.rpx" LogicalName="cores/fbalpha2012_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Arcade\fbalpha2012_cps1_libretro.rpx" LogicalName="cores/fbalpha2012_cps1_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Arcade\fbalpha2012_cps2_libretro.rpx" LogicalName="cores/fbalpha2012_cps2_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Arcade\fbalpha2012_cps3_libretro.rpx" LogicalName="cores/fbalpha2012_cps3_libretro.rpx" />
+    <EmbeddedResource Include="Assets\Cores\Arcade\fbalpha2012_neogeo_libretro.rpx" LogicalName="cores/fbalpha2012_neogeo_libretro.rpx" />
     <EmbeddedResource Include="Assets\Template\app.xml" LogicalName="template/code/app.xml" />
     <EmbeddedResource Include="Assets\Template\cos.xml" LogicalName="template/code/cos.xml" />
     <EmbeddedResource Include="Assets\Template\meta.xml" LogicalName="template/meta/meta.xml" />

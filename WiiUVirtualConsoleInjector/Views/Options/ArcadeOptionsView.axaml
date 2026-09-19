@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WiiUVirtualConsoleInjector.ViewModels.Options"
+             xmlns:conv="using:WiiUVirtualConsoleInjector.Converters"
+             x:Class="WiiUVirtualConsoleInjector.Views.Options.ArcadeOptionsView"
+             x:DataType="vm:ArcadeOptionsViewModel">
+    <StackPanel Spacing="16" Width="560" HorizontalAlignment="Left">
+        <TextBlock Classes="hint" Text="{Binding Hint}" TextWrapping="Wrap" />
+        <StackPanel Spacing="4">
+            <TextBlock Classes="label" Text="Companion zips" />
+            <ItemsControl ItemsSource="{Binding Companions}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" Margin="0,4,0,4">
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding, Converter={x:Static conv:PathConverters.FileName}}" FontSize="13" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Classes="fine" Text="{Binding}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <Button Grid.Column="1" Classes="link" VerticalAlignment="Center"
+                                    Command="{Binding $parent[ItemsControl].((vm:ArcadeOptionsViewModel)DataContext).RemoveCompanionCommand}"
+                                    CommandParameter="{Binding}">
+                                <TextBlock Text="Remove" />
+                            </Button>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Classes="fine" Text="None yet" IsVisible="{Binding !HasCompanions}" />
+        </StackPanel>
+        <Button Classes="sm" Content="Add zip…" Command="{Binding AddCompanionCommand}" HorizontalAlignment="Left" />
+    </StackPanel>
+</UserControl>

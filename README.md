@@ -1,6 +1,6 @@
 # Wii U Virtual Console Injector
 
-Turns a ROM or disc image into an installable Wii U title, using a stock Virtual Console game as the base — or, for the Sega and Atari consoles and the Virtual Boy, a bundled RetroArch core. A rewrite of [UWUVCI AIO](https://github.com/stuff-by-3-random-dudes/UWUVCI-AIO-WPF): same recipes, no bundled tools, no bundled keys, runs on Windows, Linux and macOS.
+Turns a ROM or disc image into an installable Wii U title, using a stock Virtual Console game as the base — or, for the Sega and Atari consoles, the Virtual Boy, Arcade and Neo Geo, a bundled RetroArch core. A rewrite of [UWUVCI AIO](https://github.com/stuff-by-3-random-dudes/UWUVCI-AIO-WPF): same recipes, no bundled tools, no bundled keys, runs on Windows, Linux and macOS.
 
 ## Download
 
@@ -17,13 +17,15 @@ Turns a ROM or disc image into an installable Wii U title, using a stock Virtual
 
 NES, SNES, Nintendo 64, Game Boy Advance (and Game Boy / Game Boy Color through Goomba), Nintendo DS, TurboGrafx-16 (HuCard and TurboCD), MSX, Wii, GameCube (through Nintendont).
 
-**Sega Genesis, Master System, Game Gear, 32X, Atari 2600, 7800, Lynx and Virtual Boy** titles are different: there is no Virtual Console base, so the title carries a libretro core (Genesis Plus GX, its widescreen build, PicoDrive, Gearsystem, Stella, ProSystem, Handy or Beetle VB) as its emulator with the ROM beside it. They run under **Aroma only**, read and write settings and saves under `sd:/retroarch/`, and need Aroma's signature patch module ([01_sigpatches.rpx](https://github.com/marco-calautti/SigpatchesModuleWiiU/releases) in `wiiu/environments/aroma/modules/setup/`) to install; the Review step checks the card for both. Quit from RetroArch's own menu — closing the software from the HOME Menu hangs on the Wii U Menu, a RetroArch bug.
+**Sega Genesis, Master System, Game Gear, 32X, Atari 2600, 7800, Lynx, Virtual Boy, Arcade and Neo Geo** titles are different: there is no Virtual Console base, so the title carries a libretro core (Genesis Plus GX, its widescreen build, PicoDrive, Gearsystem, Stella, ProSystem, Handy, Beetle VB, FinalBurn Neo, FB Alpha 2012 or MAME 2000/2003/2010) as its emulator with the ROM beside it. They run under **Aroma only**, read and write settings and saves under `sd:/retroarch/`, and need Aroma's signature patch module ([01_sigpatches.rpx](https://github.com/marco-calautti/SigpatchesModuleWiiU/releases) in `wiiu/environments/aroma/modules/setup/`) to install; the Review step checks the card for both. Quit from RetroArch's own menu — closing the software from the HOME Menu hangs on the Wii U Menu, a RetroArch bug.
+
+Arcade romsets are tied to an emulator version: pick the core that matches your set (FinalBurn Neo for a current FBNeo set, FB Alpha 2012 for a 2012 set, a MAME core for the matching MAME version). A clone needs its parent zip and some sets need a BIOS zip or samples; add those on the Options step and they are copied into the title beside the game, names unchanged. Neo Geo games need `neogeo.zip` the same way.
 
 ## What you need
 
 - A Wii U with custom firmware (Aroma, Tiramisu or similar) and [WUP Installer](https://github.com/Fangal-Airbag/wup-installer-gx2) or similar to install the result.
 - Your Wii U common key, or an `otp.bin` dump to read it from. Entered on **Bases & Keys**; never shipped with the app.
-- A title key for each base you use. Also entered on **Bases & Keys**; the base is then downloaded from Nintendo's servers. The Sega and Atari consoles and the Virtual Boy need no base and no title key. Lynx needs `lynxboot.img` in `sd:/retroarch/system/`; the Review step checks for it, and a dump you pick on the Game step is copied to the card with the title.
+- A title key for each base you use. Also entered on **Bases & Keys**; the base is then downloaded from Nintendo's servers. The Sega and Atari consoles, the Virtual Boy, Arcade and Neo Geo need no base and no title key. Lynx needs `lynxboot.img` in `sd:/retroarch/system/`; the Review step checks for it, and a dump you pick on the Game step is copied to the card with the title.
 - For encrypted Wii ISO/WBFS images, the Wii common key. NKit images need no key.
 - For GameCube, [Nintendont](https://github.com/GaryOderNichts/Nintendont) on the SD card; **Settings** puts it there and edits its `nincfg.bin`.
 
